@@ -1,7 +1,8 @@
 'use client'
-import { useEffect, useState } from 'react'
+import React from 'react'
 
 type Theme = 'light' | 'anime' | 'pirate' | 'lifesim' | 'fantasy'
+
 const LABELS: Record<Theme, string> = {
   light: 'Light',
   anime: 'Anime-combat',
@@ -11,14 +12,16 @@ const LABELS: Record<Theme, string> = {
 }
 
 export default function ThemeSwitcher() {
-  const [theme, setTheme] = useState<Theme>('light')
+  const [theme, setTheme] = React.useState<Theme>('light')
 
-  useEffect(() => {
+  React.useEffect(() => {
     const stored = (typeof window !== 'undefined' && localStorage.getItem('cmc.theme')) as Theme | null
-    if (stored && Object.keys(LABELS).includes(stored)) setTheme(stored)
+    if (stored && (Object.keys(LABELS) as string[]).includes(stored)) {
+      setTheme(stored as Theme)
+    }
   }, [])
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (typeof document !== 'undefined') {
       document.documentElement.setAttribute('data-theme', theme)
       try { localStorage.setItem('cmc.theme', theme) } catch {}
@@ -26,17 +29,21 @@ export default function ThemeSwitcher() {
     }
   }, [theme])
 
+  function onChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    setTheme(e.target.value as Theme)
+  }
+
   return (
     <div className="card space-y-2">
       <div className="text-sm text-muted">Thème visuel</div>
       <select
         value={theme}
-        onChange={(e) => setTheme(e.target.value as Theme)}
+        onChange={onChange}
         className="btn w-full"
         aria-label="Choisir un thème"
       >
-        {Object.entries(LABELS).map(([k, v]) => (
-          <option key={k} value={k}>{v}</option>
+        {(Object.keys(LABELS) as Theme[]).map((k) => (
+          <option key={k} value={k}>{LABELS[k]}</option>
         ))}
       </select>
     </div>
