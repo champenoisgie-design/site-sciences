@@ -1,15 +1,22 @@
 'use client'
 import { useState } from 'react'
-export default function Checklist({ items = ["Finir 2 quiz","Regarder 1 vidéo","Faire 1 pause active"] }:{items?: string[]}){
-  const [done, setDone] = useState<boolean[]>(items.map(()=>false))
+
+export default function Checklist({ items }: { items?: string[] }) {
+  const defaults = items ?? ['Finir 2 quiz', 'Regarder 1 vidéo', 'Faire 1 pause active']
+  const [checked, setChecked] = useState<boolean[]>(defaults.map(() => false))
+
   return (
     <div className="card">
-      <div className="font-semibold mb-2">Objectifs du jour</div>
+      <h3 className="font-semibold mb-2">Checklist</h3>
       <ul className="space-y-2">
-        {items.map((it, i)=> (
+        {defaults.map((txt, i) => (
           <li key={i} className="flex items-center gap-2">
-            <input type="checkbox" checked={done[i]} onChange={()=> setDone(d=> d.map((v,idx)=> idx===i? !v : v))} />
-            <span className={done[i] ? "line-through text-muted" : ""}>{it}</span>
+            <input
+              type="checkbox"
+              checked={checked[i]}
+              onChange={() => setChecked((c) => c.map((v, idx) => (idx === i ? !v : v)))}
+            />
+            <span className={checked[i] ? 'line-through text-muted' : ''}>{txt}</span>
           </li>
         ))}
       </ul>
