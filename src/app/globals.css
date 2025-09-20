@@ -1,26 +1,72 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+/* Design tokens (Light par défaut) */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: 255 255 255;
+  --fg: 15 23 42;
+  --muted: 100 116 139;
+  --primary: 0 0 0;
+  --accent: 44 194 255;
+  --card: 248 250 252;
+  --border: 226 232 240;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html[data-theme="anime"] {
+  --bg: 10 15 35;
+  --fg: 235 245 255;
+  --primary: 44 194 255;    /* cyan électrique */
+  --accent: 255 196 0;      /* jaune énergie */
+  --card: 14 23 42;
+  --border: 30 41 59;
+}
+html[data-theme="pirate"] {
+  --bg: 14 24 27;
+  --fg: 240 249 255;
+  --primary: 246 189 96;    /* sable */
+  --accent: 79 70 229;      /* violet profond */
+  --card: 17 28 31;
+  --border: 32 46 50;
+}
+html[data-theme="lifesim"] {
+  --bg: 250 252 255;
+  --fg: 17 24 39;
+  --primary: 34 197 94;     /* vert sim */
+  --accent: 14 165 233;     /* bleu doux */
+  --card: 241 245 249;
+  --border: 226 232 240;
+}
+html[data-theme="fantasy"] {
+  --bg: 7 16 25;
+  --fg: 236 253 245;
+  --primary: 217 119 6;     /* or/cuivre */
+  --accent: 59 130 246;     /* bleu rune */
+  --card: 15 23 42;
+  --border: 30 41 59;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Modes d’adaptation */
+html[data-mode="tdah"] * { transition: none !important; }
+html[data-mode="tdah"] .anti-distract { display: none !important; }
+
+html[data-mode="dys"] body { font-family: 'OpenDyslexic', Arial, Verdana, system-ui, sans-serif; letter-spacing: .3px; line-height: 1.7; }
+html[data-mode="dys"] p { max-width: 60ch; }
+
+html[data-mode="tsa"] * { animation: none !important; transition: none !important; }
+html[data-mode="tsa"] .cta-neutral { background: rgb(var(--primary) / .08); border-color: rgb(var(--primary) / .35); }
+
+html[data-mode="hpi"] .expert-badge { border: 1px dashed rgb(var(--accent)); padding: .25rem .5rem; border-radius: .5rem; font-size: .75rem; }
+
+/* Utilitaires */
+@layer components {
+  .card { @apply rounded-2xl border p-5; border-color: rgb(var(--border)); background: rgb(var(--card)); }
+  .btn { @apply inline-flex items-center gap-2 rounded-xl border px-4 py-2 text-sm; border-color: rgb(var(--border)); }
+  .btn-primary { @apply inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm text-white; background: rgb(var(--primary)); }
+  .text-muted { color: rgb(var(--muted)); }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  color: rgb(var(--fg));
+  background: rgb(var(--bg));
 }
