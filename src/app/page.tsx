@@ -3,7 +3,9 @@ export default function Home() {
     <main className="min-h-screen bg-white text-slate-900">
       {/* HERO */}
       <section className="px-6 py-16 md:py-24 max-w-6xl mx-auto">
-        <div className="grid md:grid-cols-2 gap-8 items-center">
+        import ThemeSwitcher from '@/components/ThemeSwitcher'
+import ModeSwitcher from '@/components/ModeSwitcher'
+<div className="grid md:grid-cols-2 gap-8 items-center">
           <div>
             <h1 className="text-3xl md:text-5xl font-extrabold leading-tight">
               Cours MP Concret
