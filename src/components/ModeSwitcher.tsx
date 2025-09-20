@@ -1,14 +1,28 @@
 'use client'
 import { useMode } from './ModeProvider'
-const LABELS = { normal:'Normal', tdah:'TDAH', dys:'DYS', tsa:'TSA', hpi:'HPI' } as const
 
-export default function ModeSwitcher(){
+const LABELS: Record<string, string> = {
+  normal: 'Normal',
+  tdah: 'TDAH',
+  dys: 'DYS',
+  tsa: 'TSA',
+  hpi: 'HPI',
+}
+
+export default function ModeSwitcher() {
   const { mode, setMode } = useMode()
   return (
-    <div className="card">
-      <div className="text-sm text-muted mb-2">Mode d’adaptation</div>
-      <select className="btn w-full" value={mode} onChange={e=> setMode(e.target.value as any)}>
-        {Object.entries(LABELS).map(([k,v])=> <option key={k} value={k}>{v}</option>)}
+    <div className="card space-y-2">
+      <div className="text-sm text-muted">Mode d’apprentissage</div>
+      <select
+        value={mode}
+        onChange={(e) => setMode(e.target.value as any)}
+        className="btn w-full"
+        aria-label="Choisir un mode"
+      >
+        {Object.keys(LABELS).map((k) => (
+          <option key={k} value={k}>{LABELS[k]}</option>
+        ))}
       </select>
     </div>
   )
