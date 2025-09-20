@@ -1,20 +1,15 @@
 import './globals.css'
 import type { Metadata } from 'next'
-import ModeProvider from '@/components/ModeProvider'
 
 export const metadata: Metadata = {
   title: 'Cours MP Concret',
-  description: 'Exercices, tutoriels et live adaptés TDAH/DYS/TSA/HPI',
+  description: 'Exercices corrigés, tutoriels vidéo et sessions live.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr">
-      <body>
-        <ModeProvider>
-          {children}
-        </ModeProvider>
-      </body>
+    <html lang="fr" data-theme="light">
+      <body>{children}</body>
     </html>
   )
 }
