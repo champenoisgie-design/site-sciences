@@ -1,18 +1,19 @@
+import ThemeSwitcher from '@/components/ThemeSwitcher'
+import ModeSwitcher from '@/components/ModeSwitcher'
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-white text-slate-900">
       {/* HERO */}
       <section className="px-6 py-16 md:py-24 max-w-6xl mx-auto">
-        import ThemeSwitcher from '@/components/ThemeSwitcher'
-import ModeSwitcher from '@/components/ModeSwitcher'
-<div className="grid md:grid-cols-2 gap-8 items-center">
+        <div className="grid md:grid-cols-2 gap-8 items-center">
           <div>
             <h1 className="text-3xl md:text-5xl font-extrabold leading-tight">
               Cours MP Concret
             </h1>
             <p className="mt-4 text-slate-600 md:text-lg">
-              Exercices corrigés, tutoriels vidéo et sessions live. 
-              Choisis ton <span className="font-semibold">mode d’apprentissage</span> (TDAH, DYS, TSA, HPI) 
+              Exercices corrigés, tutoriels vidéo et sessions live.
+              Choisis ton <span className="font-semibold">mode d’apprentissage</span> (TDAH, DYS, TSA, HPI)
               et ton <span className="font-semibold">univers visuel</span>.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
@@ -31,10 +32,15 @@ import ModeSwitcher from '@/components/ModeSwitcher'
             </p>
           </div>
           <div className="rounded-2xl border bg-slate-50 aspect-video flex items-center justify-center">
-            {/* Remplace cette zone par une image/illustration plus tard */}
             <span className="text-slate-500">Visuel d’accueil (à remplacer)</span>
           </div>
         </div>
+      </section>
+
+      {/* Switchers */}
+      <section className="px-6 -mt-6 max-w-6xl mx-auto grid md:grid-cols-2 gap-6">
+        <ThemeSwitcher />
+        <ModeSwitcher />
       </section>
 
       {/* 3 CARTES */}
@@ -79,5 +85,5 @@ import ModeSwitcher from '@/components/ModeSwitcher'
         </div>
       </footer>
     </main>
-  );
+  )
 }
