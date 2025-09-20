@@ -1,7 +1,9 @@
 'use client'
 import { useMode } from './ModeProvider'
+import type { UIMode } from './ModeProvider'
+import React from 'react'
 
-const LABELS: Record<string, string> = {
+const LABELS: Record<UIMode, string> = {
   normal: 'Normal',
   tdah: 'TDAH',
   dys: 'DYS',
@@ -11,16 +13,22 @@ const LABELS: Record<string, string> = {
 
 export default function ModeSwitcher() {
   const { mode, setMode } = useMode()
+
+  function onChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const next = e.target.value as UIMode
+    setMode(next)
+  }
+
   return (
     <div className="card space-y-2">
       <div className="text-sm text-muted">Mode d’apprentissage</div>
       <select
         value={mode}
-        onChange={(e) => setMode(e.target.value as any)}
+        onChange={onChange}
         className="btn w-full"
         aria-label="Choisir un mode"
       >
-        {Object.keys(LABELS).map((k) => (
+        {(Object.keys(LABELS) as UIMode[]).map((k) => (
           <option key={k} value={k}>{LABELS[k]}</option>
         ))}
       </select>
