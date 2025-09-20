@@ -1,15 +1,34 @@
 'use client'
 import { useEffect, useState } from 'react'
-export default function FocusTimer({ minutes=5 }: { minutes?: number }){
-  const [sec, setSec] = useState(minutes*60)
-  useEffect(()=>{ const t = setInterval(()=> setSec(s=> s>0? s-1 : 0), 1000); return ()=> clearInterval(t) },[])
-  const m = Math.floor(sec/60).toString().padStart(2,'0')
-  const s = (sec%60).toString().padStart(2,'0')
+
+export default function FocusTimer({ minutes = 5 }: { minutes?: number }) {
+  const total = minutes * 60
+  const [s, setS] = useState(total)
+  const [running, setRunning] = useState(false)
+
+  useEffect(() => {
+    if (!running) return
+    const id = setInterval(() => setS((v) => (v > 0 ? v - 1 : 0)), 1000)
+    return () => clearInterval(id)
+  }, [running])
+
+  const mm = String(Math.floor(s / 60)).padStart(2, '0')
+  const ss = String(s % 60).padStart(2, '0')
+
   return (
     <div className="card flex items-center justify-between">
-      <div className="text-sm text-muted">Minuteur</div>
-      <div className="text-xl font-mono">{m}:{s}</div>
-      <button className="btn" onClick={()=> setSec(minutes*60)}>Reset</button>
+      <div>
+        <div className="text-sm text-muted">Minuteur de focus</div>
+        <div className="text-lg font-semibold tabular-nums">{mm}:{ss}</div>
+      </div>
+      <div className="flex gap-2">
+        {!running ? (
+          <button className="btn-primary" onClick={() => setRunning(true)}>Démarrer</button>
+        ) : (
+          <button className="btn" onClick={() => setRunning(false)}>Pause</button>
+        )}
+        <button className="btn" onClick={() => { setRunning(false); setS(total) }}>Reset</button>
+      </div>
     </div>
   )
 }
