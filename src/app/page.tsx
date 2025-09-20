@@ -3,7 +3,7 @@ export default function HomePage() {
     <main className="min-h-screen">
       {/* HERO */}
       <section className="max-w-5xl mx-auto px-6 pt-14 pb-10">
-        <div className="rounded-xl p-8" style={{
+        <div className="rounded-lg p-8" style={{
           background: 'linear-gradient(135deg, rgba(44,194,255,.12), rgba(15,23,42,.06))'
         }}>
           <h1 className="text-3xl md:text-4xl font-extrabold mb-3">
