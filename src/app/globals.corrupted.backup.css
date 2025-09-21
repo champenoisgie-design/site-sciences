@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base mini pour vérifier visuellement */
+:root { font-family: ui-sans-serif, system-ui, -apple-system, "Inter", Arial, sans-serif; }
+html, body { height: 100%; }
+body { min-height: 10body {}

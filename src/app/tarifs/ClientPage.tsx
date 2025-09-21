@@ -1,27 +1,52 @@
 "use client"
 import { useMemo, useState } from "react"
-import { gradesBySchool } from "@/lib/school"
-import type { School, AnyGrade } from "@/lib/school"
-import { perSubjectPricing, pack3Subjects, tierBenefits, Tier } from "@/lib/pricing"
+import { gradesBySchool, subjects } from "@/lib/school"
+import type { School, AnyGrade, Subject } from "@/lib/school"
 
-const TIERS: Tier[] = ["Normal", "Gold", "Platine"]
+const basePrices: Record<Subject, Record<AnyGrade, number>> = {
+  "Maths": {
+    "6e": 7, "5e": 7, "4e": 8, "3e": 8,
+    "2nde": 10, "1re": 12, "Terminale": 14,
+  },
+  "Physique-Chimie": {
+    "6e": 0 as any, "5e": 0 as any, "4e": 6, "3e": 7,
+    "2nde": 10, "1re": 12, "Terminale": 14,
+  },
+  "SVT": {
+    "6e": 6, "5e": 6, "4e": 7, "3e": 7,
+    "2nde": 9, "1re": 11, "Terminale": 13,
+  },
+} as const
 
-export default function Page() {
+function monthlyPriceFor(subject: Subject, grade: AnyGrade) {
+  const v = basePrices[subject][grade]
+  return typeof v === "number" ? v : 0
+}
+
+export default function ClientPage() {
   const [school, setSchool] = useState<School | undefined>()
   const [grade, setGrade] = useState<AnyGrade | undefined>()
-  const [tier, setTier] = useState<Tier>("Normal")
 
   const grades = useMemo(() => (school ? gradesBySchool[school] : []), [school])
-  const perSubj = useMemo(() => (grade ? perSubjectPricing(grade, tier) : []), [grade, tier])
-  const pack = useMemo(() => (grade ? pack3Subjects(grade, tier) : null), [grade, tier])
+
+  const perSubject = useMemo(() => {
+    if (!grade) return []
+    return subjects.map(s => ({ subject: s, price: monthlyPriceFor(s, grade) }))
+  }, [grade])
+
+  const terminaleBundle = useMemo(() => {
+    if (grade !== "Terminale") return null
+    const sum = subjects.reduce((acc, s) => acc + monthlyPriceFor(s, "Terminale"), 0)
+    const promo = Math.max(0, sum - 35) // exemple : pack 3 matières à 35€ au lieu de la somme
+    return { packPrice: 35, saved: promo }
+  }, [grade])
 
   return (
     <section>
       <h1 className="mb-6 text-3xl font-bold">Tarifs</h1>
 
-      {/* Sélecteurs École / Niveau / Palier */}
+      {/* Sélecteurs pour simuler la grille */}
       <div className="mb-6 grid gap-4 rounded-2xl border p-4">
-        {/* École */}
         <div>
           <label className="mb-1 block text-sm font-medium">École</label>
           <div className="flex gap-2">
@@ -38,8 +63,6 @@ export default function Page() {
             ))}
           </div>
         </div>
-
-        {/* Niveau */}
         <div>
           <label className="mb-1 block text-sm font-medium">Niveau</label>
           <div className="flex flex-wrap gap-2">
@@ -57,41 +80,22 @@ export default function Page() {
             ))}
           </div>
         </div>
-
-        {/* Palier d'abonnement */}
-        <div>
-          <label className="mb-1 block text-sm font-medium">Niveau d’abonnement</label>
-          <div className="flex flex-wrap gap-2">
-            {TIERS.map(t => (
-              <button
-                key={t}
-                onClick={() => setTier(t)}
-                className={`rounded-lg border px-3 py-1.5 text-sm ${
-                  tier === t ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900" : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                }`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-          <ul className="mt-2 text-xs text-zinc-600 dark:text-zinc-400 list-disc pl-5">
-            {tierBenefits[tier].map((b) => <li key={b}>{b}</li>)}
-          </ul>
-        </div>
       </div>
 
       {/* Grille de prix par matière */}
       {grade ? (
         <div className="grid gap-4 md:grid-cols-3">
-          {perSubj.map(t => (
+          {perSubject.map(t => (
             <div key={t.subject} className="rounded-2xl border p-5">
               <h2 className="text-lg font-semibold">{t.subject}</h2>
               <p className="mt-2 text-2xl font-bold">{t.price} € / mois</p>
               <ul className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-                {tierBenefits[tier].map((b) => <li key={b}>• {b}</li>)}
+                <li>• Tutoriels complets {grade}</li>
+                <li>• Entraînement Solo illimité</li>
+                <li>• Suivi XP/Badges</li>
               </ul>
               <a href="/contact" className="mt-4 inline-block rounded-lg bg-zinc-900 px-3 py-1.5 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900">
-                S’abonner {t.subject} ({tier})
+                S’abonner {t.subject}
               </a>
             </div>
           ))}
@@ -100,30 +104,29 @@ export default function Page() {
         <p className="text-sm text-zinc-500">Choisis un niveau pour afficher les prix par matière.</p>
       )}
 
-      {/* Pack 3 matières, disponible pour toutes les classes */}
-      {grade && pack && (
+      {/* Offre pack Terminale */}
+      {terminaleBundle && (
         <div className="mt-6 rounded-2xl border p-5">
           <div className="mb-1 w-fit rounded-full bg-zinc-900 px-2 py-1 text-xs text-white dark:bg-zinc-100 dark:text-zinc-900">
-            Pack 3 matières — {grade} — {tier}
+            Offre 3 matières Terminale
           </div>
           <p className="text-lg">
-            Prix pack: <span className="font-semibold">{pack.packPrice} € / mois</span>
-            {pack.saved > 0 && (
-              <span className="text-green-600 dark:text-green-400"> (économie ~{pack.saved} €)</span>
+            Pack Maths + Physique-Chimie + SVT : <span className="font-semibold">{terminaleBundle.packPrice} € / mois</span>
+            {terminaleBundle.saved > 0 && (
+              <span className="text-green-600 dark:text-green-400"> (économie ~{terminaleBundle.saved} €)</span>
             )}
           </p>
-          <p className="mt-1 text-xs text-zinc-500">Remise ~20% sur la somme des 3 matières du même niveau et palier.</p>
         </div>
       )}
 
-      {/* Offre Famille (info) */}
+      {/* Offre Famille : multi-niveaux */}
       <div className="mt-6 rounded-2xl border p-5">
         <div className="mb-1 w-fit rounded-full bg-zinc-900 px-2 py-1 text-xs text-white dark:bg-zinc-100 dark:text-zinc-900">
           Offre Famille
         </div>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
           Plusieurs niveaux au foyer (ex: 6e + Terminale) : remise progressive sur le total.
-          Contacte-nous pour un devis « multi-niveaux » nominatif.
+          Contacte-nous pour un devis packé et nominatif.
         </p>
         <a href="/contact" className="mt-3 inline-block rounded-lg border px-3 py-1.5 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800">
           Demander un devis Famille
