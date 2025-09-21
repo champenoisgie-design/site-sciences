@@ -1,15 +1,18 @@
-import './globals.css'
-import type { Metadata } from 'next'
+import type { Metadata } from "next";
+import "./globals.css";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: 'Cours MP Concret',
-  description: 'Exercices corrigés, tutoriels vidéo et sessions live.',
-}
+  title: "Site Sciences",
+  description: "Apprentissage interactif en sciences",
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" data-theme="light">
-      <body>{children}</body>
+    <html lang="fr">
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
-  )
+  );
 }
