@@ -1,46 +1,41 @@
-import ThemeSwitcher from '@/components/ThemeSwitcher'
-import ModeSwitcher from '@/components/ModeSwitcher'
-import Checklist from '@/components/Checklist'
+"use client"
+import Link from "next/link"
+import { tutorials } from "@/lib/tutorials"
+import { useSelection } from "@/components/SelectionProvider"
 
 export default function Page() {
+  const { selection } = useSelection()
+  const filtered = tutorials.filter(t => {
+    if (selection.school && t.school !== selection.school) return false
+    if (selection.grade && t.grade !== selection.grade) return false
+    if (selection.subject && t.subject !== selection.subject) return false
+    return true
+  })
+
   return (
-    <main className="max-w-6xl mx-auto p-6 space-y-6">
-      <header className="flex items-start justify-between gap-6 flex-col md:flex-row">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Tutoriels vidéo</h1>
-          <p className="text-muted mt-1">
-            Vidéos courtes (2–5 min), chapitrées, avec quiz et fiches.
-          </p>
+    <section>
+      <h1 className="mb-6 text-3xl font-bold">Tutoriels</h1>
+      {filtered.length === 0 ? (
+        <p className="text-sm text-zinc-500">Aucun tutoriel ne correspond à ta sélection actuelle.</p>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2">
+          {filtered.map(t => (
+            <article key={t.slug} className="rounded-2xl border p-5">
+              <div className="mb-1 text-xs text-zinc-500">
+                {t.subject} • {t.school === "college" ? "Collège" : "Lycée"} {t.grade} • MAJ {new Date(t.updatedAt).toLocaleDateString("fr-FR")}
+              </div>
+              <h2 className="text-xl font-semibold">{t.title}</h2>
+              <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{t.excerpt}</p>
+              <Link
+                href={`/tutoriels/${t.slug}`}
+                className="mt-4 inline-block rounded-lg bg-zinc-900 px-3 py-1.5 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900"
+              >
+                Lire le tutoriel
+              </Link>
+            </article>
+          ))}
         </div>
-        <div className="grid md:grid-cols-2 gap-3 w-full md:w-auto">
-          <ThemeSwitcher />
-          <ModeSwitcher />
-        </div>
-      </header>
-
-      <Checklist items={['Regarder 1 vidéo de 3 min', 'Répondre au quiz']} />
-
-      <section className="card">
-        <h2 className="text-lg font-semibold mb-2">Loi d’Ohm en 3 minutes</h2>
-        <div className="aspect-video rounded-xl border bg-slate-100 anti-distract flex items-center justify-center">
-          Lecteur vidéo (à brancher)
-        </div>
-        <p className="text-xs text-muted mt-2">
-          Résumé : relation U = R × I, unités en SI…
-        </p>
-      </section>
-
-      <section className="card">
-        <h2 className="text-lg font-semibold mb-2">
-          Produit scalaire – intuition
-        </h2>
-        <div className="aspect-video rounded-xl border bg-slate-100 anti-distract flex items-center justify-center">
-          Lecteur vidéo (à brancher)
-        </div>
-        <p className="text-xs text-muted mt-2">
-          Résumé : projection, angle, cosinus…
-        </p>
-      </section>
-    </main>
+      )}
+    </section>
   )
 }

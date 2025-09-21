@@ -1,47 +1,45 @@
-import ThemeSwitcher from '@/components/ThemeSwitcher'
-import ModeSwitcher from '@/components/ModeSwitcher'
-import Checklist from '@/components/Checklist'
-import FocusTimer from '@/components/FocusTimer'
+"use client"
+import { useSelection } from "@/components/SelectionProvider"
+import { exercises } from "@/lib/exercises"
 
 export default function Page() {
+  const { selection } = useSelection()
+
+  const filtered = exercises.filter(e => {
+    if (selection.school && e.school !== selection.school) return false
+    if (selection.grade && e.grade !== selection.grade) return false
+    if (selection.subject && e.subject !== selection.subject) return false
+    return true
+  })
+
   return (
-    <main className="max-w-6xl mx-auto p-6 space-y-6">
-      <header className="flex items-start justify-between gap-6 flex-col md:flex-row">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold">
-            Entraînement en solo
-          </h1>
-          <p className="text-muted mt-1">
-            Objectifs courts, indices progressifs, XP.
-          </p>
-        </div>
-        <div className="grid md:grid-cols-2 gap-3 w-full md:w-auto">
-          <ThemeSwitcher />
-          <ModeSwitcher />
-        </div>
-      </header>
+    <section>
+      <h1 className="mb-2 text-3xl font-bold">Entraînement Solo</h1>
+      <p className="mb-6 text-zinc-600 dark:text-zinc-400">
+        Exercices selon ta sélection : {selection.subject ?? "—"} •{" "}
+        {selection.school ? (selection.school === "college" ? "Collège" : "Lycée") : "—"}{" "}
+        {selection.grade ?? "—"}.
+      </p>
 
-      <Checklist />
-
-      <section className="card space-y-3">
-        <h2 className="text-lg font-semibold">Exercice 1 – Fractions</h2>
-        <p className="text-muted">Simplifie 6/9.</p>
-        <div className="flex flex-wrap gap-2">
-          <button className="btn-primary">Commencer</button>
-          <button className="btn">Voir un indice</button>
+      {filtered.length === 0 ? (
+        <div className="rounded-2xl border p-5 text-sm text-zinc-500">
+          Aucun exercice pour l’instant sur cette combinaison.
         </div>
-        <FocusTimer minutes={5} />
-      </section>
-
-      <section className="card space-y-3">
-        <h2 className="text-lg font-semibold">Exercice 2 – Dérivées</h2>
-        <p className="text-muted">Calcule f’(x) si f(x)=3x²−5x+2.</p>
-        <div className="flex flex-wrap gap-2">
-          <button className="btn-primary">Commencer</button>
-          <button className="btn">Voir un indice</button>
-        </div>
-        <FocusTimer minutes={7} />
-      </section>
-    </main>
+      ) : (
+        <ul className="grid gap-3">
+          {filtered.map(ex => (
+            <li key={ex.id} className="rounded-2xl border p-4">
+              <div className="text-xs text-zinc-500">
+                {ex.subject} • {ex.school === "college" ? "Collège" : "Lycée"} {ex.grade} • {ex.difficulty}
+              </div>
+              <div className="font-medium">{ex.title}</div>
+              <button className="mt-2 rounded border px-3 py-1.5 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                Lancer
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   )
 }

@@ -1,0 +1,106 @@
+@import "tailwindcss";
+@import 'tailwindcss';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design tokens par défaut (Light) */
+:root {
+  --bg: 255 255 255;
+  --fg: 15 23 42;
+  --muted: 100 116 139;
+  --primary: 0 0 0;
+  --accent: 44 194 255;
+  --card: 248 250 252;
+  --border: 226 232 240;
+}
+
+/* Thèmes (optionnels) */
+html[data-theme='anime'] {
+  --bg: 10 15 35;
+  --fg: 235 245 255;
+  --primary: 44 194 255;
+  --accent: 255 196 0;
+  --card: 14 23 42;
+  --border: 30 41 59;
+}
+html[data-theme='pirate'] {
+  --bg: 14 24 27;
+  --fg: 240 249 255;
+  --primary: 246 189 96;
+  --accent: 79 70 229;
+  --card: 17 28 31;
+  --border: 32 46 50;
+}
+html[data-theme='lifesim'] {
+  --bg: 250 252 255;
+  --fg: 17 24 39;
+  --primary: 34 197 94;
+  --accent: 14 165 233;
+  --card: 241 245 249;
+  --border: 226 232 240;
+}
+html[data-theme='fantasy'] {
+  --bg: 7 16 25;
+  --fg: 236 253 245;
+  --primary: 217 119 6;
+  --accent: 59 130 246;
+  --card: 15 23 42;
+  --border: 30 41 59;
+}
+
+/* Modes (optionnels) */
+html[data-mode='tdah'] * {
+  transition: none !important;
+}
+html[data-mode='tdah'] .anti-distract {
+  display: none !important;
+}
+html[data-mode='dys'] body {
+  font-family: Arial, Verdana, system-ui, sans-serif;
+  letter-spacing: 0.3px;
+  line-height: 1.7;
+}
+html[data-mode='tsa'] * {
+  animation: none !important;
+  transition: none !important;
+}
+html[data-mode='hpi'] .expert-badge {
+  border: 1px dashed rgb(var(--accent));
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+}
+
+/* Utilitaires */
+@layer components {
+  .card {
+    @apply rounded-lg border p-6;
+    border-color: rgb(var(--border));
+    background: rgb(var(--card));
+  }
+  .btn {
+    @apply inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm;
+    border-color: rgb(var(--border));
+  }
+  .btn-primary {
+    @apply inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm text-white;
+    background: rgb(var(--primary));
+  }
+  .text-muted {
+    color: rgb(var(--muted));
+  }
+}
+
+body {
+  color: rgb(var(--fg));
+  background: rgb(var(--bg));
+}
+
+/* Thèmes par matière (fond discret) */
+:root{ --wm-opacity:0.06 }
+html[data-subject="Maths"] body{ background-image: radial-gradient(circle at 10% 10%, rgba(0,0,0,var(--wm-opacity)) 1px, transparent 1px); background-size: 28px 28px; }
+html[data-subject="Physique-Chimie"] body{ background-image: linear-gradient(90deg, rgba(0,0,0,var(--wm-opacity)) 1px, transparent 1px), linear-gradient(0deg, rgba(0,0,0,var(--wm-opacity)) 1px, transparent 1px); background-size: 32px 32px; }
+html[data-subject="SVT"] body{ background-image: radial-gradient(ellipse at center, rgba(0,0,0,var(--wm-opacity)) 1px, transparent 1px); background-size: 22px 22px; }
+@media (prefers-color-scheme: dark){ html[data-subject] body{ background-image:none; }}
+

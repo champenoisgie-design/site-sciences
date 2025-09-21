@@ -1,38 +1,31 @@
-import type { Metadata } from 'next'
-import './globals.css'
-import { Inter } from 'next/font/google'
-import { Providers } from './providers'
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
-
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-inter',
-})
+import type { Metadata } from "next";
+import "./globals.css";
+import Header from "@/components/Header";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: 'Site Sciences',
-  description: 'Ressources et tutoriels scientifiques.',
-  metadataBase: new URL('https://ton-domaine.fr'),
-}
+  title: "Site Sciences",
+  description: "Ressources, tutoriels et entraînements adaptés à ton niveau.",
+};
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      <body
-        className={`${inter.variable} min-h-dvh bg-white text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-50`}
-      >
+      <body>
         <Providers>
           <Header />
-          <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
-          <Footer />
+          <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
+          <footer className="border-t mt-10 py-6 text-center text-sm text-zinc-500">
+            © 2025 Site Sciences — Tous droits réservés
+            <div className="mt-2 flex justify-center gap-4">
+              <a href="/cgu">CGU</a>
+              <a href="/confidentialite">Confidentialité</a>
+              <a href="/mentions-legales">Mentions légales</a>
+              <a href="/cookies">Cookies</a>
+            </div>
+          </footer>
         </Providers>
       </body>
     </html>
-  )
+  );
 }

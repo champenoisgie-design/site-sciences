@@ -1,133 +1,167 @@
-// src/app/page.tsx
-import Link from 'next/link'
+"use client"
 
-function PrimaryLink({
-  href,
-  children,
-}: {
-  href: string
-  children: React.ReactNode
-}) {
-  return (
-    <Link
-      href={href}
-      className="inline-flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-white hover:bg-gray-800 transition"
-    >
-      {children}
-    </Link>
+import Link from "next/link"
+import { useMemo } from "react"
+import { useSelection } from "@/components/SelectionProvider"
+import type { School, AnyGrade } from "@/lib/school"
+import { gradesBySchool, subjects } from "@/lib/school"
+import ModeSwitcher from "@/components/ModeSwitcher"
+
+export default function Page() {
+  const { selection, setSchool, setGrade, setSubject } = useSelection()
+  const availableGrades = useMemo<AnyGrade[]>(
+    () => (selection.school ? gradesBySchool[selection.school] : []),
+    [selection.school],
   )
-}
 
-export default function HomePage() {
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10">
-      {/* HERO */}
-      <section className="grid gap-8 md:grid-cols-2 md:items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-            Cours MP Concret
-          </h1>
-          <p className="mt-4 text-lg text-gray-600">
-            Exercices corrigés, tutoriels vidéo et sessions live. Choisis ton
-            mode d’apprentissage (TDAH, DYS, TSA, HPI) et ton univers visuel.
-          </p>
+    <section className="space-y-8">
+      <div className="grid gap-6 md:grid-cols-2 md:items-start">
+        {/* Bulle 1 : Sélection imbriquée */}
+        <div className="rounded-2xl border p-5">
+          <h2 className="text-lg font-semibold mb-3">Sélection</h2>
 
-          <div className="mt-6 flex flex-wrap gap-3">
-            <PrimaryLink href="/solo">S’entraîner maintenant</PrimaryLink>
-            <PrimaryLink href="/tutoriels">Voir un tutoriel</PrimaryLink>
-            <PrimaryLink href="/multijoueur">Rejoindre le live</PrimaryLink>
+          {/* École */}
+          <div className="mb-4">
+            <label className="mb-1 block text-sm font-medium">École</label>
+            <div className="flex gap-2">
+              {(["college", "lycee"] as School[]).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setSchool(s)}
+                  className={`rounded-lg border px-3 py-1.5 text-sm ${
+                    selection.school === s
+                      ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                      : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  }`}
+                >
+                  {s === "college" ? "Collège" : "Lycée"}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <p className="mt-3 text-sm text-gray-500">
-            Extraits gratuits disponibles – pas de carte requise.
+          {/* Niveau */}
+          <div className="mb-4">
+            <label className="mb-1 block text-sm font-medium">Niveau</label>
+            <div className="flex flex-wrap gap-2">
+              {availableGrades.length === 0 && (
+                <span className="text-xs text-zinc-500">
+                  Choisis d’abord Collège ou Lycée
+                </span>
+              )}
+              {availableGrades.map((g) => (
+                <button
+                  key={g}
+                  onClick={() => setGrade(g)}
+                  className={`rounded-lg border px-3 py-1.5 text-sm ${
+                    selection.grade === g
+                      ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                      : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  }`}
+                >
+                  {g}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Matière */}
+          <div>
+            <label className="mb-1 block text-sm font-medium">Matière</label>
+            <div className="flex flex-wrap gap-2">
+              {subjects.map((m) => (
+                <button
+                  key={m}
+                  onClick={() => setSubject(m)}
+                  className={`rounded-lg border px-3 py-1.5 text-sm ${
+                    selection.subject === m
+                      ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                      : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  }`}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+            <p className="mt-1 text-xs text-zinc-500">
+              SVT = Sciences de la Vie et de la Terre (intitulé officiel).
+            </p>
+          </div>
+        </div>
+
+        {/* Bulle 2 : Récapitulatif */}
+        <div className="rounded-2xl border p-5">
+          <h2 className="text-lg font-semibold mb-3">Ta sélection</h2>
+          <ul className="space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
+            <li>
+              <span className="text-zinc-500">École :</span>{" "}
+              {selection.school ? (selection.school === "college" ? "Collège" : "Lycée") : "—"}
+            </li>
+            <li>
+              <span className="text-zinc-500">Niveau :</span>{" "}
+              {selection.grade ?? "—"}
+            </li>
+            <li>
+              <span className="text-zinc-500">Matière :</span>{" "}
+              {selection.subject ?? "—"}
+            </li>
+          </ul>
+
+          <p className="mt-4 text-xs text-zinc-500">
+            Le thème visuel change selon la matière ; les pages Tutoriels & Solo
+            se filtrent selon le niveau et la matière sélectionnés.
           </p>
         </div>
+      </div>
 
-        <div className="bg-gray-200 aspect-video flex items-center justify-center text-gray-500">
-          Visuel d’accueil (à remplacer)
+      {/* Bulle 3 : Mode d’apprentissage */}
+      <div className="rounded-2xl border p-5">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold">Mode d’apprentissage</h2>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              Choisis le mode le plus confortable : Normal, TDAH, DYS (affichages
+              adaptés).
+            </p>
+          </div>
+          {/* on réutilise le composant existant */}
+          <ModeSwitcher />
         </div>
-      </section>
+      </div>
 
-      {/* MODE SELECTORS */}
-      <section className="mt-12 grid gap-4 sm:grid-cols-2">
-        <div>
-          <label className="block text-sm font-medium">Thème visuel</label>
-          <select className="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-            <option>Anime-combat</option>
-            <option>Science-fiction</option>
-            <option>Fantasy</option>
-            <option>Minimaliste</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium">
-            Mode d’apprentissage
-          </label>
-          <select className="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-            <option>Normal</option>
-            <option>TDAH</option>
-            <option>DYS</option>
-            <option>TSA</option>
-            <option>HPI</option>
-          </select>
-        </div>
-      </section>
-
-      {/* FEATURES */}
-      <section className="mt-16 grid gap-8 sm:grid-cols-3">
-        <div className="rounded-lg border p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-blue-600">
-            Entraînement en solo
-          </h3>
-          <p className="mt-2 text-gray-600">
-            Séries d’exercices corrigés pas à pas, indices progressifs, XP.
-          </p>
-        </div>
-
-        <div className="rounded-lg border p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-green-600">
-            Tutoriels vidéo
-          </h3>
-          <p className="mt-2 text-gray-600">
-            Vidéos courtes (2–5 min), chapitrées, avec quiz et fiches.
-          </p>
-        </div>
-
-        <div className="rounded-lg border p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-purple-600">
-            Multijoueur – Live
-          </h3>
-          <p className="mt-2 text-gray-600">
-            Défis courts, chat, tableau interactif, classement amical.
-          </p>
-        </div>
-      </section>
-
-      {/* PRICING */}
-      <section className="mt-16 text-center">
-        <p className="text-gray-700">
-          Abonnements <strong>Normal</strong> • <strong>Gold</strong> •{' '}
-          <strong>Platinium</strong> + achat à la demande.
-        </p>
+      {/* Trois bulles d’accès */}
+      <div className="grid gap-6 md:grid-cols-3">
         <Link
-          href="/tarifs"
-          className="mt-4 inline-block rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-500 transition"
+          href="/solo"
+          className="block rounded-2xl border p-6 transition hover:bg-zinc-50 dark:hover:bg-zinc-900/40"
         >
-          Voir les tarifs
+          <h3 className="text-lg font-semibold">Entraînement Solo</h3>
+          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+            Séries d’exercices adaptées à ta sélection, avec suivi XP.
+          </p>
         </Link>
-      </section>
 
-      {/* FOOTER */}
-      <footer className="mt-20 border-t pt-6 text-sm text-gray-500 text-center">
-        <p>© 2025 Cours MP Concret</p>
-        <div className="mt-2 flex justify-center gap-4">
-          <Link href="#">Mentions légales</Link>
-          <Link href="#">CGU</Link>
-          <Link href="#">Confidentialité</Link>
-          <Link href="#">@CoursMPConcret</Link>
-        </div>
-      </footer>
-    </main>
+        <Link
+          href="/tutoriels"
+          className="block rounded-2xl border p-6 transition hover:bg-zinc-50 dark:hover:bg-zinc-900/40"
+        >
+          <h3 className="text-lg font-semibold">Tutoriels</h3>
+          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+            Cours guidés + exemples interactifs par niveau/matière.
+          </p>
+        </Link>
+
+        <Link
+          href="/multi"
+          className="block rounded-2xl border p-6 transition hover:bg-zinc-50 dark:hover:bg-zinc-900/40"
+        >
+          <h3 className="text-lg font-semibold">Multijoueur</h3>
+          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+            Défis live et coop (bientôt) — badges & classement.
+          </p>
+        </Link>
+      </div>
+    </section>
   )
 }
