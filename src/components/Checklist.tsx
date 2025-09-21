@@ -2,7 +2,11 @@
 import { useState } from 'react'
 
 export default function Checklist({ items }: { items?: string[] }) {
-  const defaults = items ?? ['Finir 2 quiz', 'Regarder 1 vidéo', 'Faire 1 pause active']
+  const defaults = items ?? [
+    'Finir 2 quiz',
+    'Regarder 1 vidéo',
+    'Faire 1 pause active',
+  ]
   const [checked, setChecked] = useState<boolean[]>(defaults.map(() => false))
 
   return (
@@ -14,9 +18,13 @@ export default function Checklist({ items }: { items?: string[] }) {
             <input
               type="checkbox"
               checked={checked[i]}
-              onChange={() => setChecked((c) => c.map((v, idx) => (idx === i ? !v : v)))}
+              onChange={() =>
+                setChecked((c) => c.map((v, idx) => (idx === i ? !v : v)))
+              }
             />
-            <span className={checked[i] ? 'line-through text-muted' : ''}>{txt}</span>
+            <span className={checked[i] ? 'line-through text-muted' : ''}>
+              {txt}
+            </span>
           </li>
         ))}
       </ul>

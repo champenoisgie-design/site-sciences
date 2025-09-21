@@ -29,7 +29,9 @@ export default function ModeSwitcher() {
         aria-label="Choisir un mode"
       >
         {(Object.keys(LABELS) as UIMode[]).map((k) => (
-          <option key={k} value={k}>{LABELS[k]}</option>
+          <option key={k} value={k}>
+            {LABELS[k]}
+          </option>
         ))}
       </select>
     </div>

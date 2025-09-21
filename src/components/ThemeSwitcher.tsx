@@ -15,7 +15,8 @@ export default function ThemeSwitcher() {
   const [theme, setTheme] = React.useState<Theme>('light')
 
   React.useEffect(() => {
-    const stored = (typeof window !== 'undefined' && localStorage.getItem('cmc.theme')) as Theme | null
+    const stored = (typeof window !== 'undefined' &&
+      localStorage.getItem('cmc.theme')) as Theme | null
     if (stored && (Object.keys(LABELS) as string[]).includes(stored)) {
       setTheme(stored as Theme)
     }
@@ -24,7 +25,9 @@ export default function ThemeSwitcher() {
   React.useEffect(() => {
     if (typeof document !== 'undefined') {
       document.documentElement.setAttribute('data-theme', theme)
-      try { localStorage.setItem('cmc.theme', theme) } catch {}
+      try {
+        localStorage.setItem('cmc.theme', theme)
+      } catch {}
       document.cookie = `cmc_theme=${theme}; Max-Age=31536000; Path=/; SameSite=Lax`
     }
   }, [theme])
@@ -43,7 +46,9 @@ export default function ThemeSwitcher() {
         aria-label="Choisir un thème"
       >
         {(Object.keys(LABELS) as Theme[]).map((k) => (
-          <option key={k} value={k}>{LABELS[k]}</option>
+          <option key={k} value={k}>
+            {LABELS[k]}
+          </option>
         ))}
       </select>
     </div>

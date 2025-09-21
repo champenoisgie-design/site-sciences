@@ -1,33 +1,57 @@
-'use client'
-import { createContext, useContext, useEffect, useState } from 'react'
+"use client";
+import { createContext, useContext, useEffect, useState } from "react";
 
-export type UIMode = 'normal' | 'tdah' | 'dys' | 'tsa' | 'hpi'
-type Ctx = { mode: UIMode; setMode: (m: UIMode) => void }
-const C = createContext<Ctx | null>(null)
+type Mode = "light" | "dark" | "system";
+type Ctx = {
+  mode: Mode;
+  setMode: (m: Mode) => void;
+  resolved: "light" | "dark";
+  toggle: () => void;
+};
 
-export default function ModeProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setMode] = useState<UIMode>('normal')
+const C = createContext<Ctx | undefined>(undefined);
 
+export function ModeProvider({ children }: { children: React.ReactNode }) {
+  const [mode, setMode] = useState<Mode>("system");
+  const [resolved, setResolved] = useState<"light" | "dark">("light");
+
+  // Récupérer la préférence stockée
   useEffect(() => {
-    const stored = (typeof window !== 'undefined' && localStorage.getItem('cmc.mode')) as UIMode | null
-    if (stored && ['normal', 'tdah', 'dys', 'tsa', 'hpi'].includes(stored)) {
-      setMode(stored)
-    }
-  }, [])
+    try {
+      const m = localStorage.getItem("mode");
+      if (m === "light" || m === "dark" || m === "system") setMode(m);
+    } catch {}
+  }, []);
 
+  // Persister la préférence
   useEffect(() => {
-    if (typeof document !== 'undefined') {
-      document.documentElement.setAttribute('data-mode', mode)
-      try { localStorage.setItem('cmc.mode', mode) } catch {}
-      document.cookie = `cmc_mode=${mode}; Max-Age=31536000; Path=/; SameSite=Lax`
-    }
-  }, [mode])
+    try {
+      localStorage.setItem("mode", mode);
+    } catch {}
+  }, [mode]);
 
-  return <C.Provider value={{ mode, setMode }}>{children}</C.Provider>
+  // Calculer le thème effectif et appliquer la classe .dark sur <html>
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const apply = () => {
+      const r = mode === "system" ? (mq.matches ? "dark" : "light") : mode;
+      setResolved(r);
+      document.documentElement.classList.toggle("dark", r === "dark");
+    };
+    apply();
+    mq.addEventListener?.("change", apply);
+    return () => mq.removeEventListener?.("change", apply);
+  }, [mode]);
+
+  const toggle = () => setMode((p) => (p === "dark" ? "light" : "dark"));
+
+  return (
+    <C.Provider value={{ mode, setMode, resolved, toggle }}>{children}</C.Provider>
+  );
 }
 
 export const useMode = () => {
-  const v = useContext(C)
-  if (!v) throw new Error('useMode must be used within ModeProvider')
-  return v
-}
+  const v = useContext(C);
+  if (!v) throw new Error("useMode must be used within ModeProvider");
+  return v;
+};
