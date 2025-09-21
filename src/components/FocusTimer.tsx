@@ -19,15 +19,29 @@ export default function FocusTimer({ minutes = 5 }: { minutes?: number }) {
     <div className="card flex items-center justify-between">
       <div>
         <div className="text-sm text-muted">Minuteur de focus</div>
-        <div className="text-lg font-semibold tabular-nums">{mm}:{ss}</div>
+        <div className="text-lg font-semibold tabular-nums">
+          {mm}:{ss}
+        </div>
       </div>
       <div className="flex gap-2">
         {!running ? (
-          <button className="btn-primary" onClick={() => setRunning(true)}>Démarrer</button>
+          <button className="btn-primary" onClick={() => setRunning(true)}>
+            Démarrer
+          </button>
         ) : (
-          <button className="btn" onClick={() => setRunning(false)}>Pause</button>
+          <button className="btn" onClick={() => setRunning(false)}>
+            Pause
+          </button>
         )}
-        <button className="btn" onClick={() => { setRunning(false); setS(total) }}>Reset</button>
+        <button
+          className="btn"
+          onClick={() => {
+            setRunning(false)
+            setS(total)
+          }}
+        >
+          Reset
+        </button>
       </div>
     </div>
   )

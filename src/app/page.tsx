@@ -1,12 +1,12 @@
 // src/app/page.tsx
-import Link from "next/link";
+import Link from 'next/link'
 
 function PrimaryLink({
   href,
   children,
 }: {
-  href: string;
-  children: React.ReactNode;
+  href: string
+  children: React.ReactNode
 }) {
   return (
     <Link
@@ -15,7 +15,7 @@ function PrimaryLink({
     >
       {children}
     </Link>
-  );
+  )
 }
 
 export default function HomePage() {
@@ -61,7 +61,9 @@ export default function HomePage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium">Mode d’apprentissage</label>
+          <label className="block text-sm font-medium">
+            Mode d’apprentissage
+          </label>
           <select className="mt-1 w-full rounded-md border-gray-300 shadow-sm">
             <option>Normal</option>
             <option>TDAH</option>
@@ -105,7 +107,7 @@ export default function HomePage() {
       {/* PRICING */}
       <section className="mt-16 text-center">
         <p className="text-gray-700">
-          Abonnements <strong>Normal</strong> • <strong>Gold</strong> •{" "}
+          Abonnements <strong>Normal</strong> • <strong>Gold</strong> •{' '}
           <strong>Platinium</strong> + achat à la demande.
         </p>
         <Link
@@ -127,5 +129,5 @@ export default function HomePage() {
         </div>
       </footer>
     </main>
-  );
+  )
 }

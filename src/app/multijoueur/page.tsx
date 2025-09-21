@@ -2,13 +2,15 @@ import ThemeSwitcher from '@/components/ThemeSwitcher'
 import ModeSwitcher from '@/components/ModeSwitcher'
 import FocusTimer from '@/components/FocusTimer'
 
-export default function Page(){
+export default function Page() {
   return (
     <main className="max-w-6xl mx-auto p-6 space-y-6">
       <header className="flex items-start justify-between gap-6 flex-col md:flex-row">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold">Multijoueur – Live</h1>
-          <p className="text-muted mt-1">Défis courts, chat, tableau interactif, classement amical.</p>
+          <p className="text-muted mt-1">
+            Défis courts, chat, tableau interactif, classement amical.
+          </p>
         </div>
         <div className="grid md:grid-cols-2 gap-3 w-full md:w-auto">
           <ThemeSwitcher />
