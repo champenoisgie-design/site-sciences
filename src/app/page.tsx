@@ -1,6 +1,24 @@
+// src/app/page.tsx
 import Link from "next/link";
 
-export default function Page() {
+function PrimaryLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className="inline-flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-white hover:bg-gray-800 transition"
+    >
+      {children}
+    </Link>
+  );
+}
+
+export default function HomePage() {
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
       {/* HERO */}
@@ -9,101 +27,104 @@ export default function Page() {
           <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
             Cours MP Concret
           </h1>
-          <p className="mt-2 text-muted-foreground">
-            Exercices corrigés, tutoriels vidéo et sessions live. Choisis ton mode
-            d’apprentissage (TDAH, DYS, TSA, HPI) et ton univers visuel.
+          <p className="mt-4 text-lg text-gray-600">
+            Exercices corrigés, tutoriels vidéo et sessions live. Choisis ton
+            mode d’apprentissage (TDAH, DYS, TSA, HPI) et ton univers visuel.
           </p>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link
-              href="/solo"
-              className="inline-flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-white hover:opacity-90"
-            >
-              S’entraîner maintenant
-            </Link>
-            <Link
-              href="/tutoriels"
-              className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 hover:bg-gray-50"
-            >
-              Voir un tutoriel
-            </Link>
-            <Link
-              href="/multijoueur"
-              className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 hover:bg-gray-50"
-            >
-              Rejoindre le live
-            </Link>
+            <PrimaryLink href="/solo">S’entraîner maintenant</PrimaryLink>
+            <PrimaryLink href="/tutoriels">Voir un tutoriel</PrimaryLink>
+            <PrimaryLink href="/multijoueur">Rejoindre le live</PrimaryLink>
           </div>
 
-          <p className="mt-3 text-sm text-muted-foreground">
+          <p className="mt-3 text-sm text-gray-500">
             Extraits gratuits disponibles – pas de carte requise.
           </p>
         </div>
 
-        <div className="rounded-lg border p-6 text-center">
-          <div className="aspect-[16/9] w-full rounded-lg bg-gray-100" />
-          <p className="mt-3 text-sm text-muted-foreground">Visuel d’accueil (à remplacer)</p>
+        <div className="bg-gray-200 aspect-video flex items-center justify-center text-gray-500">
+          Visuel d’accueil (à remplacer)
         </div>
       </section>
 
-      {/* CARTES */}
-      <section className="mt-12 grid gap-6 md:grid-cols-3">
-        <div className="rounded-lg border p-6">
-          <h3 className="text-lg font-semibold">Entraînement en solo</h3>
-          <p className="mt-2 text-sm text-muted-foreground">
+      {/* MODE SELECTORS */}
+      <section className="mt-12 grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="block text-sm font-medium">Thème visuel</label>
+          <select className="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+            <option>Anime-combat</option>
+            <option>Science-fiction</option>
+            <option>Fantasy</option>
+            <option>Minimaliste</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium">Mode d’apprentissage</label>
+          <select className="mt-1 w-full rounded-md border-gray-300 shadow-sm">
+            <option>Normal</option>
+            <option>TDAH</option>
+            <option>DYS</option>
+            <option>TSA</option>
+            <option>HPI</option>
+          </select>
+        </div>
+      </section>
+
+      {/* FEATURES */}
+      <section className="mt-16 grid gap-8 sm:grid-cols-3">
+        <div className="rounded-lg border p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-blue-600">
+            Entraînement en solo
+          </h3>
+          <p className="mt-2 text-gray-600">
             Séries d’exercices corrigés pas à pas, indices progressifs, XP.
           </p>
-          <Link href="/solo" className="mt-4 inline-block rounded-lg border px-3 py-2 hover:bg-gray-50">
-            Ouvrir
-          </Link>
         </div>
 
-        <div className="rounded-lg border p-6">
-          <h3 className="text-lg font-semibold">Tutoriels vidéo</h3>
-          <p className="mt-2 text-sm text-muted-foreground">
+        <div className="rounded-lg border p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-green-600">
+            Tutoriels vidéo
+          </h3>
+          <p className="mt-2 text-gray-600">
             Vidéos courtes (2–5 min), chapitrées, avec quiz et fiches.
           </p>
-          <Link
-            href="/tutoriels"
-            className="mt-4 inline-block rounded-lg border px-3 py-2 hover:bg-gray-50"
-          >
-            Ouvrir
-          </Link>
         </div>
 
-        <div className="rounded-lg border p-6">
-          <h3 className="text-lg font-semibold">Multijoueur – Live</h3>
-          <p className="mt-2 text-sm text-muted-foreground">
+        <div className="rounded-lg border p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-purple-600">
+            Multijoueur – Live
+          </h3>
+          <p className="mt-2 text-gray-600">
             Défis courts, chat, tableau interactif, classement amical.
           </p>
-          <Link
-            href="/multijoueur"
-            className="mt-4 inline-block rounded-lg border px-3 py-2 hover:bg-gray-50"
-          >
-            Ouvrir
-          </Link>
         </div>
       </section>
 
       {/* PRICING */}
-      <section className="mt-12 rounded-lg border p-6">
-        <p className="text-sm">
-          Abonnements <strong>Normal</strong> • <strong>Gold</strong> • <strong>Platinium</strong> + achat à la demande.
+      <section className="mt-16 text-center">
+        <p className="text-gray-700">
+          Abonnements <strong>Normal</strong> • <strong>Gold</strong> •{" "}
+          <strong>Platinium</strong> + achat à la demande.
         </p>
-        <Link href="#" className="mt-4 inline-block rounded-lg bg-black px-4 py-2 text-white hover:opacity-90">
+        <Link
+          href="/tarifs"
+          className="mt-4 inline-block rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-500 transition"
+        >
           Voir les tarifs
         </Link>
       </section>
 
       {/* FOOTER */}
-      <footer className="mt-12 grid gap-2 text-sm text-muted-foreground md:grid-cols-2">
+      <footer className="mt-20 border-t pt-6 text-sm text-gray-500 text-center">
         <p>© 2025 Cours MP Concret</p>
-        <p className="flex flex-wrap gap-4 md:justify-end">
+        <div className="mt-2 flex justify-center gap-4">
           <Link href="#">Mentions légales</Link>
           <Link href="#">CGU</Link>
           <Link href="#">Confidentialité</Link>
           <Link href="#">@CoursMPConcret</Link>
-        </p>
+        </div>
       </footer>
     </main>
   );
