@@ -1,7 +1,7 @@
 export const metadata = {
-  title: "Mentions légales | Site Sciences",
-  description: "Informations légales de l’éditeur du site",
-};
+  title: 'Mentions légales | Site Sciences',
+  description: 'Informations légales de l’éditeur du site',
+}
 export default function Page() {
   return (
     <article className="prose prose-zinc max-w-none dark:prose-invert">
@@ -13,5 +13,5 @@ export default function Page() {
       <h2>Propriété intellectuelle</h2>
       <p>Contenus protégés. Toute reproduction nécessite autorisation.</p>
     </article>
-  );
+  )
 }

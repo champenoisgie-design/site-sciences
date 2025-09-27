@@ -1,4 +1,4 @@
-import type { AnyGrade, Subject, School } from "@/lib/school"
+import type { AnyGrade, Subject, School } from '@/lib/school'
 
 export type Tutorial = {
   slug: string
@@ -14,14 +14,14 @@ export type Tutorial = {
 
 export const tutorials: Tutorial[] = [
   {
-    slug: "mecanique-newton",
-    title: "Mécanique de Newton — bases et exercices",
-    excerpt: "Forces, lois de Newton, mouvements et applications simples.",
-    updatedAt: "2025-09-20",
-    category: "Physique",
-    school: "lycee",
-    grade: "2nde",
-    subject: "Physique-Chimie",
+    slug: 'mecanique-newton',
+    title: 'Mécanique de Newton — bases et exercices',
+    excerpt: 'Forces, lois de Newton, mouvements et applications simples.',
+    updatedAt: '2025-09-20',
+    category: 'Physique',
+    school: 'lycee',
+    grade: '2nde',
+    subject: 'Physique-Chimie',
     content: `
 ## Objectifs
 - Comprendre les trois lois de Newton
@@ -39,14 +39,14 @@ const F = m * a
 `.trim(),
   },
   {
-    slug: "thermo-intro",
-    title: "Thermodynamique — introduction",
-    excerpt: "Systèmes, variables d’état et premier principe.",
-    updatedAt: "2025-09-18",
-    category: "Physique",
-    school: "lycee",
-    grade: "1re",
-    subject: "Physique-Chimie",
+    slug: 'thermo-intro',
+    title: 'Thermodynamique — introduction',
+    excerpt: 'Systèmes, variables d’état et premier principe.',
+    updatedAt: '2025-09-18',
+    category: 'Physique',
+    school: 'lycee',
+    grade: '1re',
+    subject: 'Physique-Chimie',
     content: `
 ## Plan
 - Système, frontière, environnement
@@ -55,14 +55,14 @@ const F = m * a
 `.trim(),
   },
   {
-    slug: "svt-cellule",
-    title: "SVT — La cellule : structure et fonctions",
-    excerpt: "Observer et comprendre l’unité du vivant.",
-    updatedAt: "2025-09-15",
-    category: "SVT",
-    school: "college",
-    grade: "5e",
-    subject: "SVT",
+    slug: 'svt-cellule',
+    title: 'SVT — La cellule : structure et fonctions',
+    excerpt: 'Observer et comprendre l’unité du vivant.',
+    updatedAt: '2025-09-15',
+    category: 'SVT',
+    school: 'college',
+    grade: '5e',
+    subject: 'SVT',
     content: `
 ## À retenir
 - Membrane, cytoplasme, noyau
@@ -70,14 +70,14 @@ const F = m * a
 `.trim(),
   },
   {
-    slug: "maths-fractions",
-    title: "Fractions — simplification et opérations",
-    excerpt: "Addition, soustraction, multiplication et division de fractions.",
-    updatedAt: "2025-09-10",
-    category: "Maths",
-    school: "college",
-    grade: "6e",
-    subject: "Maths",
+    slug: 'maths-fractions',
+    title: 'Fractions — simplification et opérations',
+    excerpt: 'Addition, soustraction, multiplication et division de fractions.',
+    updatedAt: '2025-09-10',
+    category: 'Maths',
+    school: 'college',
+    grade: '6e',
+    subject: 'Maths',
     content: `
 ## Exemples guidés
 1/2 + 1/3 = …

@@ -1,28 +1,29 @@
 "use client"
-import { useState } from "react"
+import { useState } from 'react'
 
 export default function Page({ params }: { params: { token: string } }) {
-  const [msg, setMsg] = useState<string|null>(null)
+  const [msg, setMsg] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [show, setShow] = useState(false)
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const form = e.currentTarget
-    setMsg(null); setLoading(true)
+    setMsg(null)
+    setLoading(true)
     const fd = new FormData(form)
     const body = Object.fromEntries(fd.entries())
     try {
-      const r = await fetch("/api/auth/reset", {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
+      const r = await fetch('/api/auth/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...body, token: params.token }),
       })
       if (!r.ok) throw new Error(await r.text())
-      setMsg("Mot de passe mis à jour ✔. Vous pouvez vous connecter.")
+      setMsg('Mot de passe mis à jour ✔. Vous pouvez vous connecter.')
       form.reset()
     } catch (e: any) {
-      setMsg(e?.message || "Erreur")
+      setMsg(e?.message || 'Erreur')
     } finally {
       setLoading(false)
     }
@@ -37,18 +38,25 @@ export default function Page({ params }: { params: { token: string } }) {
           <div className="mt-1 flex items-stretch gap-2">
             <input
               name="password"
-              type={show ? "text" : "password"}
+              type={show ? 'text' : 'password'}
               required
               minLength={8}
               className="w-full rounded border bg-transparent px-3 py-2"
             />
-            <button type="button" onClick={()=>setShow(s=>!s)} className="rounded border px-2 text-xs">
-              {show ? "Masquer" : "Afficher"}
+            <button
+              type="button"
+              onClick={() => setShow((s) => !s)}
+              className="rounded border px-2 text-xs"
+            >
+              {show ? 'Masquer' : 'Afficher'}
             </button>
           </div>
         </div>
-        <button disabled={loading} className="rounded bg-zinc-900 text-white px-4 py-2 text-sm dark:bg-zinc-100 dark:text-zinc-900">
-          {loading ? "..." : "Mettre à jour"}
+        <button
+          disabled={loading}
+          className="rounded bg-zinc-900 text-white px-4 py-2 text-sm dark:bg-zinc-100 dark:text-zinc-900"
+        >
+          {loading ? '...' : 'Mettre à jour'}
         </button>
         {msg && <p className="text-sm">{msg}</p>}
       </form>

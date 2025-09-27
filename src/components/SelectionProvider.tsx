@@ -1,7 +1,7 @@
 "use client"
-import { createContext, useContext, useEffect, useMemo, useState } from "react"
-import type { Selection, School, AnyGrade, Subject } from "@/lib/school"
-import { gradesBySchool } from "@/lib/school"
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import type { Selection, School, AnyGrade, Subject } from '@/lib/school'
+import { gradesBySchool } from '@/lib/school'
 
 type Ctx = {
   selection: Selection
@@ -15,11 +15,11 @@ const C = createContext<Ctx | undefined>(undefined)
 
 export function useSelection() {
   const v = useContext(C)
-  if (!v) throw new Error("useSelection must be used within SelectionProvider")
+  if (!v) throw new Error('useSelection must be used within SelectionProvider')
   return v
 }
 
-const KEY = "__site_sciences_selection__"
+const KEY = '__site_sciences_selection__'
 
 export function SelectionProvider({ children }: { children: React.ReactNode }) {
   const [selection, setSelection] = useState<Selection>({})
@@ -41,7 +41,7 @@ export function SelectionProvider({ children }: { children: React.ReactNode }) {
 
   // Réinitialiser grade si l'école change
   function setSchool(s: School | undefined) {
-    setSelection(prev => {
+    setSelection((prev) => {
       const next = { ...prev, school: s }
       if (s && prev.grade && !gradesBySchool[s].includes(prev.grade)) {
         next.grade = undefined
@@ -51,17 +51,20 @@ export function SelectionProvider({ children }: { children: React.ReactNode }) {
   }
 
   function setGrade(g: AnyGrade | undefined) {
-    setSelection(prev => ({ ...prev, grade: g }))
+    setSelection((prev) => ({ ...prev, grade: g }))
   }
 
   function setSubject(s: Subject | undefined) {
-    setSelection(prev => ({ ...prev, subject: s }))
+    setSelection((prev) => ({ ...prev, subject: s }))
   }
 
   function reset() {
     setSelection({})
   }
 
-  const value = useMemo(() => ({ selection, setSchool, setGrade, setSubject, reset }), [selection])
+  const value = useMemo(
+    () => ({ selection, setSchool, setGrade, setSubject, reset }),
+    [selection],
+  )
   return <C.Provider value={value}>{children}</C.Provider>
 }

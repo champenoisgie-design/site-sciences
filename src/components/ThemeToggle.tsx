@@ -1,22 +1,22 @@
 "use client"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from 'react'
 
-type Theme = "light" | "dark" | "system"
-const KEY = "__theme_pref__"
+type Theme = 'light' | 'dark' | 'system'
+const KEY = '__theme_pref__'
 
 function applyTheme(theme: Theme) {
   const root = document.documentElement
-  const sysDark = window.matchMedia("(prefers-color-scheme: dark)").matches
-  const isDark = theme === "dark" || (theme === "system" && sysDark)
-  root.classList.toggle("dark", isDark)
+  const sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+  const isDark = theme === 'dark' || (theme === 'system' && sysDark)
+  root.classList.toggle('dark', isDark)
 }
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("system")
+  const [theme, setTheme] = useState<Theme>('system')
 
   // Au montage : charge la préférence + applique
   useEffect(() => {
-    const stored = (localStorage.getItem(KEY) as Theme | null) ?? "system"
+    const stored = (localStorage.getItem(KEY) as Theme | null) ?? 'system'
     setTheme(stored)
     applyTheme(stored)
   }, [])
@@ -29,21 +29,23 @@ export default function ThemeToggle() {
 
   // Si "system", réagit aux changements de l'OS
   useEffect(() => {
-    if (theme !== "system") return
-    const m = window.matchMedia("(prefers-color-scheme: dark)")
-    const handler = () => applyTheme("system")
-    m.addEventListener?.("change", handler)
-    return () => m.removeEventListener?.("change", handler)
+    if (theme !== 'system') return
+    const m = window.matchMedia('(prefers-color-scheme: dark)')
+    const handler = () => applyTheme('system')
+    m.addEventListener?.('change', handler)
+    return () => m.removeEventListener?.('change', handler)
   }, [theme])
 
   const label = useMemo(() => {
-    if (theme === "light") return "Thème : clair"
-    if (theme === "dark") return "Thème : sombre"
-    return "Thème : système"
+    if (theme === 'light') return 'Thème : clair'
+    if (theme === 'dark') return 'Thème : sombre'
+    return 'Thème : système'
   }, [theme])
 
   function next() {
-    setTheme(t => (t === "light" ? "dark" : t === "dark" ? "system" : "light"))
+    setTheme((t) =>
+      t === 'light' ? 'dark' : t === 'dark' ? 'system' : 'light',
+    )
   }
 
   return (

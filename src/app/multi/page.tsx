@@ -1,4 +1,4 @@
-export const metadata = { title: "Multijoueur | Site Sciences" }
+export const metadata = { title: 'Multijoueur | Site Sciences' }
 
 export default function Page() {
   return (

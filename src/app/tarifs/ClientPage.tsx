@@ -1,26 +1,41 @@
 "use client"
-import { useMemo, useState } from "react"
-import { gradesBySchool, subjects } from "@/lib/school"
-import type { School, AnyGrade, Subject } from "@/lib/school"
+import { useMemo, useState } from 'react'
+import { gradesBySchool, subjects } from '@/lib/school'
+import type { School, AnyGrade, Subject } from '@/lib/school'
 
 const basePrices: Record<Subject, Record<AnyGrade, number>> = {
-  "Maths": {
-    "6e": 7, "5e": 7, "4e": 8, "3e": 8,
-    "2nde": 10, "1re": 12, "Terminale": 14,
+  Maths: {
+    '6e': 7,
+    '5e': 7,
+    '4e': 8,
+    '3e': 8,
+    '2nde': 10,
+    '1re': 12,
+    Terminale: 14,
   },
-  "Physique-Chimie": {
-    "6e": 0 as any, "5e": 0 as any, "4e": 6, "3e": 7,
-    "2nde": 10, "1re": 12, "Terminale": 14,
+  'Physique-Chimie': {
+    '6e': 0 as any,
+    '5e': 0 as any,
+    '4e': 6,
+    '3e': 7,
+    '2nde': 10,
+    '1re': 12,
+    Terminale: 14,
   },
-  "SVT": {
-    "6e": 6, "5e": 6, "4e": 7, "3e": 7,
-    "2nde": 9, "1re": 11, "Terminale": 13,
+  SVT: {
+    '6e': 6,
+    '5e': 6,
+    '4e': 7,
+    '3e': 7,
+    '2nde': 9,
+    '1re': 11,
+    Terminale: 13,
   },
 } as const
 
 function monthlyPriceFor(subject: Subject, grade: AnyGrade) {
   const v = basePrices[subject][grade]
-  return typeof v === "number" ? v : 0
+  return typeof v === 'number' ? v : 0
 }
 
 export default function ClientPage() {
@@ -31,12 +46,18 @@ export default function ClientPage() {
 
   const perSubject = useMemo(() => {
     if (!grade) return []
-    return subjects.map(s => ({ subject: s, price: monthlyPriceFor(s, grade) }))
+    return subjects.map((s) => ({
+      subject: s,
+      price: monthlyPriceFor(s, grade),
+    }))
   }, [grade])
 
   const terminaleBundle = useMemo(() => {
-    if (grade !== "Terminale") return null
-    const sum = subjects.reduce((acc, s) => acc + monthlyPriceFor(s, "Terminale"), 0)
+    if (grade !== 'Terminale') return null
+    const sum = subjects.reduce(
+      (acc, s) => acc + monthlyPriceFor(s, 'Terminale'),
+      0,
+    )
     const promo = Math.max(0, sum - 35) // exemple : pack 3 matières à 35€ au lieu de la somme
     return { packPrice: 35, saved: promo }
   }, [grade])
@@ -50,15 +71,20 @@ export default function ClientPage() {
         <div>
           <label className="mb-1 block text-sm font-medium">École</label>
           <div className="flex gap-2">
-            {(["college","lycee"] as School[]).map(s => (
+            {(['college', 'lycee'] as School[]).map((s) => (
               <button
                 key={s}
-                onClick={() => { setSchool(s); setGrade(undefined) }}
+                onClick={() => {
+                  setSchool(s)
+                  setGrade(undefined)
+                }}
                 className={`rounded-lg border px-3 py-1.5 text-sm ${
-                  school === s ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900" : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  school === s
+                    ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                    : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
                 }`}
               >
-                {s === "college" ? "Collège" : "Lycée"}
+                {s === 'college' ? 'Collège' : 'Lycée'}
               </button>
             ))}
           </div>
@@ -66,13 +92,19 @@ export default function ClientPage() {
         <div>
           <label className="mb-1 block text-sm font-medium">Niveau</label>
           <div className="flex flex-wrap gap-2">
-            {grades.length === 0 && <span className="text-xs text-zinc-500">Choisis d’abord Collège ou Lycée</span>}
-            {grades.map(g => (
+            {grades.length === 0 && (
+              <span className="text-xs text-zinc-500">
+                Choisis d’abord Collège ou Lycée
+              </span>
+            )}
+            {grades.map((g) => (
               <button
                 key={g}
                 onClick={() => setGrade(g)}
                 className={`rounded-lg border px-3 py-1.5 text-sm ${
-                  grade === g ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900" : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  grade === g
+                    ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                    : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
                 }`}
               >
                 {g}
@@ -85,7 +117,7 @@ export default function ClientPage() {
       {/* Grille de prix par matière */}
       {grade ? (
         <div className="grid gap-4 md:grid-cols-3">
-          {perSubject.map(t => (
+          {perSubject.map((t) => (
             <div key={t.subject} className="rounded-2xl border p-5">
               <h2 className="text-lg font-semibold">{t.subject}</h2>
               <p className="mt-2 text-2xl font-bold">{t.price} € / mois</p>
@@ -94,14 +126,19 @@ export default function ClientPage() {
                 <li>• Entraînement Solo illimité</li>
                 <li>• Suivi XP/Badges</li>
               </ul>
-              <a href="/contact" className="mt-4 inline-block rounded-lg bg-zinc-900 px-3 py-1.5 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900">
+              <a
+                href="/contact"
+                className="mt-4 inline-block rounded-lg bg-zinc-900 px-3 py-1.5 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900"
+              >
                 S’abonner {t.subject}
               </a>
             </div>
           ))}
         </div>
       ) : (
-        <p className="text-sm text-zinc-500">Choisis un niveau pour afficher les prix par matière.</p>
+        <p className="text-sm text-zinc-500">
+          Choisis un niveau pour afficher les prix par matière.
+        </p>
       )}
 
       {/* Offre pack Terminale */}
@@ -111,9 +148,15 @@ export default function ClientPage() {
             Offre 3 matières Terminale
           </div>
           <p className="text-lg">
-            Pack Maths + Physique-Chimie + SVT : <span className="font-semibold">{terminaleBundle.packPrice} € / mois</span>
+            Pack Maths + Physique-Chimie + SVT :{' '}
+            <span className="font-semibold">
+              {terminaleBundle.packPrice} € / mois
+            </span>
             {terminaleBundle.saved > 0 && (
-              <span className="text-green-600 dark:text-green-400"> (économie ~{terminaleBundle.saved} €)</span>
+              <span className="text-green-600 dark:text-green-400">
+                {' '}
+                (économie ~{terminaleBundle.saved} €)
+              </span>
             )}
           </p>
         </div>
@@ -125,10 +168,13 @@ export default function ClientPage() {
           Offre Famille
         </div>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Plusieurs niveaux au foyer (ex: 6e + Terminale) : remise progressive sur le total.
-          Contacte-nous pour un devis packé et nominatif.
+          Plusieurs niveaux au foyer (ex: 6e + Terminale) : remise progressive
+          sur le total. Contacte-nous pour un devis packé et nominatif.
         </p>
-        <a href="/contact" className="mt-3 inline-block rounded-lg border px-3 py-1.5 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800">
+        <a
+          href="/contact"
+          className="mt-3 inline-block rounded-lg border px-3 py-1.5 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800"
+        >
           Demander un devis Famille
         </a>
       </div>

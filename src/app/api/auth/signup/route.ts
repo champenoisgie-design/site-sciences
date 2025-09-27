@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+import { NextResponse } from 'next/server'
 
 /**
  * Démo: renvoie ok=true. À remplacer par:
@@ -8,7 +8,7 @@ import { NextResponse } from "next/server"
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    console.log("[SIGNUP DEMO]", body?.email)
+    console.log('[SIGNUP DEMO]', body?.email)
     return NextResponse.json({ ok: true })
   } catch {
     return NextResponse.json({ ok: false }, { status: 400 })

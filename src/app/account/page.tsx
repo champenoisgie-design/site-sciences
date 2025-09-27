@@ -1,35 +1,51 @@
-import Link from "next/link"
-import ChangePasswordCard from "@/components/ChangePasswordCard"
-import { requireUserOrRedirect } from "@/lib/server-auth"
+import { PrismaClient } from "@prisma/client";
+import { getCurrentUser } from "@/lib/auth";
 
-export const dynamic = "force-dynamic"
+export const runtime = "nodejs";
 
-export default async function Page() {
-  const user = await requireUserOrRedirect()
+const prisma = (globalThis as any).__prisma || new PrismaClient();
+if (process.env.NODE_ENV !== "production") (globalThis as any).__prisma = prisma;
 
+export default async function AccountHome() {
+  const user = await getCurrentUser();
   if (!user) {
     return (
-      <section className="max-w-md mx-auto">
-        <h1 className="text-2xl font-bold mb-4">Mon compte</h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
-          Vous devez être connecté pour accéder à cette page.
-        </p>
-        <Link href="/login" className="rounded px-3 py-2 border text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800">
-          Se connecter
-        </Link>
+      <section>
+        <h1 className="text-2xl font-bold mb-2">Mon compte</h1>
+        <p className="text-sm text-zinc-500">Veuillez vous connecter.</p>
       </section>
-    )
+    );
   }
 
+  const progresses = await prisma.userProgress.findMany({
+    where: { userId: user.id },
+    orderBy: [{ grade: "asc" }, { subject: "asc" }],
+  });
+
   return (
-    <section className="grid gap-6 max-w-2xl mx-auto">
-      <div>
-        <h1 className="text-2xl font-bold">Mon compte</h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Connecté en tant que <span className="font-medium">{user.name ?? user.email}</span>
-        </p>
-      </div>
-      <ChangePasswordCard />
+    <section>
+      <h1 className="text-2xl font-bold mb-4">Mes progressions</h1>
+
+      {progresses.length === 0 ? (
+        <p className="text-sm text-zinc-500">Pas encore de progression.</p>
+      ) : (
+        <div className="space-y-4">
+          {progresses.map((p) => {
+            const badges = (() => {
+              try { return p.badgesJson ? JSON.parse(p.badgesJson) : []; } catch { return []; }
+            })();
+            return (
+              <div key={p.id} className="rounded-2xl border p-4">
+                <div className="font-semibold">{p.subject} · {p.grade}</div>
+                <div className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">XP : {p.xp ?? 0}</div>
+                <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                  Badges : {Array.isArray(badges) && badges.length > 0 ? badges.join(", ") : "—"}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </section>
-  )
+  );
 }

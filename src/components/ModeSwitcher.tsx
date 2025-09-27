@@ -1,4 +1,4 @@
-'use client'
+"use client"
 import { useMode } from './ModeProvider'
 import type { UIMode } from './ModeProvider'
 import React from 'react'

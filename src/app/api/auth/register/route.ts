@@ -5,12 +5,17 @@ import { hashPassword, createSessionForUser } from '@/lib/auth'
 export async function POST(req: Request) {
   try {
     const { name, email, password, remember } = await req.json()
-    if (!email || !password) return NextResponse.json({ error: 'missing' }, { status: 400 })
-    if (String(password).length < 8) return NextResponse.json({ error: 'weak_password' }, { status: 400 })
+    if (!email || !password)
+      return NextResponse.json({ error: 'missing' }, { status: 400 })
+    if (String(password).length < 8)
+      return NextResponse.json({ error: 'weak_password' }, { status: 400 })
     const exists = await prisma.user.findUnique({ where: { email } })
-    if (exists) return NextResponse.json({ error: 'email_in_use' }, { status: 400 })
+    if (exists)
+      return NextResponse.json({ error: 'email_in_use' }, { status: 400 })
     const passwordHash = await hashPassword(password)
-    const user = await prisma.user.create({ data: { name, email, passwordHash } })
+    const user = await prisma.user.create({
+      data: { name, email, passwordHash },
+    })
     await createSessionForUser(user.id, { remember: !!remember })
     return NextResponse.json({ ok: true })
   } catch {
