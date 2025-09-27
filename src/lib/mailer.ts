@@ -1,12 +1,27 @@
 import nodemailer from 'nodemailer'
 
 function hasSmtpEnv() {
-  return !!(process.env.SMTP_HOST && process.env.SMTP_PORT && process.env.SMTP_USER && process.env.SMTP_PASS)
+  return !!(
+    process.env.SMTP_HOST &&
+    process.env.SMTP_PORT &&
+    process.env.SMTP_USER &&
+    process.env.SMTP_PASS
+  )
 }
 
-export async function sendMail(opts: { to: string; subject: string; text?: string; html?: string }) {
+export async function sendMail(opts: {
+  to: string
+  subject: string
+  text?: string
+  html?: string
+}) {
   if (!hasSmtpEnv()) {
-    console.log('[MAIL:FALLBACK]', { to: opts.to, subject: opts.subject, text: opts.text, html: opts.html })
+    console.log('[MAIL:FALLBACK]', {
+      to: opts.to,
+      subject: opts.subject,
+      text: opts.text,
+      html: opts.html,
+    })
     return { ok: true, transport: 'console' }
   }
   const transporter = nodemailer.createTransport({

@@ -1,6 +1,6 @@
 "use client"
-import { useState } from "react"
-import PasswordInput from "@/components/PasswordInput"
+import { useState } from 'react'
+import PasswordInput from '@/components/PasswordInput'
 
 export default function ChangePasswordCard() {
   const [msg, setMsg] = useState<string | null>(null)
@@ -8,24 +8,29 @@ export default function ChangePasswordCard() {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    setMsg(null); setLoading(true)
+    setMsg(null)
+    setLoading(true)
     const fd = new FormData(e.currentTarget)
     const body = Object.fromEntries(fd.entries())
     try {
-      const r = await fetch("/api/account/change-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const r = await fetch('/api/account/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
       if (!r.ok) {
-        let err = "Erreur"
-        try { err = (await r.json()).error || err } catch {}
+        let err = 'Erreur'
+        try {
+          err = (await r.json()).error || err
+        } catch {}
         throw new Error(err)
       }
-      setMsg("Mot de passe mis à jour ✔. Toutes vos autres sessions sont invalidées.")
+      setMsg(
+        'Mot de passe mis à jour ✔. Toutes vos autres sessions sont invalidées.',
+      )
       ;(e.currentTarget as HTMLFormElement).reset()
     } catch (e: any) {
-      setMsg(e?.message || "Erreur")
+      setMsg(e?.message || 'Erreur')
     } finally {
       setLoading(false)
     }
@@ -37,17 +42,24 @@ export default function ChangePasswordCard() {
       <form className="grid gap-3" onSubmit={onSubmit} noValidate>
         <div>
           <label className="text-sm">Mot de passe actuel</label>
-          <PasswordInput name="currentPassword" autoComplete="current-password" />
+          <PasswordInput
+            name="currentPassword"
+            autoComplete="current-password"
+          />
         </div>
         <div>
           <label className="text-sm">Nouveau mot de passe (min. 8)</label>
-          <PasswordInput name="newPassword" minLength={8} autoComplete="new-password" />
+          <PasswordInput
+            name="newPassword"
+            minLength={8}
+            autoComplete="new-password"
+          />
         </div>
         <button
           disabled={loading}
           className="rounded bg-zinc-900 text-white px-4 py-2 text-sm dark:bg-zinc-100 dark:text-zinc-900"
         >
-          {loading ? "..." : "Mettre à jour"}
+          {loading ? '...' : 'Mettre à jour'}
         </button>
         {msg && <p className="text-sm">{msg}</p>}
       </form>

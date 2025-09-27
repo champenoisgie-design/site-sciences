@@ -1,19 +1,67 @@
-"use client"
-import { useMemo, useState } from "react"
-import { gradesBySchool } from "@/lib/school"
-import type { School, AnyGrade } from "@/lib/school"
-import { perSubjectPricing, pack3Subjects, tierBenefits, Tier } from "@/lib/pricing"
+"use client";
+import SubscribeButton from '@/components/SubscribeButton';
+import { useEffect, useMemo, useState } from 'react';
+import { gradesBySchool } from '@/lib/school';
+import type { School, AnyGrade } from '@/lib/school';
+import { perSubjectPricing, pack3Subjects, tierBenefits, Tier } from '@/lib/pricing';
 
-const TIERS: Tier[] = ["Normal", "Gold", "Platine"]
+const TIERS: Tier[] = ['Normal', 'Gold', 'Platine'];
+
+function tierToPlan(t: Tier): 'BRONZE' | 'GOLD' | 'PLATINE' {
+  if (t === 'Gold') return 'GOLD';
+  if (t === 'Platine') return 'PLATINE';
+  return 'BRONZE';
+}
+
+type Entitlement = {
+  id: string;
+  status: string;
+  plan?: 'BRONZE' | 'GOLD' | 'PLATINE';
+  kind: 'SUBJECT' | 'PACK3';
+  subject?: string;
+  grade?: string;
+};
 
 export default function Page() {
-  const [school, setSchool] = useState<School | undefined>()
-  const [grade, setGrade] = useState<AnyGrade | undefined>()
-  const [tier, setTier] = useState<Tier>("Normal")
+  const [school, setSchool] = useState<School | undefined>();
+  const [grade, setGrade] = useState<AnyGrade | undefined>();
+  const [tier, setTier] = useState<Tier>('Normal');
 
-  const grades = useMemo(() => (school ? gradesBySchool[school] : []), [school])
-  const perSubj = useMemo(() => (grade ? perSubjectPricing(grade, tier) : []), [grade, tier])
-  const pack = useMemo(() => (grade ? pack3Subjects(grade, tier) : null), [grade, tier])
+  const [loadingStatus, setLoadingStatus] = useState(false);
+  const [entitlements, setEntitlements] = useState<Entitlement[]>([]);
+
+  // Clés actives pour désactiver les boutons : `${grade}:${tier}:${subject}` et `${grade}:${tier}:PACK3`
+  const activeKeys = useMemo(() => {
+    const s = new Set<string>();
+    for (const e of entitlements) {
+      if (e.kind === 'PACK3' && e.grade) {
+        s.add(`${e.grade}:${e.plan}:PACK3`);
+      } else if (e.kind === 'SUBJECT' && e.grade && e.subject) {
+        s.add(`${e.grade}:${e.plan}:${e.subject}`);
+      }
+    }
+    return s;
+  }, [entitlements]);
+
+  const grades = useMemo(() => (school ? gradesBySchool[school] : []), [school]);
+  const perSubj = useMemo(() => (grade ? perSubjectPricing(grade, tier) : []), [grade, tier]);
+  const pack = useMemo(() => (grade ? pack3Subjects(grade, tier) : null), [grade, tier]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoadingStatus(true);
+        const r = await fetch('/api/billing/status');
+        if (!r.ok) return; // non connecté ou pas d'abonnement
+        const data = await r.json();
+        setEntitlements(data?.entitlements ?? []);
+      } finally {
+        setLoadingStatus(false);
+      }
+    })();
+  }, []);
+
+  const plan = tierToPlan(tier);
 
   return (
     <section>
@@ -25,15 +73,20 @@ export default function Page() {
         <div>
           <label className="mb-1 block text-sm font-medium">École</label>
           <div className="flex gap-2">
-            {(["college","lycee"] as School[]).map(s => (
+            {(['college', 'lycee'] as School[]).map((s) => (
               <button
                 key={s}
-                onClick={() => { setSchool(s); setGrade(undefined) }}
+                onClick={() => {
+                  setSchool(s);
+                  setGrade(undefined);
+                }}
                 className={`rounded-lg border px-3 py-1.5 text-sm ${
-                  school === s ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900" : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  school === s
+                    ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                    : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
                 }`}
               >
-                {s === "college" ? "Collège" : "Lycée"}
+                {s === 'college' ? 'Collège' : 'Lycée'}
               </button>
             ))}
           </div>
@@ -43,13 +96,17 @@ export default function Page() {
         <div>
           <label className="mb-1 block text-sm font-medium">Niveau</label>
           <div className="flex flex-wrap gap-2">
-            {grades.length === 0 && <span className="text-xs text-zinc-500">Choisis d’abord Collège ou Lycée</span>}
-            {grades.map(g => (
+            {grades.length === 0 && (
+              <span className="text-xs text-zinc-500">Choisis d’abord Collège ou Lycée</span>
+            )}
+            {grades.map((g) => (
               <button
                 key={g}
                 onClick={() => setGrade(g)}
                 className={`rounded-lg border px-3 py-1.5 text-sm ${
-                  grade === g ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900" : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  grade === g
+                    ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                    : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
                 }`}
               >
                 {g}
@@ -62,20 +119,24 @@ export default function Page() {
         <div>
           <label className="mb-1 block text-sm font-medium">Niveau d’abonnement</label>
           <div className="flex flex-wrap gap-2">
-            {TIERS.map(t => (
+            {TIERS.map((t) => (
               <button
                 key={t}
                 onClick={() => setTier(t)}
                 className={`rounded-lg border px-3 py-1.5 text-sm ${
-                  tier === t ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900" : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  tier === t
+                    ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                    : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
                 }`}
               >
                 {t}
               </button>
             ))}
           </div>
-          <ul className="mt-2 text-xs text-zinc-600 dark:text-zinc-400 list-disc pl-5">
-            {tierBenefits[tier].map((b) => <li key={b}>{b}</li>)}
+          <ul className="mt-2 list-disc pl-5 text-xs text-zinc-600 dark:text-zinc-400">
+            {tierBenefits[tier].map((b) => (
+              <li key={b}>{b}</li>
+            ))}
           </ul>
         </div>
       </div>
@@ -83,18 +144,36 @@ export default function Page() {
       {/* Grille de prix par matière */}
       {grade ? (
         <div className="grid gap-4 md:grid-cols-3">
-          {perSubj.map(t => (
-            <div key={t.subject} className="rounded-2xl border p-5">
-              <h2 className="text-lg font-semibold">{t.subject}</h2>
-              <p className="mt-2 text-2xl font-bold">{t.price} € / mois</p>
-              <ul className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-                {tierBenefits[tier].map((b) => <li key={b}>• {b}</li>)}
-              </ul>
-              <a href="/contact" className="mt-4 inline-block rounded-lg bg-zinc-900 px-3 py-1.5 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900">
-                S’abonner {t.subject} ({tier})
-              </a>
-            </div>
-          ))}
+          {perSubj.map((t) => {
+            const key = `${grade}:${plan}:${t.subject}`;
+            const isActive = activeKeys.has(key);
+            return (
+              <div key={t.subject} className="rounded-2xl border p-5">
+                <h2 className="text-lg font-semibold">{t.subject}</h2>
+                <p className="mt-2 text-2xl font-bold">{t.price} € / mois</p>
+                <ul className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+                  {tierBenefits[tier].map((b) => (
+                    <li key={b}>• {b}</li>
+                  ))}
+                </ul>
+
+                {isActive ? (
+                  <span className="mt-4 inline-block rounded-lg border px-3 py-1.5 text-sm">
+                    ✅ Déjà abonné
+                  </span>
+                ) : (
+                  <SubscribeButton
+                    plan={plan}
+                    kind="SUBJECT"
+                    subject={t.subject}
+                    grade={String(grade)}
+                    label="S'abonner"
+                    disabled={loadingStatus}
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
       ) : (
         <p className="text-sm text-zinc-500">Choisis un niveau pour afficher les prix par matière.</p>
@@ -112,7 +191,22 @@ export default function Page() {
               <span className="text-green-600 dark:text-green-400"> (économie ~{pack.saved} €)</span>
             )}
           </p>
-          <p className="mt-1 text-xs text-zinc-500">Remise ~20% sur la somme des 3 matières du même niveau et palier.</p>
+          <p className="mt-1 text-xs text-zinc-500">
+            Remise ~20% sur la somme des 3 matières du même niveau et palier.
+          </p>
+
+          {activeKeys.has(`${grade}:${plan}:PACK3`) ? (
+            <span className="mt-3 inline-block rounded-lg border px-3 py-1.5 text-sm">✅ Déjà abonné</span>
+          ) : (
+            <SubscribeButton
+              plan={plan}
+              kind="PACK3"
+              grade={String(grade)}
+              packPrice={pack.packPrice}
+              label="S'abonner au pack 3 matières"
+              disabled={loadingStatus}
+            />
+          )}
         </div>
       )}
 
@@ -122,13 +216,15 @@ export default function Page() {
           Offre Famille
         </div>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Plusieurs niveaux au foyer (ex: 6e + Terminale) : remise progressive sur le total.
-          Contacte-nous pour un devis « multi-niveaux » nominatif.
+          Plusieurs niveaux au foyer (ex: 6e + Terminale) : remise progressive sur le total. Contacte-nous pour un devis « multi-niveaux » nominatif.
         </p>
-        <a href="/contact" className="mt-3 inline-block rounded-lg border px-3 py-1.5 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800">
+        <a
+          href="/contact"
+          className="mt-3 inline-block rounded-lg border px-3 py-1.5 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800"
+        >
           Demander un devis Famille
         </a>
       </div>
     </section>
-  )
+  );
 }

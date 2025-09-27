@@ -1,25 +1,25 @@
-import type { AnyGrade, Subject } from "@/lib/school"
-import { subjects } from "@/lib/school"
+import type { AnyGrade, Subject } from '@/lib/school'
+import { subjects } from '@/lib/school'
 
 /**
  * Barème de base (€/mois) PAR MATIÈRE et PAR NIVEAU — prix égaux entre matières.
  * (Tu peux ajuster ces montants facilement ici.)
  */
 export const basePriceByGrade: Record<AnyGrade, number> = {
-  "6e": 12,
-  "5e": 12,
-  "4e": 13,
-  "3e": 13,
-  "2nde": 15,
-  "1re": 17,
-  "Terminale": 19,
+  '6e': 12,
+  '5e': 12,
+  '4e': 13,
+  '3e': 13,
+  '2nde': 15,
+  '1re': 17,
+  Terminale: 19,
 }
 
 /**
  * Multiplicateurs par niveau d’abonnement.
  * Normal = 1x, Gold = 1.3x, Platine = 1.7x (à adapter si besoin).
  */
-export type Tier = "Normal" | "Gold" | "Platine"
+export type Tier = 'Normal' | 'Gold' | 'Platine'
 export const tierMultiplier: Record<Tier, number> = {
   Normal: 1.0,
   Gold: 1.3,
@@ -31,19 +31,19 @@ export const tierMultiplier: Record<Tier, number> = {
  */
 export const tierBenefits: Record<Tier, string[]> = {
   Normal: [
-    "Tutoriels complets",
-    "Entraînement Solo illimité",
-    "Suivi XP/Badges",
+    'Tutoriels complets',
+    'Entraînement Solo illimité',
+    'Suivi XP/Badges',
   ],
   Gold: [
-    "Tout le palier Normal",
-    "Support prioritaire e-mail",
-    "Défis mensuels exclusifs",
+    'Tout le palier Normal',
+    'Support prioritaire e-mail',
+    'Défis mensuels exclusifs',
   ],
   Platine: [
-    "Tout le palier Gold",
-    "Live mensuel (groupe)",
-    "Parcours & révisions avancés",
+    'Tout le palier Gold',
+    'Live mensuel (groupe)',
+    'Parcours & révisions avancés',
   ],
 }
 

@@ -8,22 +8,27 @@ datasource db {
 }
 
 model User {
-  id                   String   @id @default(cuid())
-  name                 String?
-  email                String?  @unique
-  emailVerified        DateTime?
-  image                String?
-  passwordHash         String?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  stripeCustomerId String?       @unique
+  subscription     Subscription?
+  id               String        @id @default(cuid())
+  name             String?
+  email            String?       @unique
+  emailVerified    DateTime?
+  image            String?
+  passwordHash     String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
-  accounts             Account[]
-  sessions             Session[]
-  passwordResetTokens  PasswordResetToken[]
+  accounts            Account[]
+  sessions            Session[]
+  passwordResetTokens PasswordResetToken[]
+  progress            UserProgress[]
+  userBadges          UserBadge[]
+  billingStreak       UserBillingStreak?
 }
 
 model Account {
-  id                String   @id @default(cuid())
+  id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
@@ -63,6 +68,87 @@ model PasswordResetToken {
   token   String   @unique
   userId  String
   expires DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserProgress {
+  id         String @id @default(cuid())
+  userId     String
+  subject    String
+  grade      String
+  xp         Int    @default(0)
+  badgesJson String @default("[]")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, subject, grade])
+}
+
+model Subscription {
+  id                   String    @id @default(cuid())
+  userId               String    @unique
+  plan                 String // bronze | gold | platine
+  grade                String // ex: "Terminale"
+  subjectsJson         String    @default("[]") // ["Maths","Physique-Chimie","SVT"]
+  status               String // active | incomplete | past_due | canceled | unpaid
+  stripeSubscriptionId String?
+  currentPeriodEnd     DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([stripeSubscriptionId])
+  @@index([userId])
+}
+
+enum SubscriptionStatus {
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+  PAUSED
+}
+
+enum Plan {
+  BRONZE
+  GOLD
+  PLATINE
+}
+
+/// --- Badges & Streaks (site-sciences) ---
+model Badge {
+  key         String   @id
+  name        String
+  description String?
+  icon        String?
+  points      Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  userBadges UserBadge[]
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  badgeKey String
+  earnedAt DateTime @default(now())
+  metaJson String?
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeKey], references: [key], onDelete: Cascade)
+
+  @@unique([userId, badgeKey])
+}
+
+model UserBillingStreak {
+  userId            String    @id
+  consecutiveMonths Int       @default(0)
+  lastPeriodEnd     DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

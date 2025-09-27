@@ -1,94 +1,123 @@
-"use client";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import ThemeSwitchInline from "@/components/ThemeSwitchInline";
-import ModeLearningSwitcher from "@/components/ModeLearningSwitcher";
+"use client"
+import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
+import ThemeToggle from '@/components/ThemeToggle'
+import ModeLearningSwitcher from '@/components/ModeLearningSwitcher'
+import { useEffect, useState } from 'react'
 
 const navRight = [
-  { href: "/", label: "Accueil" },
-  { href: "/tarifs", label: "Tarifs" },
-  { href: "/contact", label: "Contact" },
-];
+  { href: '/', label: 'Accueil' },
+  { href: '/tarifs', label: 'Tarifs' },
+  { href: '/contact', label: 'Contact' },
+]
+
+async function fetchMe(): Promise<{
+  user: { name?: string; email?: string } | null
+}> {
+  const res = await fetch('/api/auth/me', {
+    cache: 'no-store',
+    headers: { 'cache-control': 'no-store' },
+  })
+  return res.json()
+}
 
 export default function Header() {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [user, setUser] = useState<{ name?: string; email?: string } | null>(null);
+  const pathname = usePathname()
+  const router = useRouter()
+  const [user, setUser] = useState<{ name?: string; email?: string } | null>(
+    null,
+  )
 
   useEffect(() => {
-    fetch("/api/auth/me").then(r=>r.json()).then(d=>setUser(d.user)).catch(()=>{});
-  }, []);
+    let mounted = true
+    fetchMe()
+      .then((d) => mounted && setUser(d.user))
+      .catch(() => {})
+    const onFocus = () =>
+      fetchMe()
+        .then((d) => setUser(d.user))
+        .catch(() => {})
+    window.addEventListener('focus', onFocus)
+    document.addEventListener('visibilitychange', onFocus)
+    return () => {
+      mounted = false
+      window.removeEventListener('focus', onFocus)
+      document.removeEventListener('visibilitychange', onFocus)
+    }
+  }, [])
 
   async function logout() {
-    await fetch("/api/auth/logout", { method:"POST" });
-    setUser(null);
-    router.refresh();
+    await fetch('/api/auth/logout', { method: 'POST' })
+    setUser(null)
+    router.refresh()
   }
 
   return (
     <header className="border-b">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
-        {/* Titre */}
-        <div className="min-w-0">
-          <Link href="/" className="font-semibold">Site Sciences</Link>
-        </div>
+      <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 gap-3">
+        {/* Gauche : Titre */}
+        <Link href="/" className="font-semibold">
+          Site Sciences
+        </Link>
 
-        {/* Centre : Thème + Mode d'apprentissage (une seule fois) */}
+        {/* Centre : switch Thème + switch Mode d’apprentissage (une seule fois) */}
         <div className="flex items-center gap-3">
-          <ThemeSwitchInline />
+          <ThemeToggle />
           <ModeLearningSwitcher />
         </div>
 
-        {/* Droite : Nav + Compte */}
+        {/* Droite : Navigation + Connexion/Compte */}
         <ul className="flex items-center gap-2">
           {navRight.map(({ href, label }) => {
-            const active = pathname === href;
+            const active = pathname === href
             return (
               <li key={href}>
                 <Link
                   href={href}
-                  className={`rounded px-3 py-1 text-sm transition ${
-                    active
-                      ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                      : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                  }`}
-                  aria-current={active ? "page" : undefined}
+                  className={`rounded px-3 py-1 text-sm transition 
+                    ${active ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+                  aria-current={active ? 'page' : undefined}
                 >
                   {label}
                 </Link>
               </li>
-            );
+            )
           })}
-          {!user ? (
-            <>
-              <li>
-                <Link href="/login" className="rounded px-3 py-1 text-sm border hover:bg-zinc-100 dark:hover:bg-zinc-800">
+          <li className="pl-2 ml-2 border-l flex items-center gap-2">
+            {!user ? (
+              <>
+                <Link
+                  href="/login"
+                  className="rounded px-3 py-1 text-sm border hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                >
                   Se connecter
                 </Link>
-              </li>
-              <li>
-                <Link href="/login" className="rounded px-3 py-1 text-sm bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900">
+                <Link
+                  href="/login"
+                  className="rounded px-3 py-1 text-sm bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                >
                   Créer un compte
                 </Link>
-              </li>
-            </>
-          ) : (
-            <>
-              <li>
-                <Link href="/account" className="rounded px-3 py-1 text-sm border hover:bg-zinc-100 dark:hover:bg-zinc-800">
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/account"
+                  className="rounded px-3 py-1 text-sm border hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                >
                   Mon compte
                 </Link>
-              </li>
-              <li>
-                <button onClick={logout} className="rounded px-3 py-1 text-sm border hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                <button
+                  onClick={logout}
+                  className="rounded px-3 py-1 text-sm border hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                >
                   Déconnexion
                 </button>
-              </li>
-            </>
-          )}
+              </>
+            )}
+          </li>
         </ul>
       </nav>
     </header>
-  );
+  )
 }

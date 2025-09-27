@@ -1,9 +1,9 @@
-import ContactForm from "@/components/ContactForm";
+import ContactForm from '@/components/ContactForm'
 
 export const metadata = {
-  title: "Contact | Site Sciences",
-  description: "Écrivez-nous pour toute question.",
-};
+  title: 'Contact | Site Sciences',
+  description: 'Écrivez-nous pour toute question.',
+}
 
 export default function Page() {
   return (
@@ -14,5 +14,5 @@ export default function Page() {
       </p>
       <ContactForm />
     </section>
-  );
+  )
 }
