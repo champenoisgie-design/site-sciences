@@ -10,8 +10,10 @@ export async function POST(req: Request) {
     const user = await prisma.user.findUnique({ where: { email } })
     if (!user) return NextResponse.json({ ok: true })
     const token = randomBytes(32).toString('hex')
-    const expires = new Date(Date.now() + 60*60*1000)
-    await prisma.passwordResetToken.create({ data: { token, userId: user.id, expires } })
+    const expires = new Date(Date.now() + 60 * 60 * 1000)
+    await prisma.passwordResetToken.create({
+      data: { token, userId: user.id, expires },
+    })
     const base = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
     const resetUrl = `${base}/reset/${token}`
     await sendMail({

@@ -1,14 +1,18 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import Header from "@/components/Header";
-import { Providers } from "./providers";
+import type { Metadata } from 'next'
+import './globals.css'
+import Header from '@/components/Header'
+import { Providers } from './providers'
 
 export const metadata: Metadata = {
-  title: "Site Sciences",
-  description: "Ressources, tutoriels et entraînements adaptés à ton niveau.",
-};
+  title: 'Site Sciences',
+  description: 'Ressources, tutoriels et entraînements adaptés à ton niveau.',
+}
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="fr" suppressHydrationWarning>
       <body>
@@ -27,5 +31,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Providers>
       </body>
     </html>
-  );
+  )
 }

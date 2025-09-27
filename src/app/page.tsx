@@ -1,11 +1,11 @@
 "use client"
-
-import Link from "next/link"
-import { useMemo } from "react"
-import { useSelection } from "@/components/SelectionProvider"
-import type { School, AnyGrade } from "@/lib/school"
-import { gradesBySchool, subjects } from "@/lib/school"
-import ModeSwitcher from "@/components/ModeSwitcher"
+import ProgressCard from '@/components/ProgressCard'
+import Link from 'next/link'
+import { useMemo } from 'react'
+import { useSelection } from '@/components/SelectionProvider'
+import type { School, AnyGrade } from '@/lib/school'
+import { gradesBySchool, subjects } from '@/lib/school'
+import ModeSwitcher from '@/components/ModeSwitcher'
 
 export default function Page() {
   const { selection, setSchool, setGrade, setSubject } = useSelection()
@@ -25,17 +25,17 @@ export default function Page() {
           <div className="mb-4">
             <label className="mb-1 block text-sm font-medium">École</label>
             <div className="flex gap-2">
-              {(["college", "lycee"] as School[]).map((s) => (
+              {(['college', 'lycee'] as School[]).map((s) => (
                 <button
                   key={s}
                   onClick={() => setSchool(s)}
                   className={`rounded-lg border px-3 py-1.5 text-sm ${
                     selection.school === s
-                      ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                      : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                      : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
                   }`}
                 >
-                  {s === "college" ? "Collège" : "Lycée"}
+                  {s === 'college' ? 'Collège' : 'Lycée'}
                 </button>
               ))}
             </div>
@@ -56,8 +56,8 @@ export default function Page() {
                   onClick={() => setGrade(g)}
                   className={`rounded-lg border px-3 py-1.5 text-sm ${
                     selection.grade === g
-                      ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                      : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                      : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
                   }`}
                 >
                   {g}
@@ -76,8 +76,8 @@ export default function Page() {
                   onClick={() => setSubject(m)}
                   className={`rounded-lg border px-3 py-1.5 text-sm ${
                     selection.subject === m
-                      ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                      : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                      : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
                   }`}
                 >
                   {m}
@@ -95,21 +95,28 @@ export default function Page() {
           <h2 className="text-lg font-semibold mb-3">Ta sélection</h2>
           <ul className="space-y-1 text-sm text-zinc-700 dark:text-zinc-300">
             <li>
-              <span className="text-zinc-500">École :</span>{" "}
-              {selection.school ? (selection.school === "college" ? "Collège" : "Lycée") : "—"}
+              <span className="text-zinc-500">École :</span>{' '}
+              {selection.school
+                ? selection.school === 'college'
+                  ? 'Collège'
+                  : 'Lycée'
+                : '—'}
             </li>
             <li>
-              <span className="text-zinc-500">Niveau :</span>{" "}
-              {selection.grade ?? "—"}
+              <span className="text-zinc-500">Niveau :</span>{' '}
+              {selection.grade ?? '—'}
             </li>
             <li>
-              <span className="text-zinc-500">Matière :</span>{" "}
-              {selection.subject ?? "—"}
+              <span className="text-zinc-500">Matière :</span>{' '}
+              {selection.subject ?? '—'}
             </li>
           </ul>
 
           <p className="mt-4 text-xs text-zinc-500">
             Le thème visuel change selon la matière ; les pages Tutoriels & Solo
+            <div className="mt-4">
+              <ProgressCard />
+            </div>
             se filtrent selon le niveau et la matière sélectionnés.
           </p>
         </div>
@@ -121,8 +128,8 @@ export default function Page() {
           <div>
             <h2 className="text-lg font-semibold">Mode d’apprentissage</h2>
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Choisis le mode le plus confortable : Normal, TDAH, DYS (affichages
-              adaptés).
+              Choisis le mode le plus confortable : Normal, TDAH, DYS
+              (affichages adaptés).
             </p>
           </div>
           {/* on réutilise le composant existant */}

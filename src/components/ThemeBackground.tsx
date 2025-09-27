@@ -1,6 +1,6 @@
 "use client"
-import { useEffect } from "react"
-import { useSelection } from "@/components/SelectionProvider"
+import { useEffect } from 'react'
+import { useSelection } from '@/components/SelectionProvider'
 
 /**
  * Applique un data-attribute sur <html> pour basculer le thème CSS
@@ -10,8 +10,8 @@ export default function ThemeBackground() {
   const { selection } = useSelection()
   useEffect(() => {
     const el = document.documentElement
-    const subj = selection.subject ?? "none"
-    el.setAttribute("data-subject", subj)
+    const subj = selection.subject ?? 'none'
+    el.setAttribute('data-subject', subj)
     return () => {
       // rien
     }

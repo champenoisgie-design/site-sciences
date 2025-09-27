@@ -1,10 +1,9 @@
 "use client"
-
-import Link from "next/link"
-import { useMemo } from "react"
-import { useSelection } from "@/components/SelectionProvider"
-import type { School, AnyGrade, Subject } from "@/lib/school"
-import { gradesBySchool, subjects } from "@/lib/school"
+import Link from 'next/link'
+import { useMemo } from 'react'
+import { useSelection } from '@/components/SelectionProvider'
+import type { School, AnyGrade, Subject } from '@/lib/school'
+import { gradesBySchool, subjects } from '@/lib/school'
 
 export default function Page() {
   const { selection, setSchool, setGrade, setSubject } = useSelection()
@@ -28,17 +27,17 @@ export default function Page() {
           <div>
             <label className="mb-1 block text-sm font-medium">École</label>
             <div className="flex gap-2">
-              {(["college", "lycee"] as School[]).map(s => (
+              {(['college', 'lycee'] as School[]).map((s) => (
                 <button
                   key={s}
                   onClick={() => setSchool(s)}
                   className={`rounded-lg border px-3 py-1.5 text-sm ${
                     selection.school === s
-                      ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                      : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                      : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
                   }`}
                 >
-                  {s === "college" ? "Collège" : "Lycée"}
+                  {s === 'college' ? 'Collège' : 'Lycée'}
                 </button>
               ))}
             </div>
@@ -49,16 +48,18 @@ export default function Page() {
             <label className="mb-1 block text-sm font-medium">Niveau</label>
             <div className="flex flex-wrap gap-2">
               {availableGrades.length === 0 && (
-                <span className="text-xs text-zinc-500">Choisis d’abord Collège ou Lycée</span>
+                <span className="text-xs text-zinc-500">
+                  Choisis d’abord Collège ou Lycée
+                </span>
               )}
-              {availableGrades.map(g => (
+              {availableGrades.map((g) => (
                 <button
                   key={g}
                   onClick={() => setGrade(g)}
                   className={`rounded-lg border px-3 py-1.5 text-sm ${
                     selection.grade === g
-                      ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                      : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                      : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
                   }`}
                 >
                   {g}
@@ -71,14 +72,14 @@ export default function Page() {
           <div>
             <label className="mb-1 block text-sm font-medium">Matière</label>
             <div className="flex flex-wrap gap-2">
-              {subjects.map(m => (
+              {subjects.map((m) => (
                 <button
                   key={m}
                   onClick={() => setSubject(m)}
                   className={`rounded-lg border px-3 py-1.5 text-sm ${
                     selection.subject === m
-                      ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                      : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+                      : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
                   }`}
                 >
                   {m}
@@ -123,12 +124,20 @@ export default function Page() {
       <div className="rounded-2xl border p-4">
         <h2 className="text-lg font-semibold">Ta sélection</h2>
         <ul className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          <li>École : {selection.school ? (selection.school === "college" ? "Collège" : "Lycée") : "—"}</li>
-          <li>Niveau : {selection.grade ?? "—"}</li>
-          <li>Matière : {selection.subject ?? "—"}</li>
+          <li>
+            École :{' '}
+            {selection.school
+              ? selection.school === 'college'
+                ? 'Collège'
+                : 'Lycée'
+              : '—'}
+          </li>
+          <li>Niveau : {selection.grade ?? '—'}</li>
+          <li>Matière : {selection.subject ?? '—'}</li>
         </ul>
         <p className="mt-4 text-xs text-zinc-500">
-          Le thème visuel change selon la matière ; les listes Tutoriels & Solo se filtrent selon le niveau/matière.
+          Le thème visuel change selon la matière ; les listes Tutoriels & Solo
+          se filtrent selon le niveau/matière.
         </p>
       </div>
     </section>

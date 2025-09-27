@@ -1,21 +1,21 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect, useState } from 'react'
 
-type LearningMode = "Normal" | "TDAH" | "DYS"
-const KEY = "__learning_mode__"
+type LearningMode = 'Normal' | 'TDAH' | 'DYS'
+const KEY = '__learning_mode__'
 
 export default function ModeLearningSwitcher() {
-  const [mode, setMode] = useState<LearningMode>("Normal")
+  const [mode, setMode] = useState<LearningMode>('Normal')
 
   useEffect(() => {
-    const saved = (localStorage.getItem(KEY) as LearningMode) || "Normal"
+    const saved = (localStorage.getItem(KEY) as LearningMode) || 'Normal'
     setMode(saved)
-    document.documentElement.setAttribute("data-learning", saved)
+    document.documentElement.setAttribute('data-learning', saved)
   }, [])
 
   useEffect(() => {
     localStorage.setItem(KEY, mode)
-    document.documentElement.setAttribute("data-learning", mode)
+    document.documentElement.setAttribute('data-learning', mode)
   }, [mode])
 
   return (

@@ -1,20 +1,24 @@
-"use client";
-import { useEffect, useState } from "react";
-import Link from "next/link";
+"use client"
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 /** MOCK : considère “logged=in” si localStorage.has('__mock_auth__') */
-export default function RequireAuth({ children }: { children: React.ReactNode }) {
-  const [ready, setReady] = useState(false);
-  const [logged, setLogged] = useState(false);
+export default function RequireAuth({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const [ready, setReady] = useState(false)
+  const [logged, setLogged] = useState(false)
 
   useEffect(() => {
     try {
-      setLogged(!!localStorage.getItem("__mock_auth__"));
+      setLogged(!!localStorage.getItem('__mock_auth__'))
     } catch {}
-    setReady(true);
-  }, []);
+    setReady(true)
+  }, [])
 
-  if (!ready) return null;
+  if (!ready) return null
 
   if (!logged) {
     return (
@@ -24,16 +28,22 @@ export default function RequireAuth({ children }: { children: React.ReactNode })
           Tu dois être connecté pour accéder à ce contenu.
         </p>
         <div className="mt-3 flex gap-2">
-          <Link href="/login" className="rounded bg-zinc-900 px-3 py-1.5 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900">
+          <Link
+            href="/login"
+            className="rounded bg-zinc-900 px-3 py-1.5 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900"
+          >
             Connexion
           </Link>
-          <Link href="/signup" className="rounded border px-3 py-1.5 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800">
+          <Link
+            href="/signup"
+            className="rounded border px-3 py-1.5 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800"
+          >
             Créer un compte
           </Link>
         </div>
       </div>
-    );
+    )
   }
 
-  return <>{children}</>;
+  return <>{children}</>
 }
