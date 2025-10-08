@@ -23,3 +23,20 @@ prisma/dev.backup*.db
 playwright-report/
 test-results/
 
+BEGIN{inUser=0
+EOF
+awk
+fi
+line=-bash
+{
+}
+updatedAt
+canceledAt
+currentPeriodEnd
+currentPeriodStart
+seenStripe=1
+stripePriceId
+stripeSubscriptionId
+*.bak
+*.backup*
+disabled_files/
