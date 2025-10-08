@@ -1,15 +1,15 @@
-'use client';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+'use client'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 const TABS = [
-  { href: '/account',          label: 'Ma progression' },
-  { href: '/account/badges',   label: 'Mes badges' },
+  { href: '/account', label: 'Ma progression' },
+  { href: '/account/badges', label: 'Mes badges' },
   { href: '/account/password', label: 'Changer le mot de passe' },
-];
+]
 
 export default function AccountTabs() {
-  const pathname = usePathname() || '';
+  const pathname = usePathname() || ''
   return (
     <nav className="border-b bg-white/70 backdrop-blur">
       <div className="px-6">
@@ -17,7 +17,7 @@ export default function AccountTabs() {
           {TABS.map((t) => {
             const isActive =
               pathname === t.href ||
-              (t.href !== '/account' && pathname.startsWith(t.href));
+              (t.href !== '/account' && pathname.startsWith(t.href))
             return (
               <li key={t.href}>
                 <Link
@@ -32,10 +32,10 @@ export default function AccountTabs() {
                   {t.label}
                 </Link>
               </li>
-            );
+            )
           })}
         </ul>
       </div>
     </nav>
-  );
+  )
 }

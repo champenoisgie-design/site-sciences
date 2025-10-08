@@ -1,0 +1,105 @@
+'use client'
+import type { PricesSnapshot } from '@/lib/pricing'
+
+const BASE: PricesSnapshot = {
+  plans: { normal: 5.99, gold: 9.99, platine: 14.99 },
+  packs: { pack3: 29.99, family: 19.99 },
+  mode: 4.99,
+  promo: { enabled: true, text: '–20% le 1er mois' },
+  guarantee: 'Garantie 14 jours remboursé',
+}
+
+function withDefaults(p?: PricesSnapshot): PricesSnapshot {
+  return {
+    ...BASE,
+    ...(p ?? {}),
+    plans: { ...BASE.plans, ...(p?.plans ?? {}) },
+    packs: { ...BASE.packs, ...(p?.packs ?? {}) },
+    promo: { ...BASE.promo, ...(p?.promo ?? {}) },
+  }
+}
+
+export default function PlanComparison({
+  prices,
+}: {
+  prices?: PricesSnapshot
+}) {
+  const pr = withDefaults(prices)
+
+  const tiers = [
+    {
+      key: 'normal',
+      title: 'Normal',
+      price: pr.plans.normal,
+      tag: 'Normal',
+      bullets: [
+        'Cours + exercices illimités',
+        'Suivi de progression',
+        'Support standard',
+      ],
+    },
+    {
+      key: 'gold',
+      title: 'Gold',
+      price: pr.plans.gold,
+      tag: 'Gold',
+      bullets: [
+        'Tout le Normal',
+        'Explications enrichies + corrections détaillées',
+        'Défis supplémentaires & stats avancées',
+      ],
+      badge: 'Le + choisi',
+    },
+    {
+      key: 'platine',
+      title: 'Platine',
+      price: pr.plans.platine,
+      tag: 'Platine',
+      bullets: [
+        'Tout le Gold',
+        'Parcours adaptatif accéléré',
+        'Badges élite & priorisation des nouveautés',
+      ],
+      highlight: true,
+    },
+  ] as const
+
+  return (
+    <div className="relative">
+      {pr.promo.enabled && (
+        <div className="absolute -left-2 -top-2 rotate-[-8deg] rounded bg-amber-200 px-3 py-1 text-xs font-semibold shadow">
+          {pr.promo.text}
+        </div>
+      )}
+      <h2 className="text-xl font-semibold mb-3">Quel plan vous convient ?</h2>
+      <div className="grid gap-4 md:grid-cols-3">
+        {tiers.map((t) => (
+          <div
+            key={t.key}
+            className={`rounded-2xl border p-4 ${t.highlight ? 'ring-2 ring-black' : ''}`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="text-lg font-semibold">{t.title}</div>
+              {'badge' in t && t.badge ? (
+                <span className="rounded-full bg-black/90 px-2 py-0.5 text-xs text-white">
+                  {t.badge}
+                </span>
+              ) : null}
+            </div>
+            <div className="mt-1 text-xs text-zinc-500">{t.tag}</div>
+            <div className="mt-3 text-2xl font-bold">
+              {t.price.toFixed(2)} €
+              <span className="text-sm font-normal">/mois</span>
+            </div>
+            <ul className="mt-3 list-disc pl-5 text-sm space-y-1">
+              {t.bullets.map((b) => (
+                <li key={b}>{b}</li>
+              ))}
+            </ul>
+            <div className="mt-4 text-xs text-zinc-500">{pr.guarantee}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}

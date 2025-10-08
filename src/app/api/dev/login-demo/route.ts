@@ -1,0 +1,54 @@
+import { NextResponse } from 'next/server'
+import prisma from '@/lib/prisma'
+import bcrypt from 'bcryptjs'
+import { randomBytes } from 'crypto'
+
+export async function GET() {
+  const userId = 'user_demo'
+  const email = 'demo@sitesciences.fr'
+  const name = 'Utilisateur Démo'
+  const password = 'Demo12345*'
+
+  const passwordHash = await bcrypt.hash(password, 10)
+  const sessionToken = randomBytes(32).toString('hex')
+  const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 jours
+
+  // Supprimer ancien user et session
+  await prisma.session.deleteMany({ where: { userId } })
+  await prisma.user.deleteMany({ where: { OR: [{ id: userId }, { email }] } })
+
+  // Recréer user
+  const user = await prisma.user.create({
+    data: {
+      id: userId, updatedAt: new Date(),
+      email,
+      passwordHash,
+      name,
+    },
+  })
+
+  // Créer session
+  await prisma.session.create({
+    data: {
+      id: 'sess_demo',
+      sessionToken,
+      userId: user.id,
+      expires,
+    },
+  })
+
+  // Réponse avec cookie
+  const res = NextResponse.json({
+    message: '✅ Compte demo connecté automatiquement',
+    email,
+    password,
+  })
+
+  res.cookies.set('session', sessionToken, {
+    httpOnly: true,
+    path: '/',
+    expires,
+  })
+
+  return res
+}

@@ -1,4 +1,4 @@
-"use client"
+'use client'
 import { ModeProvider } from '@/components/ModeProvider'
 import { SelectionProvider } from '@/components/SelectionProvider'
 import ThemeBackground from '@/components/ThemeBackground'

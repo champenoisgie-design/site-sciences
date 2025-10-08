@@ -1,0 +1,48 @@
+import prisma from '@/lib/prisma'
+import { cookies } from 'next/headers'
+import bcrypt from 'bcryptjs'
+import { randomBytes } from 'crypto'
+
+// Récupère l'utilisateur à partir du cookie "session"
+export async function getUserFromSession() {
+  const cookieStore = await cookies() // API Next 15 -> async
+  const sessionToken = cookieStore.get('session')?.value
+  if (!sessionToken) return null
+
+  // 1) Trouver la session
+  try {
+    const session = await prisma.session.findUnique({
+      where: { sessionToken },
+    })
+    if (!session) return null
+  } catch (e) {
+    return null
+  }
+
+  // 2) Charger l'utilisateur lié via userId
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+  })
+  return user
+}
+
+// Alias de compatibilité
+export const getCurrentUser = getUserFromSession
+
+// Vérifier un mot de passe
+export async function verifyPassword(password: string, hash: string) {
+  return bcrypt.compare(password, hash)
+}
+
+// Créer une session pour un utilisateur
+export async function createSessionForUser(userId: string) {
+  const token = randomBytes(32).toString('hex')
+  const session = await prisma.session.create({
+    data: {
+      sessionToken: token,
+      userId,
+      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 jours
+    },
+  })
+  return session
+}

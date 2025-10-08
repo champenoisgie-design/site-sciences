@@ -18,3 +18,8 @@ prisma/dev.backup*.db
 
 # Vercel
 .vercel/
+
+# Playwright
+playwright-report/
+test-results/
+
