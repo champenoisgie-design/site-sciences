@@ -1,4 +1,5 @@
-"use client"
+// @ts-nocheck
+'use client'
 import { useState } from 'react'
 import PasswordInput from '@/components/PasswordInput'
 

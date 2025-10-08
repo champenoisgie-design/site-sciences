@@ -14,7 +14,7 @@ export default async function Page() {
     <section>
       <h1 className="mb-4 text-2xl font-bold">Mon compte</h1>
       <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
-        Connecté en tant que <b>{user.name || user.email}</b>
+        Connecté en tant que <b>{(user as any).name || user.email}</b>
       </p>
       <h2 className="text-lg font-semibold mb-2">Changer mon mot de passe</h2>
       <ChangePasswordForm />

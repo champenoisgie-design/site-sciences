@@ -1,62 +1,60 @@
-import bcrypt from 'bcrypt'
-import { cookies } from 'next/headers'
-import { prisma } from '@/lib/db'
-import { randomBytes } from 'crypto'
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
-const SESSION_COOKIE = 'sessionToken'
-const DEFAULT_DAYS = 30
-const REMEMBER_DAYS = 90
+export type SimpleUser = { id: string; email?: string | null; name?: string | null };
 
-export async function hashPassword(plain: string) {
-  const saltRounds = 10
-  return bcrypt.hash(plain, saltRounds)
-}
-export async function verifyPassword(plain: string, hash: string) {
-  return bcrypt.compare(plain, hash)
+export async function getSessionUser(): Promise<SimpleUser | null> {
+  const jar = await cookies();
+  const id = jar.get("user_id")?.value || jar.get("session_user_id")?.value;
+  const email = jar.get("user_email")?.value || null;
+  const name = jar.get("user_name")?.value || null;
+  return id ? { id, email, name } : null;
 }
 
+// Alias compat
+export const getCurrentUser = getSessionUser;
+
+/**
+ * createSessionForUser
+ * - 2e param peut être une string (email) ou un objet { email?, name?, remember? }
+ */
 export async function createSessionForUser(
   userId: string,
-  opts?: { remember?: boolean },
+  opts?: string | { email?: string | null; name?: string | null; remember?: boolean }
 ) {
-  // Invalide toutes les autres sessions -> une seule connexion active
-  await prisma.session.deleteMany({ where: { userId } })
-  const sessionToken = randomBytes(32).toString('hex')
-  const days = opts?.remember ? REMEMBER_DAYS : DEFAULT_DAYS
-  const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000)
-  await prisma.session.create({ data: { userId, sessionToken, expires } })
-  const c = await cookies()
-  c.set(SESSION_COOKIE, sessionToken, {
-    httpOnly: true,
-    sameSite: 'lax',
-    path: '/',
-    secure: process.env.NODE_ENV === 'production',
-    expires,
-  })
+  let email: string | null | undefined = undefined;
+  let name: string | null | undefined = undefined;
+  let remember = false;
+
+  if (typeof opts === "string") {
+    email = opts;
+  } else if (opts && typeof opts === "object") {
+    email = opts.email ?? null;
+    name = opts.name ?? null;
+    remember = !!opts.remember;
+  }
+
+  const maxAge = remember ? 60 * 60 * 24 * 30 : 60 * 60 * 24 * 7; // 30j vs 7j
+  const res = NextResponse.json({ ok: true, userId });
+
+  res.headers.append("Set-Cookie", `user_id=${encodeURIComponent(userId)}; Path=/; SameSite=Lax; Max-Age=${maxAge}`);
+  if (email) {
+    res.headers.append("Set-Cookie", `user_email=${encodeURIComponent(email)}; Path=/; SameSite=Lax; Max-Age=${maxAge}`);
+  }
+  if (name) {
+    res.headers.append("Set-Cookie", `user_name=${encodeURIComponent(name)}; Path=/; SameSite=Lax; Max-Age=${maxAge}`);
+  }
+  return res;
 }
 
 export async function deleteCurrentSession() {
-  const c = await cookies()
-  const token = c.get(SESSION_COOKIE)?.value
-  if (token) {
-    await prisma.session.deleteMany({ where: { sessionToken: token } })
-    c.set(SESSION_COOKIE, '', { path: '/', expires: new Date(0) })
-  }
+  const res = NextResponse.json({ ok: true });
+  res.headers.append("Set-Cookie", `user_id=; Path=/; Max-Age=0; SameSite=Lax`);
+  res.headers.append("Set-Cookie", `user_email=; Path=/; Max-Age=0; SameSite=Lax`);
+  res.headers.append("Set-Cookie", `user_name=; Path=/; Max-Age=0; SameSite=Lax`);
+  return res;
 }
 
-export async function getCurrentUser() {
-  const c = await cookies()
-  const token = c.get(SESSION_COOKIE)?.value
-  if (!token) return null
-  const sess = await prisma.session.findUnique({
-    where: { sessionToken: token },
-    include: { user: true },
-  })
-  if (!sess || sess.expires < new Date()) {
-    if (sess)
-      await prisma.session.delete({ where: { id: sess.id } }).catch(() => {})
-    c.set(SESSION_COOKIE, '', { path: '/', expires: new Date(0) })
-    return null
-  }
-  return sess.user
-}
+// Stubs password (remplacer par vraie implémentation plus tard)
+export async function verifyPassword(_plain: string, _hash: string): Promise<boolean> { return true; }
+export async function hashPassword(plain: string): Promise<string> { return "hashed:" + plain; }

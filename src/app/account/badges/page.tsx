@@ -1,62 +1,90 @@
-import { PrismaClient } from '@prisma/client';
-import { getCurrentUser } from '@/lib/auth';
-
-export const runtime = 'nodejs';
-
-const prisma = (globalThis as any).__prisma || new PrismaClient();
-if (process.env.NODE_ENV !== 'production') (globalThis as any).__prisma = prisma;
+import prisma from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
+import { getCurrentUser } from '@/lib/auth'
 
 export default async function BadgesPage() {
-  const user = await getCurrentUser();
+  const user = await getCurrentUser()
   if (!user) {
     return (
-      <div>
-        <h1 className="text-2xl font-bold mb-2">Mes badges</h1>
-        <p className="text-sm text-zinc-500">Veuillez vous connecter.</p>
+      <div className="max-w-2xl mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-4">Mes badges</h1>
+        <p>Veuillez vous connecter pour voir vos badges.</p>
       </div>
-    );
+    )
   }
 
-  const rows = await prisma.userBadge.findMany({
-    where: { userId: user.id },
-    include: { badge: true },
-    orderBy: { earnedAt: 'desc' },
-  });
+  let items: {
+    id: string
+    userId: string
+    badgeKey: string
+    earnedAt: any
+    metaJson: string | null
+    badge: any | null
+  }[] = []
+
+  const hasModel = Boolean((prisma as any).userBadge)
+  if (hasModel) {
+    const rows = await (prisma as any).userBadge.findMany({
+      where: { userId: user.id },
+      orderBy: { earnedAt: 'desc' },
+      include: { Badge: true },
+    })
+    items = rows
+  } else {
+    // Fallback SQL (jointure manuelle) — fonctionne même si le client n'expose pas userBadge
+    const rows = await prisma.$queryRaw<Array<any>>`
+      SELECT ub.id, ub.userId, ub.badgeKey, ub.earnedAt, ub.metaJson,
+             b.key as b_key, b.name as b_name, b.description as b_description, b.icon as b_icon, b.points as b_points
+      FROM UserBadge ub
+      LEFT JOIN Badge b ON b.key = ub.badgeKey
+      WHERE ub.userId = ${user.id}
+      ORDER BY ub.earnedAt DESC
+    `
+    items = rows.map((r) => ({
+      id: r.id,
+      userId: r.userId,
+      badgeKey: r.badgeKey,
+      earnedAt: r.earnedAt,
+      metaJson: r.metaJson ?? null,
+      badge: r.b_key
+        ? {
+            key: r.b_key,
+            name: r.b_name,
+            description: r.b_description,
+            icon: r.b_icon,
+            points: r.b_points,
+          }
+        : null,
+    }))
+  }
 
   return (
-    <div>
+    <div className="max-w-2xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Mes badges</h1>
-      {rows.length === 0 ? (
-        <p className="text-sm text-zinc-500">
-          Aucun badge pour le moment. Abonne-toi et reviens ici 👀
-        </p>
+      {items.length === 0 ? (
+        <p>Vous n’avez pas encore de badge.</p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {rows.map((r) => (
-            <div key={r.id} className="rounded-2xl border p-4">
-              <div className="flex items-center gap-3">
-                <div className="text-3xl">{r.badge.icon ?? '🏅'}</div>
-                <div>
-                  <div className="font-semibold">{r.badge.name}</div>
-                  <div className="text-xs text-zinc-500">
-                    Obtenu le {new Date(r.earnedAt).toLocaleDateString()}
-                  </div>
-                </div>
+        <ul className="space-y-3">
+          {items.map((it) => (
+            <li key={it.id} className="p-4 border rounded">
+              <div className="font-semibold">
+                {it.badge?.name ?? it.badgeKey}
               </div>
-              {r.badge.description && (
-                <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-                  {r.badge.description}
-                </p>
-              )}
-              {typeof r.badge.points === 'number' && (
-                <div className="mt-3 inline-block rounded-full border px-2 py-0.5 text-xs">
-                  {r.badge.points} pts
-                </div>
-              )}
-            </div>
+              {it.badge?.description ? (
+                <p className="text-sm mt-1">{it.badge.description}</p>
+              ) : null}
+              <div className="text-sm text-gray-600">
+                Obtenu le{' '}
+                {new Intl.DateTimeFormat('fr-FR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: '2-digit',
+                }).format(new Date(it.earnedAt))}
+              </div>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
-  );
+  )
 }

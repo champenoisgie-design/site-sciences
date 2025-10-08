@@ -1,27 +1,42 @@
-"use client"
-import * as React from 'react'
+'use client'
 
-type Props = React.InputHTMLAttributes<HTMLInputElement> & { label?: string }
+import { useState } from 'react'
 
-export default function PasswordInput({ label, ...props }: Props) {
-  const ref = React.useRef<HTMLInputElement>(null)
-  const [visible, setVisible] = React.useState(false)
+type Props = {
+  label: string
+  value: string
+  onChange: (val: string) => void
+  required?: boolean
+  name?: string
+}
+
+export default function PasswordInput({
+  label,
+  value,
+  onChange,
+  required,
+  name,
+}: Props) {
+  const [show, setShow] = useState(false)
+
   return (
     <div>
-      {label && <label className="text-sm">{label}</label>}
+      <label className="block text-sm font-medium mb-1">{label}</label>
       <div className="relative">
         <input
-          ref={ref}
-          type={visible ? 'text' : 'password'}
-          className="mt-1 w-full rounded border bg-transparent px-3 py-2 pr-16"
-          {...props}
+          name={name}
+          type={show ? 'text' : 'password'}
+          className="w-full border rounded p-2 pr-10"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          required={required}
         />
         <button
           type="button"
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-xs underline"
-          onClick={() => setVisible((v) => !v)}
+          onClick={() => setShow(!show)}
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-gray-500"
         >
-          {visible ? 'masquer' : 'afficher'}
+          {show ? '🙈' : '👁️'}
         </button>
       </div>
     </div>

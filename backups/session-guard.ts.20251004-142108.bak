@@ -1,0 +1,40 @@
+// src/lib/session-guard.ts
+import { prisma } from "./prisma";
+import { deviceFingerprintCoarse } from "./privacy";
+
+export async function hasFamilyMode(userId: string) {
+  const fam = await prisma.familyMembership.fin############################################
+# 2) (Re)curn true;
+
+  // fallback heuristique : subjectsJson.family === true sur une sub active
+  const sub = await prisma.subscription.findFirst({
+    where: { userId, status: "active", currentPeriodEnd: { gte: new Date() } },
+    orderBy: { currentPeriodEnd: "desc" }
+  });
+  if (sub?.subjectsJson) {
+    try {
+      const j = JSON.parse(sub.subjectsJson);
+      if (j && typeof j === "object" && j.family === true) return true;
+    } catch {}
+  }
+  return false;
+}
+
+export function fpFromHeaders(h: Headers, ua?: string | null, tz?: string | null): string {
+  const ipRaw = h.get("x-forwarded-for") || h.get("x-real-ip") || "";
+  const ip = ipRaw.split(",")[0].trim();
+  const lang = h.get("accept-language") || "";
+  const userAgent = ua || h.get("user-agent") || "";
+  const timezone = tz || (Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC");
+  return deviceFingerprintCoarse({ userAgent, language: lang, timezone, ip });
+}
+
+export async function activeDeviceCount(userId: string) {
+  const since = new Date(Date.now() - 30*24*3600*1000); // 30j
+  const devices = await prisma.deviceSession.groupBy({
+    by: ["deviceHash"],
+    where: { userId, revokedAt: null, lastSeenAt: { gte: since } },
+    _count: { deviceHash: true }
+  });
+  return devices.length;
+}

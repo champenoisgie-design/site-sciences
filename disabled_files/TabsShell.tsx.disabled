@@ -1,0 +1,61 @@
+'use client'
+
+import { useState } from 'react'
+import PricingClient from '@/components/pricing/PricingClient'
+import PricingSkins from '@/components/pricing/PricingSkins'
+import PricingModes from '@/components/pricing/PricingModes'
+import PlanComparison from '@/components/pricing/PlanComparison'
+import type { PricesSnapshot } from '@/lib/pricing'
+
+type Props = {
+  entPlans: string[]
+  entSubjects: string[]
+  entModes: string[]
+  entSkins: string[]
+  entPacks: string[]
+  prices?: PricesSnapshot
+}
+
+const TABS = [
+  { key: 'abos', label: 'Abonnements' },
+  { key: 'skins', label: 'Skins & Thèmes' },
+  { key: 'modes', label: 'Modes d’apprentissage' },
+] as const
+
+export default function TabsShell(props: Props) {
+  const [tab, setTab] = useState<(typeof TABS)[number]['key']>('abos')
+
+  return (
+    <section>
+      <div className="flex gap-3 mb-4">
+        {TABS.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`px-3 py-1 rounded-full border ${
+              tab === t.key ? 'bg-black text-white' : 'bg-white'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'abos' && (
+        <>
+          <PlanComparison prices={props.prices} />
+          <div className="h-6" />
+          <PricingClient
+            prices={props.prices}
+            entPlans={props.entPlans}
+            entSubjects={props.entSubjects}
+            entPacks={props.entPacks}
+          />
+        </>
+      )}
+
+      {tab === 'skins' && <PricingSkins entSkins={props.entSkins} />}
+      {tab === 'modes' && <PricingModes entModes={props.entModes} />}
+    </section>
+  )
+}
