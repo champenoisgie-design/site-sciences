@@ -1,4 +1,4 @@
-"use client"
+'use client'
 import { useMemo, useState } from 'react'
 import { gradesBySchool, subjects } from '@/lib/school'
 import type { School, AnyGrade, Subject } from '@/lib/school'

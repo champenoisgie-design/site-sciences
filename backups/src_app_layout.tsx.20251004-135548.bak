@@ -1,0 +1,37 @@
+
+import TrialBannerServer from "../components/trial/TrialBannerServer";
+import type { Metadata } from 'next'
+import './addons.css'
+import './globals.css'
+import LearningModeProvider from './_providers/LearningModeProvider'
+import SelectionProviderClient from './_providers/SelectionProviderClient'
+import Header from '@/components/Header'
+import { cookies } from 'next/headers'
+
+export const metadata: Metadata = {
+  title: 'Site Sciences',
+  description: 'Apprentissages adaptés',
+}
+
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const jar = await cookies()
+  const skin = jar.get('skin_active')?.value || 'default'
+
+  return (
+    <html lang="fr" data-skin={skin}>
+      <body>
+      <TrialBannerServer />
+        <LearningModeProvider>
+          <SelectionProviderClient>
+            <Header />
+            <main className="min-h-dvh">{children}</main>
+          </SelectionProviderClient>
+        </LearningModeProvider>
+      </body>
+    </html>
+  )
+}

@@ -1,0 +1,68 @@
+"use client";
+import React from "react";
+import Link from "next/link";
+
+export default function HomePage() {
+  const [email, setEmail] = React.useState("");
+
+  return (
+    <div className="homepage-root">
+      {/* Bandeau CTA — essai gratuit 3 jours */}
+      <div className="w-full bg-gradient-to-r from-white to-gray-50 border-b">
+        <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-bold">Inscris-toi et teste gratuitement pendant 3 jours</h2>
+            <p className="text-gray-700 text-sm">Sans carte bancaire. Accès immédiat à un aperçu des contenus.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              value={email}
+              onChange={(e)=>setEmail(e.target.value)}
+              placeholder="Ton e-mail"
+              className="border rounded px-3 py-2 w-64"
+              aria-label="Adresse e-mail"
+            />
+            <Link
+              href="/register"
+              className="px-4 py-2 rounded-md bg-black text-white hover:opacity-90"
+              aria-label="Commencer l’essai gratuit"
+            >
+              Commencer l’essai
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Contenu historique (restauré) */}
+      <main className="max-w-5xl mx-auto px-4 py-8 space-y-8">
+        <section className="space-y-2">
+          <h1 className="text-2xl font-bold">Site Sciences</h1>
+          <p className="text-gray-700">
+            Cours, exercices, suivi et modes d’apprentissage adaptés (TDAH, DYS, TSA, HPI).
+          </p>
+        </section>
+
+        <section className="grid sm:grid-cols-3 gap-4">
+          <HomeCard title="Exercices en solo" href="/solo" desc="S’entraîner en autonomie, avec correction guidée." />
+          <HomeCard title="Tutoriels" href="/tutoriels" desc="Méthodes pas-à-pas et rappels de cours." />
+          <HomeCard title="Ta sélection" href="/selection" desc="Reprends où tu t’étais arrêté." />
+        </section>
+
+        <section className="grid sm:grid-cols-3 gap-4">
+          <HomeCard title="Ton niveau" href="/niveau" desc="Parcours adapté à ta classe." />
+          <HomeCard title="Ta progression" href="/progression" desc="Visualise tes acquis et ce qu’il reste à faire." />
+          <HomeCard title="Tarifs" href="/tarifs" desc="Compare les fonctionnalités et construis ton panier." />
+        </section>
+      </main>
+    </div>
+  );
+}
+
+function HomeCard({ title, desc, href }: { title: string; desc: string; href: string }) {
+  return (
+    <Link href={href} className="block border rounded-xl p-4 hover:bg-gray-50">
+      <div className="text-lg font-semibold">{title}</div>
+      <p className="text-sm text-gray-700 mt-1">{desc}</p>
+    </Link>
+  );
+}

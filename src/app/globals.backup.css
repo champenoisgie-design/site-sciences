@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @import 'tailwindcss';
 @tailwind base;
 @tailwind components;
@@ -98,9 +98,37 @@ body {
 }
 
 /* Thèmes par matière (fond discret) */
-:root{ --wm-opacity:0.06 }
-html[data-subject="Maths"] body{ background-image: radial-gradient(circle at 10% 10%, rgba(0,0,0,var(--wm-opacity)) 1px, transparent 1px); background-size: 28px 28px; }
-html[data-subject="Physique-Chimie"] body{ background-image: linear-gradient(90deg, rgba(0,0,0,var(--wm-opacity)) 1px, transparent 1px), linear-gradient(0deg, rgba(0,0,0,var(--wm-opacity)) 1px, transparent 1px); background-size: 32px 32px; }
-html[data-subject="SVT"] body{ background-image: radial-gradient(ellipse at center, rgba(0,0,0,var(--wm-opacity)) 1px, transparent 1px); background-size: 22px 22px; }
-@media (prefers-color-scheme: dark){ html[data-subject] body{ background-image:none; }}
-
+:root {
+  --wm-opacity: 0.06;
+}
+html[data-subject='Maths'] body {
+  background-image: radial-gradient(
+    circle at 10% 10%,
+    rgba(0, 0, 0, var(--wm-opacity)) 1px,
+    transparent 1px
+  );
+  background-size: 28px 28px;
+}
+html[data-subject='Physique-Chimie'] body {
+  background-image:
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, var(--wm-opacity)) 1px,
+      transparent 1px
+    ),
+    linear-gradient(0deg, rgba(0, 0, 0, var(--wm-opacity)) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+html[data-subject='SVT'] body {
+  background-image: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, var(--wm-opacity)) 1px,
+    transparent 1px
+  );
+  background-size: 22px 22px;
+}
+@media (prefers-color-scheme: dark) {
+  html[data-subject] body {
+    background-image: none;
+  }
+}

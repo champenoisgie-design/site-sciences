@@ -1,39 +1,46 @@
-"use client"
-import { useMode } from './ModeProvider'
-import type { UIMode } from './ModeProvider'
-import React from 'react'
+'use client'
 
-const LABELS: Record<UIMode, string> = {
-  normal: 'Normal',
-  tdah: 'TDAH',
-  dys: 'DYS',
-  tsa: 'TSA',
-  hpi: 'HPI',
+const MODES = [
+  { value: 'normal', label: 'Normal' },
+  { value: 'tdah', label: 'TDAH' },
+  { value: 'dys', label: 'DYS' },
+  { value: 'tsa', label: 'TSA' },
+  { value: 'hpi', label: 'HPI' },
+]
+
+function getCookie(name: string) {
+  if (typeof document === 'undefined') return null
+  const m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'))
+  return m ? decodeURIComponent(m[2]) : null
 }
 
 export default function ModeSwitcher() {
-  const { mode, setMode } = useMode()
+  const initial = (getCookie('learningMode') as string) || 'normal'
 
   function onChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const next = e.target.value as UIMode
-    setMode(next)
+    const value = e.target.value
+    if (value === 'normal') {
+      document.cookie = `learningMode=normal;path=/;max-age=${60 * 60 * 24 * 365}`
+      window.dispatchEvent(
+        new CustomEvent('learning-mode:changed', { detail: value }),
+      )
+      return
+    }
+    window.location.href = `/tarifs/mode-d-apprentissage/${value}`
   }
 
   return (
-    <div className="card space-y-2">
-      <div className="text-sm text-muted">Mode d’apprentissage</div>
-      <select
-        value={mode}
-        onChange={onChange}
-        className="btn w-full"
-        aria-label="Choisir un mode"
-      >
-        {(Object.keys(LABELS) as UIMode[]).map((k) => (
-          <option key={k} value={k}>
-            {LABELS[k]}
-          </option>
-        ))}
-      </select>
-    </div>
+    <select
+      className="pill-select"
+      defaultValue={initial}
+      onChange={onChange}
+      aria-label="Mode d’apprentissage"
+    >
+      {MODES.map((m) => (
+        <option key={m.value} value={m.value}>
+          {m.label}
+        </option>
+      ))}
+    </select>
   )
 }

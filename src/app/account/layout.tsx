@@ -1,5 +1,5 @@
-import { ReactNode } from "react";
-import AccountTabs from "@/components/AccountTabs";
+import { ReactNode } from 'react'
+import AccountTabs from '@/components/AccountTabs'
 
 export default function AccountLayout({ children }: { children: ReactNode }) {
   return (
@@ -7,5 +7,5 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
       <AccountTabs />
       {children}
     </div>
-  );
+  )
 }

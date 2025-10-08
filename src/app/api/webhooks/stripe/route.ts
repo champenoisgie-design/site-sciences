@@ -1,62 +1,48 @@
-import { headers } from 'next/headers'
-import { NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
-import { prisma } from '@/lib/db'
-
-export const runtime = 'nodejs'
+import { NextResponse } from "next/server";
+import Stripe from "stripe";
+import { prisma } from "@/lib/prisma";
+import { withMeta } from "@/lib/prisma-safe";
+import { genId } from "@/lib/id";
 
 export async function POST(req: Request) {
-  const body = await req.text()
-  const sig = (await headers()).get('stripe-signature')
-  const secret = process.env.STRIPE_WEBHOOK_SECRET
-  if (!sig || !secret) return NextResponse.json({ error: 'missing_signature' }, { status: 400 })
+  const sig = req.headers.get("stripe-signature") || "";
+  const buf = await req.text();
 
-  let event
-  try { event = stripe.webhooks.constructEvent(body, sig, secret) }
-  catch (err:any) { return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 }) }
+  const secret = process.env.STRIPE_WEBHOOK_SECRET || "";
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {});
 
+  let event: Stripe.Event;
   try {
-    switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object as any
-        const subscriptionId = session.subscription as string | undefined
-        const userId = session.metadata?.userId as string | undefined
-        const plan = session.metadata?.plan as string | undefined
-        const grade = session.metadata?.grade as string | undefined
-        const subjects = session.metadata?.subjects as string | undefined
-        if (subscriptionId && userId && plan && grade && subjects) {
-          const sub = await stripe.subscriptions.retrieve(subscriptionId)
-          const periodEnd = sub.current_period_end ? new Date(sub.current_period_end * 1000) : null
-          await prisma.subscription.upsert({
-            where: { stripeSubscriptionId: subscriptionId },
-            update: { status: sub.status, currentPeriodEnd: periodEnd },
-            create: {
-              userId, plan, grade,
-              subjectsJson: subjects,
-              status: sub.status,
-              stripeSubscriptionId: subscriptionId,
-              currentPeriodEnd: periodEnd,
-            },
-          })
-        }
-        break
-      }
-      case 'customer.subscription.updated':
-      case 'customer.subscription.deleted': {
-        const sub = event.data.object as any
-        const periodEnd = sub.current_period_end ? new Date(sub.current_period_end * 1000) : null
-        await prisma.subscription.updateMany({
-          where: { stripeSubscriptionId: sub.id },
-          data: { status: sub.status, currentPeriodEnd: periodEnd },
-        })
-        break
-      }
-      default: break
-    }
-  } catch (e) {
-    console.error('[Stripe webhook handler error]', e)
-    return NextResponse.json({ received: true, error: 'handler_failed' }, { status: 500 })
+    event = stripe.webhooks.constructEvent(buf, sig, secret);
+  } catch (err: any) {
+    return NextResponse.json({ ok: false, error: `Invalid signature: ${err?.message}` }, { status: 400 });
   }
 
-  return NextResponse.json({ received: true })
+  if (event.type === "customer.subscription.created" || event.type === "customer.subscription.updated") {
+    const stripeSub: Stripe.Subscription = event.data.object as Stripe.Subscription;
+
+    const userId = (stripeSub.metadata?.userId as string) || "user_demo";
+    const plan = (stripeSub.items?.data?.[0]?.price?.nickname || stripeSub.items?.data?.[0]?.price?.id || "normal").toString();
+    const currentPeriodEnd = (stripeSub as any).current_period_end ? new Date((stripeSub as any).current_period_end * 1000) : null;
+
+    await prisma.subscription.upsert({
+      where: { stripeSubscriptionId: stripeSub.id },
+      create: withMeta({
+        id: genId("sub"),
+        userId,
+        plan,
+        grade: "",                // placeholder si ton modèle l'exige
+        subjectsJson: "[]",       // placeholder si ton modèle l'exige
+        status: stripeSub.status,
+        stripeSubscriptionId: stripeSub.id,
+        currentPeriodEnd
+      }, "sub"),
+      update: { status: stripeSub.status, currentPeriodEnd, updatedAt: new Date() }
+    });
+
+    return NextResponse.json({ ok: true });
+  }
+
+  // autres événements: 200 OK no-op
+  return NextResponse.json({ ok: true });
 }

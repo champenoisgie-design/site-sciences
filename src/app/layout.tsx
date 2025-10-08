@@ -1,35 +1,62 @@
-import type { Metadata } from 'next'
-import './globals.css'
-import Header from '@/components/Header'
-import { Providers } from './providers'
 
+import SessionGate from "../components/security/SessionGate";
+
+import ActiveSubBannerServer from "../components/trial/ActiveSubBannerServer";
+
+import FooterLegal from "../components/layout/FooterLegal";
+
+import TrialBannerServer from "../components/trial/TrialBannerServer";
+import type { Metadata } from 'next'
+import './addons.css'
+import './globals.css'
+import LearningModeProvider from './_providers/LearningModeProvider'
+import SelectionProviderClient from './_providers/SelectionProviderClient'
+import Header from '@/components/Header'
+import { cookies } from 'next/headers'
+
+/* __DUP_METADATA_START__
+export const metadata = {
+  title: "Site Sciences — Révisions intelligentes",
+  description: "Fiches, exercices et suivi d’assiduité. Essai gratuit 3 jours. Anti-partage: 1 session (2 avec Famille).",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+  openGraph: {
+    title: "Site Sciences",
+    description: "Fiches, exercices, XP & badges. Essai 3 jours.",
+    url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+    type: "website",
+  },
+  robots: { index: true, follow: true },
+} satisfies import('next').Metadata;
+
+
+__DUP_METADATA_END__ */
 export const metadata: Metadata = {
   title: 'Site Sciences',
-  description: 'Ressources, tutoriels et entraînements adaptés à ton niveau.',
+  description: 'Apprentissages adaptés',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const jar = await cookies()
+  const skin = jar.get('skin_active')?.value || 'default'
+
   return (
-    <html lang="fr" suppressHydrationWarning>
+    <html lang="fr" data-skin={skin}>
       <body>
-        <Providers>
-          <Header />
-          <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
-          <footer className="border-t mt-10 py-6 text-center text-sm text-zinc-500">
-            © 2025 Site Sciences — Tous droits réservés
-            <div className="mt-2 flex justify-center gap-4">
-              <a href="/cgu">CGU</a>
-              <a href="/confidentialite">Confidentialité</a>
-              <a href="/mentions-legales">Mentions légales</a>
-              <a href="/cookies">Cookies</a>
-            </div>
-          </footer>
-        </Providers>
-      </body>
+      <SessionGate />
+      <TrialBannerServer />
+      <ActiveSubBannerServer />
+        <LearningModeProvider>
+          <SelectionProviderClient>
+            <Header />
+            <main className="min-h-dvh">{children}</main>
+          </SelectionProviderClient>
+        </LearningModeProvider>
+            <FooterLegal />
+    </body>
     </html>
   )
 }

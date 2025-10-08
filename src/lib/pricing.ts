@@ -1,77 +1,96 @@
-import type { AnyGrade, Subject } from '@/lib/school'
-import { subjects } from '@/lib/school'
+export type PlanKey = "normal" | "gold" | "platine";
 
-/**
- * Barème de base (€/mois) PAR MATIÈRE et PAR NIVEAU — prix égaux entre matières.
- * (Tu peux ajuster ces montants facilement ici.)
- */
-export const basePriceByGrade: Record<AnyGrade, number> = {
-  '6e': 12,
-  '5e': 12,
-  '4e': 13,
-  '3e': 13,
-  '2nde': 15,
-  '1re': 17,
-  Terminale: 19,
-}
-
-/**
- * Multiplicateurs par niveau d’abonnement.
- * Normal = 1x, Gold = 1.3x, Platine = 1.7x (à adapter si besoin).
- */
-export type Tier = 'Normal' | 'Gold' | 'Platine'
-export const tierMultiplier: Record<Tier, number> = {
-  Normal: 1.0,
-  Gold: 1.3,
-  Platine: 1.7,
-}
-
-/**
- * Avantages affichés par palier (pour la page).
- */
-export const tierBenefits: Record<Tier, string[]> = {
-  Normal: [
-    'Tutoriels complets',
-    'Entraînement Solo illimité',
-    'Suivi XP/Badges',
-  ],
-  Gold: [
-    'Tout le palier Normal',
-    'Support prioritaire e-mail',
-    'Défis mensuels exclusifs',
-  ],
-  Platine: [
-    'Tout le palier Gold',
-    'Live mensuel (groupe)',
-    'Parcours & révisions avancés',
-  ],
-}
-
-/** Prix par matière pour un niveau & un palier (arrondi au €). */
-export function pricePerSubject(grade: AnyGrade, tier: Tier): number {
-  const base = basePriceByGrade[grade]
-  return Math.round(base * tierMultiplier[tier])
-}
-
-/** Détail des prix par matière. */
-export function perSubjectPricing(grade: AnyGrade, tier: Tier) {
-  return subjects.map((s: Subject) => ({
-    subject: s,
-    price: pricePerSubject(grade, tier),
-  }))
-}
-
-/**
- * Pack 3 matières : prend la somme des 3 matières, puis applique une remise.
- * Ici: -20% sur le total (toutes classes), à ajuster si souhaité.
- */
-export function pack3Subjects(grade: AnyGrade, tier: Tier) {
-  const unit = pricePerSubject(grade, tier)
-  const sum = unit * subjects.length
-  const discounted = Math.round(sum * 0.8) // 20% de remise
-  return {
-    packPrice: discounted,
-    saved: sum - discounted,
-    sum,
+// Prix indicatifs (interne)
+export const PRICING = {
+  currency: "EUR",
+  plans: {
+    normal: { monthly: 12.99, yearly: 9.99 },
+    gold:   { monthly: 17.99, yearly: 14.99 },
+    platine:{ monthly: 24.99, yearly: 24.99 },
+  },
+  features: [
+    { key: "lessons_exercises", label: "Accès complet aux leçons et exercices" },
+    { key: "tdah_focus", label: "Mode Focus (timers, pas-à-pas, UI anti-distraction)" },
+    { key: "entry_tests", label: "Tests de départ / révision intelligente" },
+    { key: "memo_ready", label: "Fiches mémo prêtes (PDF avec filigrane)" },
+    { key: "memo_builder", label: "Fiches mémo personnalisées" },
+    { key: "skins_badges", label: "Skins & badges de progression" },
+    { key: "parents_dashboard", label: "Tableau Parents + e-mails de suivi" },
+    { key: "support_priority", label: "Support prioritaire" },
+    { key: "selected_mode_scope", label: "Mode sélectionné valable pour toutes les matières et tous les niveaux" },
+    { key: "complementary_modes", label: "Modes complémentaires (TDAH, DYS, TSA, HPI) — add-ons valables pour toutes matières et tous niveaux" }
+  ] as const,
+  matrix: {
+    normal: {
+      selected_mode_scope: true,
+      complementary_modes: false,
+      lessons_exercises: true,
+      memo_ready: true,
+      memo_builder: false,
+      parents_dashboard: false,
+      entry_tests: true,
+      tdah_focus: true,
+      skins_badges: true,
+      support_priority: false
+    },
+    gold: {
+      selected_mode_scope: true,
+      complementary_modes: false,
+      lessons_exercises: true,
+      memo_ready: true,
+      memo_builder: true,
+      parents_dashboard: true,
+      entry_tests: true,
+      tdah_focus: true,
+      skins_badges: true,
+      support_priority: false
+    },
+    platine: {
+      selected_mode_scope: true,
+      complementary_modes: false,
+      lessons_exercises: true,
+      memo_ready: true,
+      memo_builder: true,
+      parents_dashboard: true,
+      entry_tests: true,
+      tdah_focus: true,
+      skins_badges: true,
+      support_priority: true
+    }
   }
-}
+} as const;
+
+// Prix de base utilisés par le panier
+// Achat à l’unité (chapitre)
+export const CHAPTER_PRICING = {
+  perChapterEUR: 1.99
+} as const;
+
+
+export const SUBJECT_PASS = {
+  monthly: 6.99,
+  yearly: 4.99,
+  note: "Accès à une matière sur tous les niveaux."
+} as const;
+
+export const LEVEL_PASS = {
+  monthly: 7.99,
+  yearly: 5.99,
+  note: "Accès à toutes les matières d’un niveau."
+} as const;
+
+export const MODE_ADDON = {
+  monthly: 2.0, // prix indicatif par mode complémentaire
+} as const;
+
+// Bundles & promos (panier)
+export const CART_RULES = {
+  familyDiscountPct: 0.10, // -10% de réduction quand Mode famille est activé
+  discount3Subjects: 0.10, // -10% si ≥ 3 matières
+  discount4Subjects: 0.20, // -20% si 4 matières
+  familyModeMultiplier: 1.0, // +30% pour mode famille
+  first100PromoPct: 0.20, // -20% pour les 100 premiers abonnés
+} as const;
+
+// Compat anciens imports
+export type PricesSnapshot = any;

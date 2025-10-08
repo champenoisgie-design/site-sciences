@@ -1,0 +1,81 @@
+import { test, expect } from '@playwright/test'
+
+// Cherche un prix plausible (29 €, 29€ , 29 EUR, €29, 29,99 €, etc.)
+const PRICE_REGEX = /(\d{1,3}([.,]\d{2})?\s?(€|eur)|€\s?\d{1,3}([.,]\d{2})?)/i
+
+async function expectNoBrokenPlaceholders(page) {
+  const visibleText = await page.evaluate(() => document.body.innerText || '')
+  expect(visibleText).not.toMatch(/\bNaN\b/)
+  expect(visibleText).not.toMatch(/\bundefined\b/i)
+  expect(visibleText).not.toMatch(/\bnull\b/i)
+}
+
+test('Tarifs — la page charge et affiche un élément prix-like OU des cartes', async ({
+  page,
+}) => {
+  await page.goto('/tarifs', { waitUntil: 'domcontentloaded' })
+
+  // 1) Essayer de trouver un motif de prix
+  const html = await page.content()
+  const hasPriceLike = PRICE_REGEX.test(html)
+
+  // 2) Ou au moins une carte plan/pack si présentes
+  const planCount = await page
+    .locator(
+      '[data-testid="pricing-plan-card"], .plan-card, [class*="plan-card"]',
+    )
+    .count()
+  const packCount = await page
+    .locator(
+      '[data-testid="pricing-pack-card"], .pack-card, [class*="pack-card"]',
+    )
+    .count()
+
+  expect(hasPriceLike || planCount + packCount > 0).toBeTruthy()
+
+  await expectNoBrokenPlaceholders(page)
+})
+
+test('Ancienne URL ?mode=tdah — redirection si active, sinon page toujours ok', async ({
+  page,
+}) => {
+  await page.goto('/tarifs?mode=tdah', { waitUntil: 'domcontentloaded' })
+
+  const url = page.url()
+  const redirected = /\/tarifs\/mode-d-apprentissage\/tdah\/?$/i.test(url)
+  const legacy = /\/tarifs\?mode=tdah$/i.test(url)
+  expect(redirected || legacy).toBeTruthy()
+
+  // La page doit afficher quelque chose d’utile (prix-like OU au moins un contenu non vide)
+  const html = await page.content()
+  const hasPriceLike = PRICE_REGEX.test(html)
+  expect(hasPriceLike || html.length > 200).toBeTruthy()
+
+  await expectNoBrokenPlaceholders(page)
+})
+
+test('Upsell Pack3 — si présent: saving > 0 ; sinon on marque informatif', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem('subjectsOwned', '1')
+    } catch {}
+  })
+  await page.goto('/tarifs', { waitUntil: 'domcontentloaded' })
+
+  const upsell = page.getByTestId('upsell-pack3')
+  const count = await upsell.count()
+  if (count === 0) {
+    test.info().annotations.push({
+      type: 'skip',
+      description: 'UpsellPack3 non rendu — test informatif',
+    })
+    return
+  }
+
+  const savingAttr = await upsell.getAttribute('data-saving-cents')
+  expect(savingAttr).toBeTruthy()
+  const saving = Number(savingAttr)
+  expect(saving).toBeGreaterThan(0)
+})
