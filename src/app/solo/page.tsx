@@ -1,4 +1,4 @@
-"use client"
+'use client'
 import { useSelection } from '@/components/SelectionProvider'
 import { exercises } from '@/lib/exercises'
 

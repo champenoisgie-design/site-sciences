@@ -1,4 +1,4 @@
-"use client"
+'use client'
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import type { Selection, School, AnyGrade, Subject } from '@/lib/school'
 import { gradesBySchool } from '@/lib/school'

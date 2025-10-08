@@ -1,0 +1,22 @@
+/* Utilitaires discrets en plus de Tailwind (optionnels) */
+.card {
+  @apply border rounded-2xl p-5 bg-white shadow-sm;
+}
+.badge {
+  @apply inline-block text-xs px-2 py-0.5 rounded bg-emerald-100 text-emerald-700;
+}
+.chip {
+  @apply inline-flex items-center gap-1 px-2 py-1 rounded-full bg-zinc-100 text-zinc-700 text-xs;
+}
+.section {
+  @apply border rounded-2xl p-5 bg-white;
+}
+.grid-2 {
+  @apply grid sm:grid-cols-2 gap-4;
+}
+.grid-3 {
+  @apply grid sm:grid-cols-2 lg:grid-cols-3 gap-4;
+}
+.container {
+  @apply max-w-6xl mx-auto;
+}

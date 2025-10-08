@@ -1,0 +1,48 @@
+// src/app/api/stripe/webhook/route.ts
+import { NextResponse } from "next/server";
+import { headers } from "next/headers";
+import { stripe } from "../../../../lib/stripe";
+import { prisma } from "../../../../lib/prisma";
+import { withMeta } from "../../../../lib/prisma-safe";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+export async function POST(req: Request) {
+  const sig = headers().get("stripe-signature");
+  if (!sig) return NextResponse.json({ ok:false, error:"missing_signature" }, { status:400 });
+
+  const text = await req.text();
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(text, sig, process.env.STRIPE_WEBHOOK_SECRET || "");
+  } catch (err:any) {
+    return NextResponse.json({ ok:false, error:`invalid_signature: ${err.message}` }, { status:400 });
+  }
+
+  // Minimal: on traite checkout.session.completed
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object as any;
+    const userId = session?.metadata?.userId;
+    const plan = String(session?.metadata?.plan || "normal");
+    const now = new Date();
+    const periodEnd = new Date(now.getTime() + 30*24*3600*1000);
+
+    if (userId) {
+      // Active un abonnement plan=plan pendant 30 jours
+      await prisma.subscription.create({
+        data: withMeta({
+          userId,
+          status: "active",
+          plan,
+          grade: "all",
+          subjectsJson: "[]",
+          stripeSubscriptionId: null,
+          currentPeriodEnd: periodEnd
+        })
+      });
+    }
+  }
+
+  return NextResponse.json({ ok:true });
+}

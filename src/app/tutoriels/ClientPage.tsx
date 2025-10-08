@@ -1,4 +1,4 @@
-"use client"
+'use client'
 import Link from 'next/link'
 import { tutorials } from '@/lib/tutorials'
 import { useSelection } from '@/components/SelectionProvider'

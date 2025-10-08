@@ -1,26 +1,26 @@
-import { PrismaClient } from "@prisma/client";
-import { getCurrentUser } from "@/lib/auth";
+import { PrismaClient } from '@prisma/client'
+import { getCurrentUser } from '@/lib/auth'
 
-export const runtime = "nodejs";
+export const runtime = 'nodejs'
 
-const prisma = (globalThis as any).__prisma || new PrismaClient();
-if (process.env.NODE_ENV !== "production") (globalThis as any).__prisma = prisma;
+const prisma = (globalThis as any).__prisma || new PrismaClient()
+if (process.env.NODE_ENV !== 'production') (globalThis as any).__prisma = prisma
 
 export default async function AccountHome() {
-  const user = await getCurrentUser();
+  const user = await getCurrentUser()
   if (!user) {
     return (
       <section>
         <h1 className="text-2xl font-bold mb-2">Mon compte</h1>
         <p className="text-sm text-zinc-500">Veuillez vous connecter.</p>
       </section>
-    );
+    )
   }
 
   const progresses = await prisma.userProgress.findMany({
     where: { userId: user.id },
-    orderBy: [{ grade: "asc" }, { subject: "asc" }],
-  });
+    orderBy: [{ grade: 'asc' }, { subject: 'asc' }],
+  })
 
   return (
     <section>
@@ -30,22 +30,33 @@ export default async function AccountHome() {
         <p className="text-sm text-zinc-500">Pas encore de progression.</p>
       ) : (
         <div className="space-y-4">
-          {progresses.map((p) => {
+          {progresses.map((p: any) => {
             const badges = (() => {
-              try { return p.badgesJson ? JSON.parse(p.badgesJson) : []; } catch { return []; }
-            })();
+              try {
+                return p.badgesJson ? JSON.parse(p.badgesJson) : []
+              } catch {
+                return []
+              }
+            })()
             return (
               <div key={p.id} className="rounded-2xl border p-4">
-                <div className="font-semibold">{p.subject} · {p.grade}</div>
-                <div className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">XP : {p.xp ?? 0}</div>
+                <div className="font-semibold">
+                  {p.subject} · {p.grade}
+                </div>
+                <div className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                  XP : {p.xp ?? 0}
+                </div>
                 <div className="text-sm text-zinc-600 dark:text-zinc-400">
-                  Badges : {Array.isArray(badges) && badges.length > 0 ? badges.join(", ") : "—"}
+                  Badges :{' '}
+                  {Array.isArray(badges) && badges.length > 0
+                    ? badges.join(', ')
+                    : '—'}
                 </div>
               </div>
-            );
+            )
           })}
         </div>
       )}
     </section>
-  );
+  )
 }

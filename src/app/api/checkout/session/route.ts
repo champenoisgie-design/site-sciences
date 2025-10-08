@@ -1,101 +1,60 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
-import { PLAN_TO_PRICE } from '@/lib/stripePlans';
-import { getCurrentUser } from '@/lib/auth';
-import { PrismaClient } from '@prisma/client';
+// src/app/api/checkout/session/route.ts
+import { NextResponse } from "next/server";
+import { stripe } from "@/lib/stripe";
+import { getSessionUser } from "@/lib/auth";
 
-export const runtime = 'nodejs';
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-// Prisma local avec cache en dev
-const prisma = (globalThis as any).__prisma || new PrismaClient();
-if (process.env.NODE_ENV !== 'production') (globalThis as any).__prisma = prisma;
+const PRICE = {
+  normal:   process.env.STRIPE_PRICE_NORMAL_MONTHLY || "",
+  gold:     process.env.STRIPE_PRICE_GOLD_MONTHLY   || "",
+  platine:  process.env.STRIPE_PRICE_PLATINE_MONTHLY|| "",
+};
 
-type Plan = 'BRONZE' | 'GOLD' | 'PLATINE';
-type Kind = 'SUBJECT' | 'PACK3';
+export async function POST(req: Request) {
+  const user = await getSessionUser().catch(()=>null);
+  if (!user) return NextResponse.json({ ok:false, error:"not_authenticated" }, { status: 401 });
+  const body = await req.json().catch(()=> ({} as any));
 
-export async function POST(req: NextRequest) {
+  const url = new URL(req.url);
+  const origin = process.env.NEXT_PUBLIC_SITE_URL || `${url.protocol}//${url.host}`;
+
+  const plan = String(body.plan || "normal") as "normal"|"gold"|"platine";
+  const priceId = PRICE[plan];
+
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-    }
-
-    const body = await req.json().catch(() => ({}));
-    const plan = (body?.plan ?? 'BRONZE') as Plan;
-    const kind = (body?.kind ?? 'SUBJECT') as Kind;
-    const subject = typeof body?.subject === 'string' ? body.subject : undefined;
-    const grade = typeof body?.grade === 'string' ? body.grade : undefined;
-
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-
-    // S'assure d'avoir un customer Stripe
-    let stripeCustomerId = (user as any).stripeCustomerId as string | null | undefined;
-    if (!stripeCustomerId) {
-      const customer = await stripe.customers.create({
-        email: user.email ?? undefined,
-        metadata: { userId: user.id },
-      });
-      stripeCustomerId = customer.id;
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { stripeCustomerId },
-      });
-    }
-
-    let session;
-
-    if (kind === 'PACK3') {
-      // Prix pack 3 matières : on reçoit packPrice (en euros) depuis le client.
-      // (Pour aller plus loin: tu peux recalculer côté serveur selon tes règles.)
-      const packPrice = Number(body?.packPrice);
-      if (!grade || !Number.isFinite(packPrice) || packPrice <= 0) {
-        return NextResponse.json({ error: 'Invalid pack payload' }, { status: 400 });
-      }
-
-      session = await stripe.checkout.sessions.create({
-        mode: 'subscription',
-        customer: stripeCustomerId!,
-        line_items: [
-          {
-            price_data: {
-              currency: 'eur',
-              recurring: { interval: 'month' },
-              product_data: {
-                name: `Pack 3 matières — ${grade} — ${plan}`,
-              },
-              unit_amount: Math.round(packPrice * 100),
-            },
-            quantity: 1,
-          },
-        ],
-        allow_promotion_codes: true,
-        success_url: `${baseUrl}/account?checkout=success`,
-        cancel_url: `${baseUrl}/tarifs?checkout=cancel`,
-        metadata: { userId: user.id, plan, kind, grade },
-        subscription_data: { metadata: { userId: user.id, plan, kind, grade } },
-      });
-    } else {
-      // Abonnement par matière “unitaire”
-      const priceId = PLAN_TO_PRICE[plan];
-      if (!priceId) {
-        return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
-      }
-
-      session = await stripe.checkout.sessions.create({
-        mode: 'subscription',
-        customer: stripeCustomerId!,
+    if (priceId) {
+      const session = await stripe.checkout.sessions.create({
+        mode: "subscription",
         line_items: [{ price: priceId, quantity: 1 }],
-        allow_promotion_codes: true,
-        success_url: `${baseUrl}/account?checkout=success`,
-        cancel_url: `${baseUrl}/tarifs?checkout=cancel`,
-        metadata: { userId: user.id, plan, kind, grade, subject },
-        subscription_data: { metadata: { userId: user.id, plan, kind, grade, subject } },
+        success_url: `${origin}/panier?checkout=success`,
+        cancel_url: `${origin}/panier?checkout=cancel`,
+        customer_email: user.email || undefined,
+        metadata: { userId: user.id, plan },
       });
+      return NextResponse.json({ ok:true, url: session.url });
+    } else {
+      // Fallback test à montant libre si pas de PRICE configuré
+      const amount = Number(body.amount || 0);
+      const session = await stripe.checkout.sessions.create({
+        mode: "payment",
+        line_items: [{
+          price_data: {
+            currency: "eur",
+            product_data: { name: `Site Sciences (${plan})` },
+            unit_amount: Math.max(100, Math.round(amount*100))
+          },
+          quantity: 1
+        }],
+        success_url: `${origin}/panier?checkout=success`,
+        cancel_url: `${origin}/panier?checkout=cancel`,
+        customer_email: user.email || undefined,
+        metadata: { userId: user.id, plan },
+      });
+      return NextResponse.json({ ok:true, url: session.url });
     }
-
-    return NextResponse.json({ id: session.id, url: session.url });
-  } catch (err) {
-    console.error('CHECKOUT_SESSION_ERROR', err);
-    return NextResponse.json({ error: 'Internal Error' }, { status: 500 });
+  } catch (e:any) {
+    return NextResponse.json({ ok:false, error: e?.message || "stripe_error" }, { status: 500 });
   }
 }

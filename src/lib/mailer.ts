@@ -1,36 +1,33 @@
-import nodemailer from 'nodemailer'
+import { Resend } from "resend";
 
-function hasSmtpEnv() {
-  return !!(
-    process.env.SMTP_HOST &&
-    process.env.SMTP_PORT &&
-    process.env.SMTP_USER &&
-    process.env.SMTP_PASS
-  )
-}
+const apiKey = process.env.RESEND_API_KEY;
+const fromDefault = process.env.MAIL_FROM || "Site Sciences <no-reply@example.com>";
+
+let resend: Resend | null = null;
+if (apiKey && apiKey.trim()) resend = new Resend(apiKey.trim());
 
 export async function sendMail(opts: {
-  to: string
-  subject: string
-  text?: string
-  html?: string
+  to: string | string[];
+  subject: string;
+  html?: string;
+  text?: string;
+  from?: string;
 }) {
-  if (!hasSmtpEnv()) {
-    console.log('[MAIL:FALLBACK]', {
-      to: opts.to,
-      subject: opts.subject,
-      text: opts.text,
-      html: opts.html,
-    })
-    return { ok: true, transport: 'console' }
+  const { to, subject, html, text, from } = opts;
+  const payload = { from: from || fromDefault, to, subject, html, text };
+
+  if (!resend) {
+    // Fallback dev
+    // eslint-disable-next-line no-console
+    console.log("✉️ [DEV MAIL] →", JSON.stringify(payload, null, 2));
+    return { id: "dev-mail", delivered: false };
   }
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST!,
-    port: Number(process.env.SMTP_PORT || 587),
-    secure: false,
-    auth: { user: process.env.SMTP_USER!, pass: process.env.SMTP_PASS! },
-  })
-  const from = process.env.SMTP_FROM || 'no-reply@example.com'
-  await transporter.sendMail({ from, ...opts })
-  return { ok: true, transport: 'smtp' }
+
+  const result = await resend.emails.send(payload as any);
+  const id = (result as any)?.data?.id ?? null;
+  const delivered = !((result as any)?.error);
+  return { id, delivered };
 }
+
+/** Compat: certains fichiers importaient sendEmailConsole → alias vers sendMail */
+export const sendEmailConsole = sendMail;

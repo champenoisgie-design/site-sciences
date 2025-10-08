@@ -1,57 +1,76 @@
-"use client";
-import { useState } from "react";
+'use client'
+
+import { useState } from 'react'
+import PasswordInput from '@/components/PasswordInput'
 
 export default function PasswordPage() {
-  const [current, setCurrent] = useState("");
-  const [next, setNext] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true); setErr(null); setMsg(null);
-    try {
-      const res = await fetch("/api/auth/change-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ currentPassword: current, newPassword: next }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Erreur inconnue");
-      setMsg("Mot de passe mis à jour ✅");
-      setCurrent(""); setNext("");
-    } catch (e:any) {
-      setErr(e.message || "Échec de la mise à jour");
-    } finally {
-      setLoading(false);
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (newPassword !== confirmPassword) {
+      setMessage('❌ Les nouveaux mots de passe ne correspondent pas.')
+      return
+    }
+    setLoading(true)
+    setMessage(null)
+
+    const res = await fetch('/api/auth/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentPassword, newPassword }),
+    })
+
+    setLoading(false)
+    if (res.ok) {
+      setMessage('✅ Mot de passe changé avec succès !')
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+    } else {
+      const data = await res.json()
+      setMessage(
+        `❌ ${data.error || 'Erreur lors du changement de mot de passe.'}`,
+      )
     }
   }
 
   return (
-    <section>
-      <h1 className="text-2xl font-bold mb-4">Changer le mot de passe</h1>
+    <div className="max-w-md mx-auto p-6">
+      <h1 className="text-xl font-semibold mb-4">Changer mon mot de passe</h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <PasswordInput
+          label="Mot de passe actuel"
+          value={currentPassword}
+          onChange={setCurrentPassword}
+          required
+        />
+        <PasswordInput
+          label="Nouveau mot de passe"
+          value={newPassword}
+          onChange={setNewPassword}
+          required
+        />
+        <PasswordInput
+          label="Confirmer le nouveau mot de passe"
+          value={confirmPassword}
+          onChange={setConfirmPassword}
+          required
+        />
 
-      <form onSubmit={onSubmit} className="rounded-2xl border p-4 max-w-xl space-y-4">
-        <div>
-          <label className="block text-sm mb-1">Mot de passe actuel</label>
-          <input type="password" value={current} onChange={e=>setCurrent(e.target.value)}
-                 className="w-full rounded-md border px-3 py-2" required />
-        </div>
-        <div>
-          <label className="block text-sm mb-1">Nouveau mot de passe (min. 8)</label>
-          <input type="password" value={next} onChange={e=>setNext(e.target.value)}
-                 className="w-full rounded-md border px-3 py-2" minLength={8} required />
-        </div>
-        <button disabled={loading} className="rounded-xl border px-4 py-2">
-          {loading ? "Mise à jour..." : "Mettre à jour"}
+        <button
+          type="submit"
+          disabled={loading}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          {loading ? 'En cours...' : 'Changer le mot de passe'}
         </button>
-        <p className="text-xs text-zinc-500">
-          Par sécurité, vos autres appareils pourront nécessiter une reconnexion.
-        </p>
-        {msg && <div className="text-sm text-green-600">{msg}</div>}
-        {err && <div className="text-sm text-red-600">{err}</div>}
       </form>
-    </section>
-  );
+      {message && <p className="mt-4 text-sm">{message}</p>}
+    </div>
+  )
 }

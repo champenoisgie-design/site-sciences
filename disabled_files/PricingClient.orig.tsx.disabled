@@ -1,0 +1,286 @@
+'use client'
+
+import Link from 'next/link'
+import { useMemo, useState } from 'react'
+import type { PricesSnapshot } from '@/lib/pricing'
+
+type Props = {
+  entPlans: string[]
+  entSubjects: string[]
+  entPacks?: string[]
+  prices?: PricesSnapshot
+}
+
+const BASE: PricesSnapshot = {
+  plans: { normal: 5.99, gold: 9.99, platine: 14.99 },
+  packs: { pack3: 29.99, family: 19.99 },
+  mode: 4.99,
+  promo: { enabled: true, text: '–20% le 1er mois' },
+  guarantee: 'Garantie 14 jours remboursé',
+}
+
+function withDefaults(p?: PricesSnapshot): PricesSnapshot {
+  return {
+    ...BASE,
+    ...(p ?? {}),
+    plans: { ...BASE.plans, ...(p?.plans ?? {}) },
+    packs: { ...BASE.packs, ...(p?.packs ?? {}) },
+    promo: { ...BASE.promo, ...(p?.promo ?? {}) },
+  }
+}
+
+const SUBJECTS_COLLEGE: Record<string, { key: string; label: string }[]> = {
+  '6e': [
+    { key: 'maths-6e', label: 'Mathématiques' },
+    { key: 'pc-6e', label: 'Physique-Chimie' },
+    { key: 'svt-6e', label: 'SVT' },
+  ],
+  '5e': [
+    { key: 'maths-5e', label: 'Mathématiques' },
+    { key: 'pc-5e', label: 'Physique-Chimie' },
+    { key: 'svt-5e', label: 'SVT' },
+  ],
+  '4e': [
+    { key: 'maths-4e', label: 'Mathématiques' },
+    { key: 'pc-4e', label: 'Physique-Chimie' },
+    { key: 'svt-4e', label: 'SVT' },
+  ],
+  '3e': [
+    { key: 'maths-3e', label: 'Mathématiques' },
+    { key: 'pc-3e', label: 'Physique-Chimie' },
+    { key: 'svt-3e', label: 'SVT' },
+  ],
+}
+
+const SUBJECTS_LYCEE: Record<string, { key: string; label: string }[]> = {
+  '2nde': [
+    { key: 'maths-2nde', label: 'Mathématiques' },
+    { key: 'pc-2nde', label: 'Physique-Chimie' },
+    { key: 'svt-2nde', label: 'SVT' },
+  ],
+  '1re': [
+    { key: 'maths-1re', label: 'Mathématiques' },
+    { key: 'pc-1re', label: 'Physique-Chimie' },
+    { key: 'svt-1re', label: 'SVT' },
+  ],
+  terminale: [
+    { key: 'maths-term', label: 'Mathématiques' },
+    { key: 'pc-term', label: 'Physique-Chimie' },
+    { key: 'svt-term', label: 'SVT' },
+  ],
+}
+
+const PLANS = ['normal', 'gold', 'platine'] as const
+
+function Pill({ active, onClick, children }: any) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 py-1 rounded-full border ${active ? 'bg-black text-white' : 'bg-white'}`}
+    >
+      {children}
+    </button>
+  )
+}
+
+function Already({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="text-xs px-2 py-1 rounded bg-green-100 text-green-700">
+      {children}
+    </span>
+  )
+}
+
+export default function PricingClient(props: any) {
+  const pr = withDefaults(
+    props?.prices ?? {
+      plans: { normal: 0, gold: 0, platine: 0 },
+      modes: {},
+      skins: {},
+      packs: {},
+    },
+  )
+  // ── SAFE: entitlements fallbacks from cookies (évite "xxx is not defined")
+  const readCSV = (cookieName: string) => {
+    if (typeof document === 'undefined') return [] as string[]
+    const esc = cookieName.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
+    const m = document.cookie.match(new RegExp('(?:^|; )' + esc + '=([^;]+)'))
+    return m ? decodeURIComponent(m[1]).split(',').filter(Boolean) : []
+  }
+  const entPacks = readCSV('ent_packs')
+  const entSubjects = readCSV('ent_subjects')
+  const entModes = readCSV('ent_modes')
+  const entSkins = readCSV('ent_skins')
+  const entPlans = readCSV('ent_plans')
+  // ── SAFE: entitlements fallbacks (évite "entPacks is not defined")
+  const entPacks = (() => {
+    if (typeof document === 'undefined') return []
+    const m = document.cookie.match(/(?:^|; )ent_packs=([^;]+)/)
+    return m ? decodeURIComponent(m[1]).split(',').filter(Boolean) : []
+  })()
+
+  const [ecole, setEcole] = useState<'college' | 'lycee'>('lycee')
+  const [classe, setClasse] = useState<string>('2nde')
+  const [plan, setPlan] = useState<(typeof PLANS)[number]>('normal')
+
+  const classes =
+    ecole === 'college'
+      ? ['6e', '5e', '4e', '3e']
+      : ['2nde', '1re', 'terminale']
+  const subjects = useMemo(() => {
+    return ecole === 'college'
+      ? (SUBJECTS_COLLEGE[classe] ?? SUBJECTS_COLLEGE['6e'])
+      : (SUBJECTS_LYCEE[classe] ?? SUBJECTS_LYCEE['2nde'])
+  }, [ecole, classe])
+
+  const planPrice = (() => {
+    const selectedPlan = (props?.plan ?? 'normal').toLowerCase()
+    const p =
+      typeof pr !== 'undefined' && pr?.plans
+        ? pr.plans
+        : { normal: 0, gold: 0, platine: 0 }
+    return selectedPlan === 'normal'
+      ? p.normal
+      : selectedPlan === 'gold'
+        ? p.gold
+        : p.platine
+  })()
+  const prices = props?.prices ?? {
+    plans: { normal: 0, gold: 0, platine: 0 },
+    modes: {},
+    skins: {},
+    packs: {},
+  }
+  return (
+    <div className="space-y-6">
+      {/* Switchers */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="text-sm text-gray-600">École :</div>
+        <div className="flex gap-2">
+          <Pill
+            active={ecole === 'college'}
+            onClick={() => {
+              setEcole('college')
+              setClasse('6e')
+            }}
+          >
+            Collège
+          </Pill>
+          <Pill
+            active={ecole === 'lycee'}
+            onClick={() => {
+              setEcole('lycee')
+              setClasse('2nde')
+            }}
+          >
+            Lycée
+          </Pill>
+        </div>
+
+        <div className="text-sm text-gray-600 ml-4">Classe :</div>
+        <div className="flex gap-2">
+          {classes.map((c) => (
+            <Pill key={c} active={classe === c} onClick={() => setClasse(c)}>
+              {c}
+            </Pill>
+          ))}
+        </div>
+
+        <div className="text-sm text-gray-600 ml-4">Plan :</div>
+        <div className="flex gap-2">
+          {PLANS.map((p) => (
+            <Pill key={p} active={plan === p} onClick={() => setPlan(p)}>
+              {p[0].toUpperCase() + p.slice(1)}
+            </Pill>
+          ))}
+        </div>
+      </div>
+
+      {/* Packs */}
+      <h3 className="text-lg font-semibold">Packs</h3>
+      <div className="grid sm:grid-cols-2 gap-3">
+        {[
+          {
+            key: 'pack3',
+            label: 'Pack 3 matières',
+            desc: 'Accès complet à 3 matières avec remise',
+            price: pr.packs.pack3,
+          },
+          {
+            key: 'family',
+            label: 'Pack Famille',
+            desc: 'Plusieurs comptes enfants',
+            price: pr.packs.family,
+          },
+        ].map((p) => (
+          <div key={p.key} className="border rounded-2xl p-4 relative">
+            {pr.promo.enabled && (
+              <span className="absolute -top-2 -left-2 rotate-[-8deg] bg-rose-200 text-xs font-semibold rounded px-2 py-0.5">
+                {pr.promo.text}
+              </span>
+            )}
+            <div className="font-semibold">{p.label}</div>
+            <div className="text-sm text-gray-600">{p.desc}</div>
+            <div className="mt-2 text-xl font-bold">
+              {p.price.toFixed(2)} €
+              <span className="text-sm font-normal">/mois</span>
+            </div>
+            <div className="mt-2">
+              {entPacks.includes(p.key) ? (
+                <Already>Déjà inclus</Already>
+              ) : (
+                <Link
+                  href={`/api/checkout?type=pack&key=${p.key}`}
+                  className="text-sm underline"
+                >
+                  S’abonner
+                </Link>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Matières */}
+      <h3 className="text-lg font-semibold">
+        Matières — {ecole === 'college' ? 'Collège' : 'Lycée'} • {classe}
+      </h3>
+      <div className="grid sm:grid-cols-2 gap-3">
+        {subjects.map((s) => (
+          <div key={s.key} className="border rounded-2xl p-4 relative">
+            {pr.promo.enabled && (
+              <span className="absolute -top-2 -left-2 rotate-[-8deg] bg-rose-200 text-xs font-semibold rounded px-2 py-0.5">
+                {pr.promo.text}
+              </span>
+            )}
+            <div className="font-medium">{s.label}</div>
+            <div className="text-sm text-gray-600">
+              Cours, exercices et suivi.
+            </div>
+
+            <div className="mt-2 text-xl font-bold">
+              {planPrice.toFixed(2)} €
+              <span className="text-sm font-normal">/mois</span>
+              <span className="ml-2 text-xs text-zinc-500">
+                ({plan[0].toUpperCase() + plan.slice(1)})
+              </span>
+            </div>
+
+            <div className="mt-2">
+              {entSubjects.includes(s.key) ? (
+                <Already>Déjà inclus</Already>
+              ) : (
+                <Link
+                  href={`/api/checkout?type=subject&key=${s.key}&plan=${plan}`}
+                  className="text-sm underline"
+                >
+                  S’abonner ({plan[0].toUpperCase() + plan.slice(1)})
+                </Link>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}

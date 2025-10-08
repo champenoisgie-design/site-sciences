@@ -1,0 +1,180 @@
+import Link from "next/link";
+
+export const metadata = {
+  title: "Site Sciences — Apprendre, s'entraîner, progresser",
+  description: "Exercices en solo, tutoriels, suivi de progression. Essai gratuit 3 jours.",
+};
+
+export default function HomePage() {
+  return (
+    <main className="min-h-screen bg-background text-foreground">
+      {/* Bandeau essai gratuit */}
+      <div className="w-full bg-emerald-600 text-white">
+        <div className="mx-auto max-w-6xl px-4 py-2 text-center text-sm sm:text-base">
+          <strong>Inscris-toi et teste gratuitement pendant 3 jours</strong>
+        </div>
+      </div>
+
+      {/* Hero + CTA */}
+      <section className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
+        <div className="grid items-center gap-8 md:grid-cols-2">
+          <div>
+            <h1 className="text-3xl font-bold sm:text-4xl md:text-5xl">
+              Apprendre plus vite, progresser sereinement
+            </h1>
+            <p className="mt-4 text-muted-foreground">
+              Exercices guidés, tutoriels clairs, suivi par niveau et matières. Les modes
+              complémentaires (TDAH, DYS, TSA, HPI) s’appliquent à <em>toutes</em> les matières et
+              à <em>tous</em> les niveaux.
+            </p>
+
+            {/* CTA e-mail non bloquant : simple redirection vers /register */}
+            <form action="/register" method="get" className="mt-6 flex max-w-md gap-2">
+              <input
+                type="email"
+                name="email"
+                placeholder="Ton e-mail"
+                className="w-full rounded-lg border px-3 py-2 outline-none focus:ring"
+                aria-label="Adresse e-mail"
+              />
+              <button
+                type="submit"
+                className="rounded-lg border border-emerald-700 bg-emerald-600 px-4 py-2 font-medium text-white hover:bg-emerald-700"
+              >
+                Commencer l’essai
+              </button>
+            </form>
+
+            <div className="mt-4 text-sm text-muted-foreground">
+              Déjà inscrit ?{" "}
+              <Link href="/login" className="underline underline-offset-4 hover:text-foreground">
+                Me connecter
+              </Link>
+            </div>
+
+            <div className="mt-6">
+              <Link
+                href="/panier"
+                className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 hover:bg-accent"
+              >
+                Choisir mon niveau et ma matière
+              </Link>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border p-6">
+            <ul className="space-y-3 text-sm">
+              <li>✔️ Exercices interactifs et explications pas à pas</li>
+              <li>✔️ Suivi de ta progression par chapitre</li>
+              <li>✔️ Conseils adaptés (TDAH, DYS, TSA, HPI) activables</li>
+              <li>✔️ Mode Famille disponible avec remise dédiée</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* Sections historiques (cartes) */}
+      <section className="mx-auto max-w-6xl px-4 pb-12">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {/* Exercices en solo */}
+          <article className="rounded-2xl border p-6">
+            <h2 className="text-xl font-semibold">Exercices en solo</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Entraîne-toi à ton rythme avec corrections immédiates et rappels de méthode.
+            </p>
+            <div className="mt-4">
+              <Link href="/exercices" className="text-emerald-700 underline underline-offset-4">
+                Voir les exercices
+              </Link>
+            </div>
+          </article>
+
+          {/* Tutoriels */}
+          <article className="rounded-2xl border p-6">
+            <h2 className="text-xl font-semibold">Tutoriels</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Des explications claires, des exemples progressifs et des astuces pour éviter
+              les pièges fréquents.
+            </p>
+            <div className="mt-4">
+              <Link href="/tutoriels" className="text-emerald-700 underline underline-offset-4">
+                Parcourir les tutoriels
+              </Link>
+            </div>
+          </article>
+
+          {/* Ta sélection */}
+          <article className="rounded-2xl border p-6">
+            <h2 className="text-xl font-semibold">Ta sélection</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Retrouve rapidement les chapitres et exercices que tu as mis en favori.
+            </p>
+            <div className="mt-4">
+              <Link href="/favoris" className="text-emerald-700 underline underline-offset-4">
+                Ouvrir mes favoris
+              </Link>
+            </div>
+          </article>
+
+          {/* Ton niveau */}
+          <article className="rounded-2xl border p-6">
+            <h2 className="text-xl font-semibold">Ton niveau</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Choisis (ou change) ton niveau à tout moment. Le contenu s’adapte automatiquement.
+            </p>
+            <div className="mt-4">
+              <Link href="/profil/niveau" className="text-emerald-700 underline underline-offset-4">
+                Régler mon niveau
+              </Link>
+            </div>
+          </article>
+
+          {/* Ta progression */}
+          <article className="rounded-2xl border p-6">
+            <h2 className="text-xl font-semibold">Ta progression</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Suis tes réussites, identifie les notions à revoir et débloque des badges.
+            </p>
+            <div className="mt-4">
+              <Link href="/progression" className="text-emerald-700 underline underline-offset-4">
+                Voir mon suivi
+              </Link>
+            </div>
+          </article>
+
+          {/* Modes complémentaires */}
+          <article className="rounded-2xl border p-6">
+            <h2 className="text-xl font-semibold">Modes complémentaires</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Active TDAH, DYS, TSA ou HPI : ces modes s’appliquent à toutes les matières et tous
+              les niveaux, pour des consignes et un rythme adaptés.
+            </p>
+            <div className="mt-4">
+              <Link href="/faq" className="text-emerald-700 underline underline-offset-4">
+                En savoir plus
+              </Link>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      {/* Bandeau bas de page vers Tarifs */}
+      <section className="mx-auto max-w-6xl px-4 pb-16">
+        <div className="rounded-2xl border p-6 text-center">
+          <p className="text-sm text-muted-foreground">
+            Tu veux comparer les plans ? Les prix s’ajustent en direct selon tes matières,
+            ton niveau et le mode Famille.
+          </p>
+          <div className="mt-4">
+            <Link
+              href="/tarifs"
+              className="inline-flex items-center rounded-lg border px-4 py-2 hover:bg-accent"
+            >
+              Voir les tarifs
+            </Link>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
