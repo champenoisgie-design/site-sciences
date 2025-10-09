@@ -1,5 +1,3 @@
-import { React, type  ReactNode, useEffect, useState } from "react";
-import { normalizePriceForCart, applySubjectsCount } from "@/lib/pricing/apply";
 import { applySubjectsCount } from "@/lib/pricing-math";
 import { useSelection } from "@/components/SelectionProvider";
 'use client'
@@ -15,52 +13,13 @@ type PlanKey = keyof typeof PRICING.plans
 type PackKey = keyof typeof PRICING.packs
 
 export default function PricingClient() {
-  // Dynamic subjects count: reads from window/__SELECTION__ or localStorage keys.
-  const [subjectsCount, setSubjectsCount] = useState(1);
-  useEffect(() => {
-    try {
-      let n = 1;
-      const w = globalThis;
-      // Priority: explicit dev/testing override
-      if (typeof (w).__SUBJECTS_COUNT__ === 'number' && (w).__SUBJECTS_COUNT__ >= 1) {
-        n = Math.floor((w).__SUBJECTS_COUNT__);
-      } else {
-        // Try common localStorage keys used by the selection UI
-        const keys = ['selectedSubjects','subjects','subjects_selected','matieres','matières','matieres_selectionnees'];
-        for (const k of keys) {
-          const raw = w.localStorage?.getItem(k);
-          if (!raw) continue;
-          try {
-            const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed) && parsed.length > 0) { n = parsed.length; break; }
-            if (typeof parsed === 'number' && parsed >= 1) { n = Math.floor(parsed); break; }
-          } catch {
-            // fallback: comma-separated string
-            if (typeof raw === 'string' && raw.trim()) {
-              const arr = raw.split(',').map(x=>x.trim()).filter(Boolean);
-              if (arr.length) { n = arr.length; break; }
-            }
-          }
-        }
-        // Try a data-attribute on <body data-subjects-count="N">
-        const attr = w.document?.body?.getAttribute?.('data-subjects-count');
-        const maybe = Number(attr);
-        if (Number.isFinite(maybe) && maybe >= 1) n = Math.floor(maybe);
-      }
-      setSubjectsCount(n);
-    } catch {}
-  }, []);
-
   
   // Détermination du nombre de matières sélectionnées
   const selection: any = (() => {
     try {
       const maybe = (typeof useSelection === 'function') ? useSelection() : null;
       if (maybe) return maybe;
-      
-  // normalize any price-like object with subject multiplier
-  function makePriceForSubjects(p:any){ return normalizePriceForCart(p, subjectsCount); }
-  return (globalThis ?? {});
+      return (globalThis ?? {});
     } catch { return {}; }
   })();
 
