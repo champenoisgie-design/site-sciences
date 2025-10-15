@@ -1,3 +1,4 @@
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
@@ -34,3 +35,21 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Préviews marketing (non intrusif)
+
+- `/preview/hero` : bandeau d’accueil (Hero) prêt à être inclus sur la Home.
+
+- `/preview/tarifs` : comparatif Mensuel vs Annuel.
+
+- `/preview/faq` : entrée FAQ (mode valable pour toutes les matières).
+
+
+Pour intégrer plus tard sur les pages réelles :
+
+```tsx
+// Exemple Home: src/app/page.tsx
+// import Hero from "@/components/marketing/Hero";
+// <Hero />
+```
+
