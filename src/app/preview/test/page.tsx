@@ -6,6 +6,9 @@ type Subject = "maths" | "physique" | "chimie" | "svt";
 type Level = "6e" | "5e" | "4e" | "3e" | "2nde" | "1ere" | "term";
 type Mode = "normal" | "tdah" | "dys" | "tsa" | "hpi";
 
+type Exercise = { title: string; prompt: string; hint: string; solution: string };
+type ExoMap = Partial<Record<Subject, Partial<Record<Level, Partial<Record<Theme, Exercise>>>>>>;
+
 const THEMES: { key: Theme; label: string }[] = [
   { key: "onepiece", label: "One Piece" },
   { key: "mario",    label: "Mario" },
@@ -32,8 +35,8 @@ const MODES: { key: Mode; label: string }[] = [
   { key: "hpi",    label: "HPI" },
 ];
 
-/** Démo d'exercices dynamiques (échantillon) */
-const EXO: Record<Subject, Record<Level, Record<Theme, { title: string; prompt: string; hint: string; solution: string }>>> = {
+/** Démo d'exercices dynamiques (typage permissif pour la preview) */
+const EXO: ExoMap = {
   maths: {
     "6e": {
       onepiece: { title: "Fractions à bord du Sunny", prompt: "Nami partage 3/4 entre 2 amis. Part de chacun ?", hint: "3/4 ÷ 2", solution: "3/8" },
@@ -49,8 +52,7 @@ const EXO: Record<Subject, Record<Level, Record<Theme, { title: string; prompt: 
       onepiece: { title: "Complexes", prompt: "(2+i)(1-2i) ?", hint: "ac−bd + i(ad+bc)", solution: "4-3i" },
       mario:    { title: "Probas binomiale", prompt: "p=0,6, n=3, P(X≥2) ?", hint: "1−(P0+P1)", solution: "0,648" },
       dbz:      { title: "Limites", prompt: "lim (3x²−x)/(x²+1)", hint: "Coeff dominants", solution: "3" },
-    },
-    "5e":{},"4e":{},"3e":{},"1ere":{}
+    }
   },
   physique: {
     "6e": {
@@ -67,9 +69,8 @@ const EXO: Record<Subject, Record<Level, Record<Theme, { title: string; prompt: 
       mario:    { title:"Énergie cinétique", prompt:"m=0,5 kg, v=20 m/s. Ec ?", hint:"1/2 m v²", solution:"100 J" },
       onepiece: { title:"Champ E", prompt:"q=2e−6 C, E=3e3 V/m. F ?", hint:"qE", solution:"0,006 N" },
       dbz:      { title:"Radioactivité", prompt:"λ=0,1 j⁻¹, t½ ?", hint:"ln2/λ", solution:"~6,93 j" },
-    },
-    "5e":{},"4e":{},"3e":{},"1ere":{}
-  } as any,
+    }
+  },
   chimie: {
     "6e": {
       mario:    { title:"Mélanges", prompt:"Eau+sel : homogène ?", hint:"Oui", solution:"Oui" },
@@ -80,13 +81,7 @@ const EXO: Record<Subject, Record<Level, Record<Theme, { title: string; prompt: 
       mario:    { title:"M masse molaire", prompt:"NaCl ?", hint:"Na~23, Cl~35,5", solution:"~58,5 g/mol" },
       onepiece: { title:"pH", prompt:"pH=2 ?", hint:"<7", solution:"Acide" },
       dbz:      { title:"Réaction", prompt:"H₂+O₂ → ?", hint:"Eau", solution:"2H₂+O₂→2H₂O" },
-    },
-    "term": {
-      mario:    { title:"Redox", prompt:"Oxydant/réducteur ?", hint:"électrons", solution:"…" },
-      onepiece: { title:"Titrage", prompt:"Point équivalence ?", hint:"Courbe pH", solution:"…" },
-      dbz:      { title:"Cinétique", prompt:"Facteurs ?", hint:"T, conc, surface", solution:"…" },
-    },
-    "5e":{},"4e":{},"3e":{},"1ere":{}
+    }
   },
   svt: {
     "6e": {
@@ -98,14 +93,8 @@ const EXO: Record<Subject, Record<Level, Record<Theme, { title: string; prompt: 
       onepiece:{ title:"Génétique", prompt:"Allèle ?", hint:"Variante de gène", solution:"…" },
       mario:   { title:"Tectonique", prompt:"Plaques ?", hint:"Mouvements", solution:"…" },
       dbz:     { title:"Immunité", prompt:"Antigène ?", hint:"Molécule reconnue", solution:"…" },
-    },
-    "term": {
-      onepiece:{ title:"Spéciation", prompt:"Isolement ?", hint:"Reprod.", solution:"…" },
-      mario:   { title:"Cycle carbone", prompt:"Réservoirs ?", hint:"Atm/bio/océan", solution:"…" },
-      dbz:     { title:"Neurone", prompt:"Potentiel d'action ?", hint:"Dépolarisation", solution:"…" },
-    },
-    "5e":{},"4e":{},"3e":{},"1ere":{}
-  },
+    }
+  }
 };
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
@@ -124,10 +113,10 @@ export default function PreviewTestPage() {
   const [level, setLevel] = useState<Level>("6e");
   const [mode, setMode] = useState<Mode>("normal");
 
-  const exo = useMemo(() => {
-    const bySubj = EXO[subject] || {};
-    const byLvl = (bySubj as any)[level] || {};
-    return (byLvl as any)[theme] || null;
+  const exo: Exercise | null = useMemo(() => {
+    const bySubj = EXO[subject] ?? {};
+    const byLvl = (bySubj as Record<string, any>)[level] ?? {};
+    return ((byLvl as Record<string, any>)[theme] as Exercise) ?? null;
   }, [subject, level, theme]);
 
   return (
