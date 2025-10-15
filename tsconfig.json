@@ -1,46 +1,37 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "es2022"],
     "module": "esnext",
     "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
+    "jsx": "react-jsx",
+    "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["src/*"]
     },
-    "baseUrl": "."
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": ["react", "react-dom", "node"],
+    "esModuleInterop": true
   },
   "include": [
     "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts"
+    "src/**/*",
+    "scripts/**/*"
   ],
   "exclude": [
     "node_modules",
     ".next",
-    "**/.next",
-    ".turbo",
-    "**/.turbo",
-    "backups"
+    "backups",
+    "backups_*",
+    "**/backups/**",
+    "**/backups_*/**",
+    "**/*.bak.*",
+    "**/*.backup.*",
+    "**/*.safe.*",
+    "disabled_files/**",
+    ".backup_home/**",
+    "prisma/seeds/**"
   ]
 }
