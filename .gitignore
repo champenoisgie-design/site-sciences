@@ -40,3 +40,4 @@ stripeSubscriptionId
 *.bak
 *.backup*
 disabled_files/
+.vercel
