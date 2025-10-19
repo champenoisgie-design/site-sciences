@@ -1,0 +1,5 @@
+.dbz-active .themed-hero { color: white; }
+@media (prefers-reduced-motion: reduce) {
+  .dbz-active .bg-video { display: none; }
+  .dbz-active .bg-poster { display: block; }
+}

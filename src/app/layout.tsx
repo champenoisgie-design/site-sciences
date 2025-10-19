@@ -1,3 +1,4 @@
+import { VisualThemeProvider } from "@/contexts/visualTheme";
 
 import SessionGate from "../components/security/SessionGate";
 
@@ -47,6 +48,7 @@ export default async function RootLayout({
   return (
     <html lang="fr" data-skin={skin} data-theme="light" suppressHydrationWarning>
       <body>
+        <VisualThemeProvider>
         <ClientVisualTheme>
       <script dangerouslySetInnerHTML={{__html:`(function(){try{var v=localStorage.getItem("theme")||"light";document.documentElement.setAttribute("data-theme",v);}catch(e){}})();`}}></script>
       <SessionGate />
@@ -61,7 +63,8 @@ export default async function RootLayout({
             <FooterLegal />
             </ClientVisualTheme>
         <Footer />
-    </body>
+    </VisualThemeProvider>
+      </body>
     </html>
   )
 }

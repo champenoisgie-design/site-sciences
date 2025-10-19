@@ -1,0 +1,11 @@
+{
+  "name": "Mario",
+  "slug": "mario",
+  "palette": { "primary": "#0ea5e9", "accent": "#f59e0b", "bg": "#020617" },
+  "assets": {
+    "video": "/themes/mario/bg.mp4",
+    "poster": "/themes/mario/bg.jpg",
+    "badge": "/themes/mario/badge.svg",
+    "icon": "/themes/mario/icon.svg"
+  }
+}
