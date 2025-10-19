@@ -1,0 +1,11 @@
+{
+  "name": "One Piece",
+  "slug": "onepiece",
+  "palette": { "primary": "#0ea5e9", "accent": "#f59e0b", "bg": "#020617" },
+  "assets": {
+    "video": "/themes/onepiece/bg.mp4",
+    "poster": "/themes/onepiece/bg.jpg",
+    "badge": "/themes/onepiece/badge.svg",
+    "icon": "/themes/onepiece/icon.svg"
+  }
+}

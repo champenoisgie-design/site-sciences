@@ -1,0 +1,35 @@
+export type AuthUser = null | {
+  id: string
+  email?: string | null
+  name?: string | null
+}
+
+export async function getUserFromSession(
+  _sessionToken?: string,
+): Promise<AuthUser> {
+  return null // stub: anonyme
+}
+
+export async function getCurrentUser(): Promise<AuthUser> {
+  // compatibilité avec src/app/account/page.tsx
+  return null // stub: anonyme
+}
+
+// --- BEGIN temporary shims (to be replaced by real implementations) ---
+export async function hashPassword(_plain: string): Promise<string> {
+  // TODO: replace by real bcrypt hash
+  return _plain;
+}
+export async function verifyPassword(_plain: string, _hash: string): Promise<boolean> {
+  // TODO: replace by real bcrypt compare
+  return _plain === _hash || !!_hash;
+}
+export async function createSessionForUser(_user: { id: string }) {
+  // TODO: replace by real Session create via Prisma
+  return { id: 'dev', userId: _user.id, sessionToken: 'dev', expires: new Date(Date.now() + 86400e3) } as any;
+}
+export async function deleteCurrentSession() {
+  // TODO: replace by real delete via Prisma + cookies
+  return;
+}
+// --- END temporary shims ---
