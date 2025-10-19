@@ -1,55 +1,24 @@
-export const metadata = {
-  title: 'Confidentialité | Site Sciences',
-  description: 'Politique de confidentialité (RGPD)',
-}
+export const metadata = { title: "Politique de confidentialité (RGPD)" };
+
 export default function Page() {
   return (
-    <article className="prose prose-zinc max-w-none dark:prose-invert">
-      <h1>Politique de confidentialité (RGPD)</h1>
-      <p>
-        Nous collectons les données strictement nécessaires à la fourniture du
-        service :
-      </p>
+    <main className="prose mx-auto px-4 py-10">
+      <h1>Politique de confidentialité</h1>
+      <p>Dernière mise à jour : 19 octobre 2025</p>
+      <h2>Données collectées</h2>
       <ul>
-        <li>
-          Données de compte : email, mot de passe (haché), prénom/nom
-          (facultatifs).
-        </li>
-        <li>
-          Données d’usage : sélection niveau/matière, progression, badges.
-        </li>
-        <li>
-          Journaux techniques : IP (si fournie par l’hébergeur), user-agent,
-          horodatage.
-        </li>
+        <li>Identité : email, prénom/nom (si fournis).</li>
+        <li>Données d’usage : progression, réponses aux exercices.</li>
+        <li>Paiements : gérés par Stripe/GoCardless (pas de conservation complète des moyens de paiement sur nos serveurs).</li>
       </ul>
       <h2>Finalités</h2>
-      <p>
-        Authentification, personnalisation, lutte anti-partage illicite,
-        support, facturation.
-      </p>
-      <h2>Base légale</h2>
-      <p>
-        Exécution du contrat (CGU), intérêt légitime (sécurité/anti-abus),
-        obligation légale (facturation).
-      </p>
-      <h2>Durées de conservation</h2>
-      <p>Conservation pendant la durée d’abonnement + délais légaux.</p>
-      <h2>Vos droits</h2>
-      <p>
-        Accès, rectification, effacement, limitation, opposition, portabilité.
-        Contact via la page Contact.
-      </p>
-      <h2>Transferts & sous-traitants</h2>
-      <p>
-        Prestataires d’hébergement/paiement (ex. Stripe) avec engagements
-        contractuels conformes au RGPD.
-      </p>
-      <h2>Cookies</h2>
-      <p>
-        Cookies essentiels (session), et éventuels cookies de mesure si
-        consentement.
-      </p>
-    </article>
-  )
+      <p>Fourniture du service, facturation, lutte contre la fraude, amélioration pédagogique.</p>
+      <h2>Bases légales</h2>
+      <p>Exécution du contrat, intérêt légitime d’amélioration, consentement (cookies analytiques).</p>
+      <h2>Droits</h2>
+      <p>Accès, rectification, suppression, opposition, portabilité : via la page Contact.</p>
+      <h2>Conservation</h2>
+      <p>Durées proportionnées aux finalités et obligations légales.</p>
+    </main>
+  );
 }

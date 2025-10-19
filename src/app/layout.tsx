@@ -13,6 +13,7 @@ import LearningModeProvider from './_providers/LearningModeProvider'
 import SelectionProviderClient from './_providers/SelectionProviderClient'
 import Header from '@/components/Header'
 import { cookies } from 'next/headers'
+import ClientVisualTheme from "@/app/ClientVisualTheme";
 
 /* __DUP_METADATA_START__
 export const metadata = {
@@ -44,18 +45,22 @@ export default async function RootLayout({
   const skin = jar.get('skin_active')?.value || 'default'
 
   return (
-    <html lang="fr" data-skin={skin}>
+    <html lang="fr" data-skin={skin} data-theme="light" suppressHydrationWarning>
       <body>
+        <ClientVisualTheme>
+      <script dangerouslySetInnerHTML={{__html:`(function(){try{var v=localStorage.getItem("theme")||"light";document.documentElement.setAttribute("data-theme",v);}catch(e){}})();`}}></script>
       <SessionGate />
       <TrialBannerServer />
       <ActiveSubBannerServer />
         <LearningModeProvider>
           <SelectionProviderClient>
             <Header />
-            <main className="min-h-dvh">{children}</main>
+            <main className="min-h-dvh"><ClientVisualTheme>{children}</ClientVisualTheme></main>
           </SelectionProviderClient>
         </LearningModeProvider>
             <FooterLegal />
+            </ClientVisualTheme>
+        <Footer />
     </body>
     </html>
   )

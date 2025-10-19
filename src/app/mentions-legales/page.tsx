@@ -1,17 +1,11 @@
-export const metadata = {
-  title: 'Mentions légales | Site Sciences',
-  description: 'Informations légales de l’éditeur du site',
-}
+export const metadata = { title: "Mentions légales" };
+
 export default function Page() {
   return (
-    <article className="prose prose-zinc max-w-none dark:prose-invert">
+    <main className="prose mx-auto px-4 py-10">
       <h1>Mentions légales</h1>
-      <h2>Éditeur</h2>
-      <p>Raison sociale / Nom, adresse, email de contact.</p>
-      <h2>Hébergeur</h2>
-      <p>Nom de l’hébergeur, adresse, contact.</p>
-      <h2>Propriété intellectuelle</h2>
-      <p>Contenus protégés. Toute reproduction nécessite autorisation.</p>
-    </article>
-  )
+      <p>Éditeur : [Raison sociale], [Adresse], [RCS/SIREN], [Contact].</p>
+      <p>Directeur de publication : [Nom]. Hébergeur : Vercel Inc., 440 N Barranca Ave #4133, Covina, CA 91723, USA.</p>
+    </main>
+  );
 }

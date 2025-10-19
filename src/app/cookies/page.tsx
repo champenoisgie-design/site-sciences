@@ -1,20 +1,12 @@
-export const metadata = {
-  title: 'Cookies | Site Sciences',
-  description: 'Politique Cookies',
-}
+export const metadata = { title: "Politique cookies" };
+
 export default function Page() {
   return (
-    <article className="prose prose-zinc max-w-none dark:prose-invert">
-      <h1>Politique Cookies</h1>
-      <p>
-        Nous utilisons des cookies nécessaires à la session. Des cookies de
-        mesure/marketing peuvent être déposés avec votre consentement.
-      </p>
-      <h2>Gérer vos préférences</h2>
-      <p>
-        Un module de consentement permet d’accepter/refuser les catégories non
-        essentielles.
-      </p>
-    </article>
-  )
+    <main className="prose mx-auto px-4 py-10">
+      <h1>Politique cookies</h1>
+      <p>Cookies strictement nécessaires, de mesure d’audience (consentement), et fonctionnels.</p>
+      <h2>Préférences</h2>
+      <p>Vous pouvez gérer vos préférences dans le gestionnaire de cookies.</p>
+    </main>
+  );
 }
