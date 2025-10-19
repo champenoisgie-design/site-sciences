@@ -1,0 +1,24 @@
+// src/app/api/trial/eligible/route.ts
+import { NextResponse } from "next/server";
+import { canGrantTrial } from "../../../../lib/trial";
+
+export async function POST(req: Request) {
+  try {
+    const body = await req.json().catch(() => ({}));
+    const email = String(body.email || "").trim().toLowerCase();
+    if (!email) return NextResponse.json({ ok: false, error: "missing_email" }, { status: 400 });
+
+    const headers = Object.fromEntries((req.headers ?? new Headers()).entries());
+    const deviceInfo = {
+      userAgent: headers["user-agent"] ?? "",
+      language: headers["accept-language"] ?? "",
+      timezone: body.tz ?? "",
+      ip: headers["x-forwarded-for"]?.split(",")[0]?.trim() || ""
+    };
+
+    const res = await canGrantTrial({ email, deviceInfo });
+    return NextResponse.json(res);
+  } catch {
+    return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });
+  }
+}

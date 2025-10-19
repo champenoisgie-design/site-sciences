@@ -53,7 +53,3 @@ Pour intégrer plus tard sur les pages réelles :
 // <Hero />
 ```
 
-
-
-## Save 2025-10-19 18:33:03
-- Snapshot: backups_20251019_183303

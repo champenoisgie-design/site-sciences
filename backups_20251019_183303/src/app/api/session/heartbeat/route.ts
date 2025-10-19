@@ -1,0 +1,84 @@
+// src/app/api/session/heartbeat/route.ts
+import crypto from "node:crypto";
+import { NextResponse } from "next/server";
+import { getSessionUser } from "../../../../lib/auth";
+import { prisma } from "../../../../lib/prisma";
+import { fpFromHeaders, hasFamilyMode, activeDeviceCount } from "../../../../lib/session-guard";
+import { hash } from "../../../../lib/privacy";
+import { sendMail } from "@/lib/mailer";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+export async function POST(req: Request) {
+  const user = await getSessionUser().catch(()=>null);
+  if (!user) return NextResponse.json({ ok:false, error:"not_authenticated" }, { status: 401 });
+
+  const h = req.headers;
+  const ua = h.get("user-agent") || "";
+  const body = await req.json().catch(()=> ({} as any));
+  const tz = String(body.timezone || "");
+
+  const deviceHash = fpFromHeaders(h, ua, tz);
+  const sessionKey = hash(user.id + ":" + deviceHash);
+  const ip = (h.get("x-forwarded-for") || h.get("x-real-ip") || "").split(",")[0].trim() || null;
+
+  // OTP si nouveau device
+  const existing = await prisma.deviceSession.findFirst({ where: { userId: user.id, deviceHash, revokedAt: null } });
+  if (!existing) {
+    const pending = await prisma.loginOtp.findFirst({
+      where: { userId: user.id, deviceHash, consumedAt: null, expiresAt: { gte: new Date() } },
+      orderBy: { createdAt: "desc" }
+    });
+    if (!pending) {
+      const code = (Math.floor(100000 + Math.random()*900000)).toString();
+      const codeHash = hash(code);
+      const expiresAt = new Date(Date.now() + 10*60*1000);
+      await prisma.loginOtp.create({
+        data: { id: crypto.randomUUID(), userId: user.id, email: user.email ?? "", codeHash, deviceHash, expiresAt, ip: ip ?? undefined } as any
+      });
+      await sendMail({ to: user.email ?? "(unknown)", subject: "Votre code de connexion", text: `Code: ${code}\nValide 10 minutes.\nUA: ${ua}` });
+    }
+    return NextResponse.json({ ok:false, otpRequired:true });
+  }
+
+  // Limite de sessions (1 par défaut, 2 si Famille)
+  const isFamily = await hasFamilyMode(user.id);
+  const maxSessions = isFamily ? 2 : 1;
+
+  const count = await activeDeviceCount(user.id);
+  const knownThis = !!existing;
+
+  if (!knownThis && count >= maxSessions) {
+    return NextResponse.json({ ok:false, error:"too_many_sessions", maxSessions }, { status: 409 });
+  }
+
+  // Heartbeat (upsert)
+  await prisma.deviceSession.upsert({
+    where: { id: existing?.id || "___none___" },
+    update: { lastSeenAt: new Date(), ip: ip ?? undefined },
+    create: {
+      id: crypto.randomUUID(),
+      userId: user.id,
+      deviceHash,
+      sessionKey,
+      userAgent: ua,
+      ip: ip ?? undefined,
+      createdAt: new Date(),
+      lastSeenAt: new Date()
+    } as any
+  });
+
+  // Recompte des devices actifs (distincts) et blocage si dépassement
+{
+  const since = new Date(Date.now() - 30 * 24 * 3600 * 1000);
+  const groups = await prisma.deviceSession.groupBy({
+    by: ["deviceHash"],
+    where: { userId: user.id, revokedAt: null, lastSeenAt: { gte: since } },
+  });
+  if (groups.length > maxSessions) {
+    return NextResponse.json({ ok:false, error:"too_many_sessions", maxSessions }, { status: 409 });
+  }
+}
+return NextResponse.json({ ok:true, isFamily, maxSessions });
+}
