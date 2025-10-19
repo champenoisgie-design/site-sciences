@@ -81,6 +81,3 @@ Pour intégrer plus tard sur les pages réelles :
 
 ## Save 20251019_223958
 - Snapshot: backups_20251019_223958
-
-## Save 20251019_224040
-- Snapshot: backups_20251019_224040

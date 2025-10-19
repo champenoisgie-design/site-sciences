@@ -1,0 +1,16 @@
+export type AuthUser = null | {
+  id: string
+  email?: string | null
+  name?: string | null
+}
+
+export async function getUserFromSession(
+  _sessionToken?: string,
+): Promise<AuthUser> {
+  return null // stub: anonyme
+}
+
+export async function getCurrentUser(): Promise<AuthUser> {
+  // compatibilité avec src/app/account/page.tsx
+  return null // stub: anonyme
+}
