@@ -1,0 +1,37 @@
+/* Styles limités au héros quand on ajoute les classes depuis l'enhancer.
+   Les cartes restent inchangées. */
+
+.preview-hero-scope .hero-intro-force,
+.preview-hero-scope .hero-intro-force * {
+  color: #fff !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+}
+
+/* Liste de puces */
+.preview-hero-scope .hero-bullets,
+.preview-hero-scope .hero-bullets * {
+  color: #fff !important;
+}
+.preview-hero-scope .hero-bullets li::marker {
+  color: #fff !important;
+}
+.preview-hero-scope .hero-bullets [class*='border-'] {
+  border-color: rgba(255, 255, 255, 0.45) !important;
+}
+
+/* Champ e-mail */
+.preview-hero-scope .hero-email {
+  color: #fff !important;
+  border-color: #fff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+.preview-hero-scope .hero-email::placeholder {
+  color: #fff !important;
+  opacity: 0.9;
+}
+
+/* Lien "Me connecter" */
+.preview-hero-scope .hero-link {
+  color: #fff !important;
+  text-decoration-color: rgba(255, 255, 255, 0.9) !important;
+}
