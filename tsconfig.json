@@ -1,24 +1,44 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["dom", "dom.iterable", "es2022"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "es2022"
+    ],
     "module": "esnext",
     "moduleResolution": "bundler",
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": [
+        "src/*"
+      ]
     },
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "types": ["react", "react-dom", "node"],
-    "esModuleInterop": true
+    "types": [
+      "react",
+      "react-dom",
+      "node"
+    ],
+    "esModuleInterop": true,
+    "allowJs": true,
+    "incremental": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
     "next-env.d.ts",
+    "scripts/**/*",
     "src/**/*",
-    "scripts/**/*"
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
@@ -32,6 +52,8 @@
     "**/*.safe.*",
     "disabled_files/**",
     ".backup_home/**",
-    "prisma/seeds/**"
+    "prisma/seeds/**",
+    "prisma/seeds/**/*",
+    "scripts/**/*"
   ]
 }
