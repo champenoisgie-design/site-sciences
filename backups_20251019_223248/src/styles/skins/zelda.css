@@ -1,0 +1,5 @@
+.zelda-active .themed-hero { color: white; }
+@media (prefers-reduced-motion: reduce) {
+  .zelda-active .bg-video { display: none; }
+  .zelda-active .bg-poster { display: block; }
+}

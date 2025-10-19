@@ -1,0 +1,11 @@
+{
+  "name": "Dragon Ball Z",
+  "slug": "dbz",
+  "palette": { "primary": "#0ea5e9", "accent": "#f59e0b", "bg": "#020617" },
+  "assets": {
+    "video": "/themes/dbz/bg.mp4",
+    "poster": "/themes/dbz/bg.jpg",
+    "badge": "/themes/dbz/badge.svg",
+    "icon": "/themes/dbz/icon.svg"
+  }
+}
