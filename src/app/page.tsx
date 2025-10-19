@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import LiveOnline from "@/components/ux/LiveOnline";
+import OnePiece1Background from "@/components/themes/OnePiece1Background";
+import OnePiece1Enhancer from "@/components/themes/OnePiece1Enhancer";
 
 export const metadata = {
   title: "Site Sciences — Apprendre, s'entraîner, progresser",

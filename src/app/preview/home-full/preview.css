@@ -1,0 +1,42 @@
+/* Cache tous les headers hors header de preview */
+.preview-hide-global-header header:not([data-role="preview-header"]) { display: none !important; }
+
+/* ===== Thème OnePiece1 actif : tout le hero en BLANC (hors cartes) ===== */
+.onepiece1-active .preview-hero-scope h1 {
+  color: #fff !important;
+  text-shadow: 0 3px 12px rgba(0,0,0,.55);
+}
+.onepiece1-active .preview-hero-scope p,
+.onepiece1-active .preview-hero-scope label,
+.onepiece1-active .preview-hero-scope a,
+.onepiece1-active .preview-hero-scope small,
+.onepiece1-active .preview-hero-scope span {
+  color: #fff !important;
+  text-shadow: 0 2px 8px rgba(0,0,0,.45);
+}
+
+/* Liste à puces (colonne droite) */
+.onepiece1-active .preview-hero-scope .hero-bullets,
+.onepiece1-active .preview-hero-scope .hero-bullets * { color:#fff !important; }
+.onepiece1-active .preview-hero-scope .hero-bullets li::marker { color:#fff !important; }
+
+/* Champ e-mail */
+.onepiece1-active .preview-hero-scope .hero-email {
+  color:#fff !important; border-color:#fff !important; background:rgba(255,255,255,.08) !important;
+}
+.onepiece1-active .preview-hero-scope .hero-email::placeholder { color:#fff !important; opacity:.9; }
+
+/* Liens/CTA du hero */
+.onepiece1-active .preview-hero-scope .hero-link { color:#fff !important; text-decoration-color:rgba(255,255,255,.9) !important; }
+.onepiece1-active .preview-hero-scope .hero-cta-secondary,
+.onepiece1-active .preview-hero-scope .hero-cta-secondary * { color:#fff !important; }
+.onepiece1-active .preview-hero-scope .hero-cta-primary,
+.onepiece1-active .preview-hero-scope .hero-cta-primary * { color:#fff !important; }
+
+/* Bandeau “Le contenu s’adapte…” */
+.onepiece1-active .preview-top-banner,
+.onepiece1-active .preview-top-banner * {
+  color:#fff !important; text-shadow:0 2px 8px rgba(0,0,0,.45);
+}
+
+/* NB : on ne touche PAS aux cartes. */

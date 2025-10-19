@@ -1,266 +1,146 @@
 "use client";
-import React from "react";
-import { PRICING, MODE_ADDON, CART_RULES } from "@/lib/pricing";
-import { useRouter } from "next/navigation";
 
-import PaidSuccessNotice from "../../components/trial/PaidSuccessNotice";
+import { useEffect, useMemo, useState } from "react";
 
-import CheckoutDebugButton from "../../components/checkout/CheckoutDebugButton";
+type Plan = "normal" | "gold" | "platine";
+type BillingPeriod = "mensuel" | "annuel";
+type PriceResponse = {
+  ok: true;
+  subjectsCount: number;
+  modesCount: number;
+  plan: Plan;
+  subtotalCents: number;
+  subjectsDiscountCents: number;
+  extraDiscountCents: number;
+  totalCents: number;      // total mensuel (source serveur)
+  billingPeriod?: BillingPeriod;
+  annualCents?: number;    // présent si l'API l'envoie, sinon on calcule localement
+} | { ok: false };
 
-import ServerTruthBlock from "../../components/pricing/ServerTruthBlock";
-
-import TrialExpiredNotice from "../../components/trial/TrialExpiredNotice";
-
-type ModeKey = "TDAH"|"DYS"|"TSA"|"HPI";
-const ALL_MODES: ModeKey[] = ["TDAH","DYS","TSA","HPI"];
-const LEVELS = ["6e","5e","4e","3e","2nde","1re","Term"];
-const SUBJECTS = ["Maths","Physique-Chimie","SVT","Technologie"];
+function centsToEuro(c: number) {
+  return (c / 100).toFixed(2).replace(".", ",");
+}
 
 export default function PanierPage() {
-  const router = useRouter();
+  // Sélections de base : on garde ça simple pour restaurer le *calcul serveur*
+  const [subjects, setSubjects] = useState<number>(1);
+  const [modes, setModes] = useState<number>(0);
+  const [plan, setPlan] = useState<Plan>("normal");
+  const [billing, setBilling] = useState<BillingPeriod>("mensuel");
 
-  // Facturation
-  const [billing, setBilling] = React.useState<"monthly"|"yearly">("monthly");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [price, setPrice] = useState<PriceResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  // Abonnement n°1
-  const [plan, setPlan] = React.useState<"normal"|"gold"|"platine">("normal");
-  const [level, setLevel] = React.useState<string>("1re");
-  const [subjects, setSubjects] = React.useState<string[]>([]);
-  const [modes, setModes] = React.useState<ModeKey[]>([]);
-
-  // Abonnement n°2 (mode famille)
-  const [family, setFamily] = React.useState<boolean>(false);
-  const [plan2, setPlan2] = React.useState<"normal"|"gold"|"platine">("normal");
-  const [level2, setLevel2] = React.useState<string>("1re");
-  const [subjects2, setSubjects2] = React.useState<string[]>([]);
-  const [modes2, setModes2] = React.useState<ModeKey[]>([]);
-
-  const [referral, setReferral] = React.useState<string>("");
-
-  const isFirst100Promo = true; // à câbler serveur
-
-  // Prix plan
-  const planCost = React.useMemo(() => {
-    const p = (PRICING as any).plans[plan][billing];
-    return typeof p === "number" ? p : 0;
-  }, [plan, billing]);
-
-  const planCost2 = React.useMemo(() => {
-    if (!family) return 0;
-    const p = (PRICING as any).plans[plan2][billing];
-    return typeof p === "number" ? p : 0;
-  }, [family, plan2, billing]);
-
-  // Coûts des modes
-  const modesCost = React.useMemo(() => {
-    const unit = MODE_ADDON.monthly;
-    const factor = billing === "yearly" ? 12 : 1;
-    return modes.length * unit * factor;
-  }, [modes.length, billing]);
-
-  const modesCost2 = React.useMemo(() => {
-    if (!family) return 0;
-    const unit = MODE_ADDON.monthly;
-    const factor = billing === "yearly" ? 12 : 1;
-    return modes2.length * unit * factor;
-  }, [family, modes2.length, billing]);
-
-  // Remise 3/4 matières (somme des deux abonnements)
-  const discountSubjects = React.useMemo(() => {
-    const n = subjects.length + (family ? subjects2.length : 0);
-    const basis = planCost + planCost2 + modesCost + modesCost2;
-    if (n >= 4) return basis * CART_RULES.discount4Subjects;
-    if (n >= 3) return basis * CART_RULES.discount3Subjects;
-    return 0;
-  }, [subjects.length, subjects2.length, family, planCost, planCost2, modesCost, modesCost2]);
-
-  // -5% parrainage
-  const referralDiscount = React.useMemo(() => {
-    const subtotal = planCost + planCost2 + modesCost + modesCost2 - discountSubjects;
-    return referral.trim() ? 0.05 * subtotal : 0;
-  }, [referral, planCost, planCost2, modesCost, modesCost2, discountSubjects]);
-
-  // -20% 100 premiers
-  const first100Discount = React.useMemo(() => {
-    const subtotal = planCost + planCost2 + modesCost + modesCost2 - discountSubjects - referralDiscount;
-    return isFirst100Promo ? CART_RULES.first100PromoPct * subtotal : 0;
-  }, [isFirst100Promo, planCost, planCost2, modesCost, modesCost2, discountSubjects, referralDiscount]);
-
-  // **Remise famille** (ex: -10%) si activé, après les remises précédentes
-  const familyDiscount = React.useMemo(() => {
-    const subtotal = planCost + planCost2 + modesCost + modesCost2 - discountSubjects - referralDiscount - first100Discount;
-    return family ? CART_RULES.familyDiscountPct * subtotal : 0;
-  }, [family, planCost, planCost2, modesCost, modesCost2, discountSubjects, referralDiscount, first100Discount]);
-
-  // Total
-  const total = React.useMemo(() => {
-    const subtotal = planCost + planCost2 + modesCost + modesCost2
-      - discountSubjects - referralDiscount - first100Discount - familyDiscount;
-    return Math.max(0, subtotal);
-  }, [planCost, planCost2, modesCost, modesCost2, discountSubjects, referralDiscount, first100Discount, familyDiscount]);
-
-  // Helpers
-  function toggleSubject(s: string) {
-    setSubjects(prev => prev.includes(s) ? prev.filter(x => x!==s) : [...prev, s]);
-  }
-  function toggleMode(m: ModeKey) {
-    setModes(prev => prev.includes(m) ? prev.filter(x => x!==m) : [...prev, m]);
-  }
-  function toggleSubject2(su: string) {
-    setSubjects2(prev => prev.includes(su) ? prev.filter(x => x!==su) : [...prev, su]);
-  }
-  function toggleMode2(m: ModeKey) {
-    setModes2(prev => prev.includes(m) ? prev.filter(x => x!==m) : [...prev, m]);
+  async function fetchServerPrice() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/cart/price", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          subjectsCount: subjects,
+          modesCount: modes,
+          plan,
+          billingPeriod: billing,
+        }),
+      });
+      const data = await res.json() as PriceResponse;
+      if (!res.ok || !("ok" in data) || data.ok !== true) {
+        throw new Error("Réponse serveur invalide");
+      }
+      setPrice(data);
+    } catch (e: any) {
+      setError(e?.message ?? "Erreur inconnue");
+      setPrice(null);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  async function onCheckout() {
-    alert(`Paiement (stub). Total: ${total.toFixed(2)} €/${billing==="monthly"?"mois":"mois (eng. annuel)"}`);
-  }
+  useEffect(() => {
+    fetchServerPrice();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subjects, modes, plan, billing]);
 
-  return (<>
-      <TrialExpiredNotice />
-      <PaidSuccessNotice />
+  // Total annuel: si le serveur ne l'envoie pas, on calcule (-20% sur 12× mensuel)
+  const derivedAnnual = useMemo(() => {
+    if (price && "ok" in price && price.ok) {
+      if (price.annualCents != null) return price.annualCents;
+      return Math.round(price.totalCents * 12 * 0.8);
+    }
+    return null;
+  }, [price]);
 
-    <div className="max-w-5xl mx-auto p-4 space-y-8">
-      <h1 className="text-2xl font-bold">Panier</h1>
+  return (
+    <main className="px-6 py-10">
+      <h1 className="text-3xl md:text-4xl font-bold">Panier</h1>
+      <p className="mt-2 text-muted-foreground">Calcul 100% côté serveur via <code>/api/cart/price</code>.</p>
 
-      <div className="grid md:grid-cols-3 gap-4">
-        {/* Col.1 — Facturation & Plan & Famille */}
-        <div className="border rounded-lg p-4">
-          <div className="font-semibold mb-2">Facturation</div>
-          <div className="inline-flex rounded overflow-hidden border">
-            <button onClick={()=>setBilling("monthly")} className={`px-3 py-1 ${billing==="monthly"?"bg-black text-white":"bg-white"}`}>Mensuel</button>
-            <button onClick={()=>setBilling("yearly")} className={`px-3 py-1 ${billing==="yearly"?"bg-black text-white":"bg-white"}`}>Annuel</button>
-          </div>
+      {/* Contrôles simples pour piloter l'appel serveur */}
+      <div className="mt-8 grid gap-4 md:grid-cols-4 max-w-4xl">
+        <label className="rounded-2xl border p-4 flex items-center justify-between">
+          <span>Matières</span>
+          <input
+            type="number" min={1} max={8}
+            value={subjects}
+            onChange={(e)=>setSubjects(parseInt(e.target.value || "1"))}
+            className="w-24 rounded-lg border px-3 py-2"
+          />
+        </label>
 
-          <div className="font-semibold mt-4 mb-2">Plan</div>
-          <div className="space-y-2">
-            <label className="flex items-center gap-2"><input type="radio" checked={plan==="normal"} onChange={()=>setPlan("normal")} /><span>Normal</span></label>
-            <label className="flex items-center gap-2"><input type="radio" checked={plan==="gold"} onChange={()=>setPlan("gold")} /><span>Gold</span></label>
-            <label className="flex items-center gap-2"><input type="radio" checked={plan==="platine"} onChange={()=>setPlan("platine")} /><span>Platine</span></label>
-          </div>
+        <label className="rounded-2xl border p-4 flex items-center justify-between">
+          <span>Modes</span>
+          <input
+            type="number" min={0} max={3}
+            value={modes}
+            onChange={(e)=>setModes(parseInt(e.target.value || "0"))}
+            className="w-24 rounded-lg border px-3 py-2"
+          />
+        </label>
 
-          <div className="font-semibold mt-4 mb-2">Mode Famille</div>
-          <label className="flex items-center gap-2">
-            <input type="checkbox" checked={family} onChange={e=>setFamily(e.target.checked)} />
-            <span>Activer — pour plusieurs abonnements au sein de la même famille</span>
-          </label>
-        </div>
-
-        {/* Col.2 — Abonnement n°1 */}
-        <div className="border rounded-lg p-4">
-          <div className="font-semibold mb-2">Abonnement n°1 — paramètres</div>
-
-          <div className="font-semibold mb-2">Niveau</div>
-          <select className="border rounded px-2 py-1" value={level} onChange={e=>setLevel(e.target.value)}>
-            {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+        <label className="rounded-2xl border p-4 flex items-center justify-between">
+          <span>Plan</span>
+          <select value={plan} onChange={(e)=>setPlan(e.target.value as Plan)} className="w-40 rounded-lg border px-3 py-2">
+            <option value="normal">Normal</option>
+            <option value="gold">Gold (+5€)</option>
+            <option value="platine">Platine (+10€)</option>
           </select>
+        </label>
 
-          <div className="font-semibold mt-4 mb-2">Matières</div>
-          <div className="grid grid-cols-2 gap-2">
-            {SUBJECTS.map(s => (
-              <label key={s} className="flex items-center gap-2 border rounded px-2 py-1">
-                <input type="checkbox" checked={subjects.includes(s)} onChange={()=>toggleSubject(s)} />
-                <span>{s}</span>
-              </label>
-            ))}
-          </div>
-
-          <div className="font-semibold mt-4 mb-2">Modes complémentaires</div>
-          <div className="grid grid-cols-2 gap-2">
-            {ALL_MODES.map(m => (
-              <label key={m} className="flex items-center gap-2 border rounded px-2 py-1">
-                <input type="checkbox" checked={modes.includes(m)} onChange={()=>toggleMode(m)} />
-                <span>{m}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {/* Col.3 — Récap */}
-        <div className="border rounded-lg p-4">
-          <div className="font-semibold mb-2">Récapitulatif</div>
-          <ul className="text-sm space-y-1">
-            <li>Abonnement n°1 — Plan ({plan}): {planCost.toFixed(2)} €/{billing==="monthly"?"mois":"mois (eng. annuel)"}</li>
-            {family && <li>Abonnement n°2 — Plan ({plan2}): {planCost2.toFixed(2)} €/{billing==="monthly"?"mois":"mois (eng. annuel)"}</li>}
-            <li>Modes complémentaires: +{(modesCost + (family?modesCost2:0)).toFixed(2)} €</li>
-            {(subjects.length + (family?subjects2.length:0))>=4 && (
-              <li>Réduc 4 matières: -{(CART_RULES.discount4Subjects*100).toFixed(0)}%</li>
-            )}
-            {(subjects.length + (family?subjects2.length:0))>=3 && (subjects.length + (family?subjects2.length:0))<4 && (
-              <li>Réduc 3 matières: -{(CART_RULES.discount3Subjects*100).toFixed(0)}%</li>
-            )}
-            {!!referral.trim() && <li>Parrainage: -5%</li>}
-            <li>Promo 100 premiers: -{(CART_RULES.first100PromoPct*100).toFixed(0)}%</li>
-            {family && <li>Réduc famille: -{(CART_RULES.familyDiscountPct*100).toFixed(0)}%</li>}
-          </ul>
-
-          <div className="font-semibold mt-4 mb-2">Code parrainage</div>
-          <input className="border rounded w-full px-2 py-1" placeholder="Ex: SCI-ABCD" value={referral} onChange={e=>setReferral(e.target.value)} />
-
-          <div className="text-xl font-bold mt-3">
-            Total: {total.toFixed(2)} €/{billing==="monthly"?"mois":"mois (eng. annuel)"}
-          </div>
-          <button onClick={onCheckout} className="mt-3 w-full bg-black text-white rounded-md py-2 hover:opacity-90">Passer au paiement</button>
-        </div>
+        <label className="rounded-2xl border p-4 flex items-center justify-between">
+          <span>Période</span>
+          <select value={billing} onChange={(e)=>setBilling(e.target.value as BillingPeriod)} className="w-40 rounded-lg border px-3 py-2">
+            <option value="mensuel">Mensuel</option>
+            <option value="annuel">Annuel</option>
+          </select>
+        </label>
       </div>
 
-      {/* Zone Abonnement n°2 (si famille) */}
-      {family && (
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="border rounded-lg p-4">
-            <div className="font-semibold mb-2">Abonnement n°2 — paramètres</div>
-
-            <div className="font-semibold mb-2">Plan</div>
-            <div className="space-y-2">
-              <label className="flex items-center gap-2"><input type="radio" checked={plan2==="normal"} onChange={()=>setPlan2("normal")} /><span>Normal</span></label>
-              <label className="flex items-center gap-2"><input type="radio" checked={plan2==="gold"} onChange={()=>setPlan2("gold")} /><span>Gold</span></label>
-              <label className="flex items-center gap-2"><input type="radio" checked={plan2==="platine"} onChange={()=>setPlan2("platine")} /><span>Platine</span></label>
+      {/* Affichage prix (source de vérité serveur) */}
+      <section className="mt-8 max-w-3xl rounded-2xl border p-6">
+        {loading && <p>Calcul en cours…</p>}
+        {error && <p className="text-red-600">Erreur : {error}</p>}
+        {!loading && !error && price && "ok" in price && price.ok && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span>Total (mensuel, serveur)</span>
+              <strong>{centsToEuro(price.totalCents)} € / mois</strong>
             </div>
-
-            <div className="font-semibold mt-4 mb-2">Niveau</div>
-            <select className="border rounded px-2 py-1" value={level2} onChange={e=>setLevel2(e.target.value)}>
-              {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-            </select>
-
-            <div className="font-semibold mt-4 mb-2">Matières</div>
-            <div className="grid grid-cols-2 gap-2">
-              {SUBJECTS.map(su => (
-                <label key={su} className="flex items-center gap-2 border rounded px-2 py-1">
-                  <input type="checkbox" checked={subjects2.includes(su)} onChange={()=>toggleSubject2(su)} />
-                  <span>{su}</span>
-                </label>
-              ))}
-            </div>
-
-            <div className="font-semibold mt-4 mb-2">Modes complémentaires</div>
-            <div className="grid grid-cols-2 gap-2">
-              {ALL_MODES.map(m => (
-                <label key={m} className="flex items-center gap-2 border rounded px-2 py-1">
-                  <input type="checkbox" checked={modes2.includes(m)} onChange={()=>toggleMode2(m)} />
-                  <span>{m}</span>
-                </label>
-              ))}
+            {derivedAnnual != null && (
+              <div className="flex items-center justify-between text-sm">
+                <span>Équivalent annuel</span>
+                <strong>{centsToEuro(derivedAnnual)} € / an</strong>
+              </div>
+            )}
+            <hr className="my-3" />
+            <div className="text-xs text-muted-foreground">
+              Source: <code>/api/cart/price</code> — sujets: {subjects}, modes: {modes}, plan: {plan}, période: {billing}
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Mentions légales */}
-      <div className="border rounded-lg p-4 text-sm text-gray-700">
-        <h2 className="font-semibold mb-2">Informations légales & facturation</h2>
-        <ul className="list-disc pl-5 space-y-1">
-          <li>Droit de rétractation 14 jours selon les cas ; exécution immédiate = limitation du droit.</li>
-          <li>Prix TTC. Facturation mensuelle ou annuelle.</li>
-          <li>Remises (parrainage, premiers abonnés, famille) appliquées au paiement.</li>
-          <li>Un e-mail récapitulatif est envoyé après paiement.</li>
-        </ul>
-      </div>
-
-      <button onClick={()=>router.push("/tarifs")} className="text-sm underline">← Revenir aux tarifs</button>
-    </div>
-    <div className="mx-auto max-w-4xl px-6"><ServerTruthBlock />
-        <CheckoutDebugButton /></div>
-    </>
-);
+        )}
+      </section>
+    </main>
+  );
 }

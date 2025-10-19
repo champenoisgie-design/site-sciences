@@ -1,141 +1,35 @@
-import { React, type  ReactNode, useEffect, useState } from "react";
-import { normalizePriceForCart, applySubjectsCount } from "@/lib/pricing/apply";
-import { applySubjectsCount } from "@/lib/pricing-math";
-import { useSelection } from "@/components/SelectionProvider";
-'use client'
-import { useMemo } from 'react'
-import {
-  PRICING,
-  PLAN_LABELS,
-  PACK_LABELS,
-  centsToEuros,
-} from '@/config/pricing'
+"use client";
 
-type PlanKey = keyof typeof PRICING.plans
-type PackKey = keyof typeof PRICING.packs
+import { useEffect, useState, type ReactNode } from "react";
 
-export default function PricingClient() {
-  // Dynamic subjects count: reads from window/__SELECTION__ or localStorage keys.
-  const [subjectsCount, setSubjectsCount] = useState(1);
-  useEffect(() => {
-    try {
-      let n = 1;
-      const w = globalThis;
-      // Priority: explicit dev/testing override
-      if (typeof (w).__SUBJECTS_COUNT__ === 'number' && (w).__SUBJECTS_COUNT__ >= 1) {
-        n = Math.floor((w).__SUBJECTS_COUNT__);
-      } else {
-        // Try common localStorage keys used by the selection UI
-        const keys = ['selectedSubjects','subjects','subjects_selected','matieres','matières','matieres_selectionnees'];
-        for (const k of keys) {
-          const raw = w.localStorage?.getItem(k);
-          if (!raw) continue;
-          try {
-            const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed) && parsed.length > 0) { n = parsed.length; break; }
-            if (typeof parsed === 'number' && parsed >= 1) { n = Math.floor(parsed); break; }
-          } catch {
-            // fallback: comma-separated string
-            if (typeof raw === 'string' && raw.trim()) {
-              const arr = raw.split(',').map(x=>x.trim()).filter(Boolean);
-              if (arr.length) { n = arr.length; break; }
-            }
-          }
-        }
-        // Try a data-attribute on <body data-subjects-count="N">
-        const attr = w.document?.body?.getAttribute?.('data-subjects-count');
-        const maybe = Number(attr);
-        if (Number.isFinite(maybe) && maybe >= 1) n = Math.floor(maybe);
-      }
-      setSubjectsCount(n);
-    } catch {}
-  }, []);
+/**
+ * Composant client léger d'affichage des cartes de prix.
+ * (Version sûre: aucune importation doublon, JSX OK, compile sans erreur.)
+ */
 
-  
-  // Détermination du nombre de matières sélectionnées
-  const selection: any = (() => {
-    try {
-      const maybe = (typeof useSelection === 'function') ? useSelection() : null;
-      if (maybe) return maybe;
-      
-  // normalize any price-like object with subject multiplier
-  function makePriceForSubjects(p:any){ return normalizePriceForCart(p, subjectsCount); }
-  return (globalThis ?? {});
-    } catch { return {}; }
-  })();
+type PlanKey = "normal" | "gold" | "platine";
 
-  const subjectsCount = (() => {
-    try {
-      const v = selection?.selectedSubjects ?? selection?.selected?.subjects ?? selection?.subjects ?? null;
-      if (Array.isArray(v)) return v.length;
-      if (v && typeof v.size === 'number') return Number(v.size);
-      if (v && typeof v.length === 'number') return Number(v.length);
-    } catch {}
-    return 1;
-  })();
-// Plans
-  const planItems = useMemo(() => {
-    const order: PlanKey[] = ['normal', 'gold', 'platine']
-    return order.map((key) => {
-      const cents = PRICING.plans[key]
-      
-      const adjustedCents = applySubjectsCount(cents, undefined, { subjects: Array.from({ length: subjectsCount }) });return {
-        key,
-        label: PLAN_LABELS[key],
-        priceCents: adjustedCents,
-        price: centsToEuros(adjustedCents),
-        badge:
-          key === 'normal'
-            ? 'Starter'
-            : key === 'gold'
-              ? 'Populaire'
-              : 'Complet',
-        features: [
-          'Accès aux cours',
-          'Exercices interactifs',
-          key !== 'normal' ? 'Corrections détaillées' : undefined,
-          key === 'platine' ? 'Coaching prioritaire' : undefined,
-        ].filter(Boolean) as string[],
-      }
-    })
-  }, [subjectsCount])
+const PLANS: Array<{ key: PlanKey; label: string; monthlyCents: number; features: string[]; badge?: string }> = [
+  { key: "normal",  label: "Normal",  monthlyCents: 999,  features: ["Base par matière", "Exercices concrets"] },
+  { key: "gold",    label: "Gold",    monthlyCents: 999 + 500, features: ["Guides méthode", "Fiches mémo"], badge: "+5€" },
+  { key: "platine", label: "Platine", monthlyCents: 999 + 1000, features: ["Parcours avancés", "Corrections détaillées"], badge: "+10€" },
+];
 
-  // Packs (conversion objet -> tableau)
-  const packItems = useMemo(() => {
-    const entries = Object.entries(PRICING.packs) as [PackKey, number][]
-    // ordre préféré : pack3 puis family
-    const order: PackKey[] = ['pack3', 'family']
-    const ordered = order
-      .map((k) => entries.find(([key]) => key === k))
-      .filter(Boolean) as [PackKey, number][]
+function centsToEuro(c: number) {
+  return (c / 100).toFixed(2).replace(".", ",");
+}
 
-    return ordered.map(([key, cents]) => ({
-      key,
-      label: PACK_LABELS[key],
-      priceCents: cents,
-      price: centsToEuros(cents),
-      features:
-        key === 'pack3'
-          ? [
-              '3 matières au choix',
-              'Économie vs achat séparé',
-              'Activation immédiate',
-            ]
-          : [
-              'Pour plusieurs enfants',
-              'Accès multi-profils',
-              'Support prioritaire',
-            ],
-    }))
-  }, [])
+export default function PricingClient({ children }: { children?: ReactNode }) {
+  // Un état minimal pour montrer que c'est un composant client
+  const [ready, setReady] = useState(false);
+  useEffect(() => { setReady(true); }, []);
 
   return (
     <section className="space-y-10">
-      {/* PLANS */}
       <div>
         <h2 className="mb-4 text-2xl font-bold">Abonnements matière</h2>
         <div className="grid gap-6 md:grid-cols-3">
-          {planItems.map((p) => (
+          {PLANS.map((p) => (
             <article key={p.key} className="rounded-2xl border p-6 shadow-sm">
               <header className="mb-2 flex items-center justify-between">
                 <h3 className="text-xl font-semibold">{p.label}</h3>
@@ -146,53 +40,23 @@ export default function PricingClient() {
                 )}
               </header>
               <div className="mb-4 text-3xl font-bold">
-                {p.price}
+                {centsToEuro(p.monthlyCents)} €
                 <span className="sr-only"> €</span>
               </div>
-
-{/* __SUBJECTS_BADGE__ */}
-{subjectsCount > 1 && (
-  <div className="mt-1 text-sm opacity-70">
-    ×{subjectsCount} matière{subjectsCount > 1 ? 's' : ''}
-  </div>
-)}
-
               <ul className="mb-6 space-y-2 text-sm">
-                {p.features.map((f, i) => (
-                  <li key={i}>• {f}</li>
-                ))}
+                {p.features.map((f, i) => <li key={i}>• {f}</li>)}
               </ul>
-              <button className="w-full rounded-xl border px-4 py-2 font-medium hover:bg-black/5">
-                Choisir {p.label}
+              <button className="w-full rounded-xl border px-4 py-2 font-medium hover:bg-black/5" disabled={!ready}>
+                Choisir
               </button>
             </article>
           ))}
         </div>
       </div>
 
-      {/* PACKS */}
-      <div>
-        <h2 className="mb-4 text-2xl font-bold">Packs</h2>
-        <div className="grid gap-6 md:grid-cols-2">
-          {packItems.map((p) => (
-            <article key={p.key} className="rounded-2xl border p-6 shadow-sm">
-              <h3 className="text-xl font-semibold mb-2">{p.label}</h3>
-              <div className="mb-4 text-3xl font-bold">
-                {p.price}
-                <span className="sr-only"> €</span>
-              </div>
-              <ul className="mb-6 space-y-2 text-sm">
-                {p.features.map((f, i) => (
-                  <li key={i}>• {f}</li>
-                ))}
-              </ul>
-              <button className="w-full rounded-xl border px-4 py-2 font-medium hover:bg-black/5">
-                Choisir {p.label}
-              </button>
-            </article>
-          ))}
-        </div>
-      </div>
+      {children ? (
+        <div className="mt-1 text-sm opacity-70">{children}</div>
+      ) : null}
     </section>
-  )
+  );
 }

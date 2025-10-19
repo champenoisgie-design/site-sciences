@@ -34,13 +34,14 @@ export default function ThemeSwitchInline() {
       <span>Thème</span>
       <select
         value={theme}
-        onChange={(e) => setTheme(e.target.value as Theme)}
+        onChange={(e)=>{ const v=(e.target as HTMLSelectElement).value; try{localStorage.setItem("theme",v);}catch{} document.documentElement.setAttribute("data-theme",v); }} 
         className="rounded border bg-transparent px-2 py-1"
         aria-label="Choisir le thème"
       >
         <option value="system">Système</option>
         <option value="light">Clair</option>
         <option value="dark">Sombre</option>
+        <option value="onepiece1">OnePiece1</option>
       </select>
     </label>
   )
