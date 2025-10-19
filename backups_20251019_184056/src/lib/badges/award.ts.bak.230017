@@ -1,0 +1,49 @@
+import prisma from '@/lib/prisma'
+
+export async function awardBadge(userId: string, badgeKey: string) {
+  const badge = await prisma.badge.findUnique({ where: { key: badgeKey } })
+  if (!badge) return { ok: false, reason: 'badge_not_found' }
+  try {
+    const rec = await prisma.userBadge.upsert({
+      where: { userId_badgeKey: { userId, badgeKey } as any },
+      update: {},
+      create: { userId, badgeKey },
+    })
+    return { ok: true, badge: rec }
+  } catch {
+    const existing = await prisma.userBadge.findFirst({
+      where: { userId, badgeKey },
+    })
+    if (existing) return { ok: true, badge: existing }
+    const created = await prisma.userBadge.create({
+      data: { userId, badgeKey },
+    })
+    return { ok: true, badge: created }
+  }
+}
+
+/** Plans packs/subjects historiques */
+export async function awardOnSubscription(
+  userId: string,
+  planOrType: string,
+  subPlan?: string,
+) {
+  // Support legacy (plan only) and newer (type + plan)
+  const type = ['pack', 'subject', 'family', 'mode', 'skin'].includes(
+    planOrType,
+  )
+    ? planOrType
+    : 'pack'
+  const plan = type === 'pack' ? (subPlan ?? planOrType) : (subPlan ?? '')
+
+  // Toujours: premier abonnement
+  await awardBadge(userId, 'sub_first').catch(() => {})
+
+  if (type === 'pack') {
+    if (plan === 'pack3') await awardBadge(userId, 'pack3_sub').catch(() => {})
+  } else if (type === 'mode') {
+    await awardBadge(userId, `mode_${plan}`).catch(() => {})
+  } else if (type === 'skin') {
+    await awardBadge(userId, `skin_${plan}`).catch(() => {})
+  }
+}
