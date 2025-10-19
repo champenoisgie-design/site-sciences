@@ -1,0 +1,148 @@
+import { applySubjectsCount } from "@/lib/pricing-math";
+import { useSelection } from "@/components/SelectionProvider";
+'use client'
+import { useMemo } from 'react'
+import {
+  PRICING,
+  PLAN_LABELS,
+  PACK_LABELS,
+  centsToEuros,
+} from '@/config/pricing'
+
+type PlanKey = keyof typeof PRICING.plans
+type PackKey = keyof typeof PRICING.packs
+
+export default function PricingClient() {
+  
+  // Détermination du nombre de matières sélectionnées
+  const selection: any = (() => {
+    try {
+      const maybe = (typeof useSelection === 'function') ? useSelection() : null;
+      if (maybe) return maybe;
+      return (globalThis ?? {});
+    } catch { return {}; }
+  })();
+
+  const subjectsCount = (() => {
+    try {
+      const v = selection?.selectedSubjects ?? selection?.selected?.subjects ?? selection?.subjects ?? null;
+      if (Array.isArray(v)) return v.length;
+      if (v && typeof v.size === 'number') return Number(v.size);
+      if (v && typeof v.length === 'number') return Number(v.length);
+    } catch {}
+    return 1;
+  })();
+// Plans
+  const planItems = useMemo(() => {
+    const order: PlanKey[] = ['normal', 'gold', 'platine']
+    return order.map((key) => {
+      const cents = PRICING.plans[key]
+      return {
+        key,
+        label: PLAN_LABELS[key],
+        priceCents: adjustedCents,
+        price: centsToEuros(adjustedCents),
+        badge:
+          key === 'normal'
+            ? 'Starter'
+            : key === 'gold'
+              ? 'Populaire'
+              : 'Complet',
+        features: [
+          'Accès aux cours',
+          'Exercices interactifs',
+          key !== 'normal' ? 'Corrections détaillées' : undefined,
+          key === 'platine' ? 'Coaching prioritaire' : undefined,
+        ].filter(Boolean) as string[],
+      }
+    })
+  }, [subjectsCount])
+
+  // Packs (conversion objet -> tableau)
+  const packItems = useMemo(() => {
+    const entries = Object.entries(PRICING.packs) as [PackKey, number][]
+    // ordre préféré : pack3 puis family
+    const order: PackKey[] = ['pack3', 'family']
+    const ordered = order
+      .map((k) => entries.find(([key]) => key === k))
+      .filter(Boolean) as [PackKey, number][]
+
+    return ordered.map(([key, cents]) => ({
+      key,
+      label: PACK_LABELS[key],
+      priceCents: adjustedCents,
+      price: centsToEuros(adjustedCents),
+      features:
+        key === 'pack3'
+          ? [
+              '3 matières au choix',
+              'Économie vs achat séparé',
+              'Activation immédiate',
+            ]
+          : [
+              'Pour plusieurs enfants',
+              'Accès multi-profils',
+              'Support prioritaire',
+            ],
+    }))
+  }, [])
+
+  return (
+    <section className="space-y-10">
+      {/* PLANS */}
+      <div>
+        <h2 className="mb-4 text-2xl font-bold">Abonnements matière</h2>
+        <div className="grid gap-6 md:grid-cols-3">
+          {planItems.map((p) => (
+            <article key={p.key} className="rounded-2xl border p-6 shadow-sm">
+              <header className="mb-2 flex items-center justify-between">
+                <h3 className="text-xl font-semibold">{p.label}</h3>
+                {p.badge && (
+                  <span className="rounded-full border px-2 py-0.5 text-xs">
+                    {p.badge}
+                  </span>
+                )}
+              </header>
+              <div className="mb-4 text-3xl font-bold">
+                {p.price}
+                <span className="sr-only"> €</span>
+              </div>
+              <ul className="mb-6 space-y-2 text-sm">
+                {p.features.map((f, i) => (
+                  <li key={i}>• {f}</li>
+                ))}
+              </ul>
+              <button className="w-full rounded-xl border px-4 py-2 font-medium hover:bg-black/5">
+                Choisir {p.label}
+              </button>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      {/* PACKS */}
+      <div>
+        <h2 className="mb-4 text-2xl font-bold">Packs</h2>
+        <div className="grid gap-6 md:grid-cols-2">
+          {packItems.map((p) => (
+            <article key={p.key} className="rounded-2xl border p-6 shadow-sm">
+              <h3 className="text-xl font-semibold mb-2">{p.label}</h3>
+              <div className="mb-4 text-3xl font-bold">
+                {p.price}
+                <span className="sr-only"> €</span>
+              </div>
+              <ul className="mb-6 space-y-2 text-sm">
+                {p.features.map((f, i) => (
+                  <li key={i}>• {f}</li>
+                ))}
+              </ul>
+              <button className="w-full rounded-xl border px-4 py-2 font-medium hover:bg-black/5">
+                Choisir {p.label}
+              </button>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
