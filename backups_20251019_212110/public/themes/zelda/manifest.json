@@ -1,0 +1,11 @@
+{
+  "name": "Zelda",
+  "slug": "zelda",
+  "palette": { "primary": "#0ea5e9", "accent": "#f59e0b", "bg": "#020617" },
+  "assets": {
+    "video": "/themes/zelda/bg.mp4",
+    "poster": "/themes/zelda/bg.jpg",
+    "badge": "/themes/zelda/badge.svg",
+    "icon": "/themes/zelda/icon.svg"
+  }
+}
