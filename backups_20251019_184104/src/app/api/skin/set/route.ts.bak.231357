@@ -1,0 +1,45 @@
+import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
+function setSkinCookie(skin: string) {
+  const jar = cookies()
+  jar.set('skin_active', skin, {
+    path: '/',
+    maxAge: 60 * 60 * 24 * 365,
+    sameSite: 'lax',
+  })
+}
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url)
+  const skin = searchParams.get('skin') || ''
+  const jar = await cookies()
+  const owned = (jar.get('ent_skins')?.value || '').split(',').filter(Boolean)
+  if (!skin || !owned.includes(skin)) {
+    const url = new URL(
+      '/tarifs?tab=skins',
+      process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+    )
+    return NextResponse.redirect(url, { status: 303 })
+  }
+  setSkinCookie(skin)
+  const back = searchParams.get('back') || '/customisation'
+  return NextResponse.redirect(
+    new URL(back, process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+    { status: 303 },
+  )
+}
+
+export async function POST(req: Request) {
+  const { skin } = await req.json().catch(() => ({ skin: '' }))
+  const jar = await cookies()
+  const owned = (jar.get('ent_skins')?.value || '').split(',').filter(Boolean)
+  if (!skin || !owned.includes(skin)) {
+    return NextResponse.json({ ok: false, error: 'not_owned' }, { status: 403 })
+  }
+  setSkinCookie(skin)
+  return NextResponse.json({ ok: true })
+}
