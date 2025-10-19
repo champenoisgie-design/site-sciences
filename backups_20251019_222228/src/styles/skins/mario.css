@@ -1,0 +1,5 @@
+.mario-active .themed-hero { color: white; }
+@media (prefers-reduced-motion: reduce) {
+  .mario-active .bg-video { display: none; }
+  .mario-active .bg-poster { display: block; }
+}

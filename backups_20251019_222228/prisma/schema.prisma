@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  passwordHash   String?
+  trialExpiresAt DateTime?
+  createdAt      DateTime  @default(now())
+
+  sessions            Session[]
+  subscriptions       Subscription[]
+  entitlements        Entitlement[]
+  progresses          Progress[]
+  badges              Badge[]
+  passwordResetTokens PasswordResetToken[]
+}
+
+model Session {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
+  revokedAt DateTime?
+}
+
+model Subscription {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  provider   String // "stripe" | "gocardless"
+  externalId String
+  status     String // "active" | "incomplete" | "canceled" | ...
+  period     String // "monthly" | "annual"
+  priceCents Int
+  startedAt  DateTime  @default(now())
+  canceledAt DateTime?
+}
+
+model Entitlement {
+  id     String  @id @default(cuid())
+  userId String
+  user   User    @relation(fields: [userId], references: [id])
+  key    String // ex: "themes.onepiece"
+  value  Boolean @default(false)
+}
+
+model Progress {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id])
+  subject        String
+  xp             Int       @default(0)
+  streak         Int       @default(0)
+  lastActivityAt DateTime?
+}
+
+model Badge {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id])
+  code     String
+  earnedAt DateTime @default(now())
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  expires   DateTime
+  createdAt DateTime @default(now())
+}
