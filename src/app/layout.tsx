@@ -1,3 +1,5 @@
+import Header from "@/components/Header";
+import Footer from "@/components/layout/Footer";
 import { VisualThemeProvider } from "@/contexts/visualTheme";
 
 import SessionGate from "../components/security/SessionGate";
@@ -12,7 +14,6 @@ import './addons.css'
 import './globals.css'
 import LearningModeProvider from './_providers/LearningModeProvider'
 import SelectionProviderClient from './_providers/SelectionProviderClient'
-import Header from '@/components/Header'
 import { cookies } from 'next/headers'
 import ClientVisualTheme from "@/app/ClientVisualTheme";
 
@@ -60,7 +61,6 @@ export default async function RootLayout({
             <main className="min-h-dvh"><ClientVisualTheme>{children}</ClientVisualTheme></main>
           </SelectionProviderClient>
         </LearningModeProvider>
-            <FooterLegal />
             </ClientVisualTheme>
         <Footer />
     </VisualThemeProvider>
