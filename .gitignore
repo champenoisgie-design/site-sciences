@@ -44,3 +44,5 @@ disabled_files/
 
 # Ne pas versionner les vidéos locales de preview
 public/themes/.*/*.mp4
+venv/
+.DS_Store
