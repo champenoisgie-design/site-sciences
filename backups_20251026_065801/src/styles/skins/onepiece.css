@@ -1,0 +1,5 @@
+.onepiece-active .themed-hero { color: white; }
+@media (prefers-reduced-motion: reduce) {
+  .onepiece-active .bg-video { display: none; }
+  .onepiece-active .bg-poster { display: block; }
+}
