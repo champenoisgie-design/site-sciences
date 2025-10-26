@@ -1,11 +1,8 @@
 {
   "name": "Mario",
   "slug": "mario",
-  "palette": { "primary": "#0ea5e9", "accent": "#f59e0b", "bg": "#020617" },
-  "assets": {
-    "video": "/themes/mario/bg.mp4",
-    "poster": "/themes/mario/bg.jpg",
-    "badge": "/themes/mario/badge.svg",
-    "icon": "/themes/mario/icon.svg"
-  }
+  "variants": [
+    { "id": "mario1", "label": "Mario – World 1", "video": "/themes/mario/mario1.mp4", "poster": "/themes/mario/mario1.jpg" }
+  ],
+  "gallery": []
 }

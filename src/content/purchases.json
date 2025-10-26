@@ -1,0 +1,29 @@
+[
+  {
+    "id": "ord_001",
+    "date": "2025-10-20",
+    "item": "Physique-Chimie 4e — Formule Gold",
+    "period": "mensuel",
+    "amount": 12.9,
+    "status": "paid",
+    "provider": "stripe"
+  },
+  {
+    "id": "ord_002",
+    "date": "2025-10-22",
+    "item": "Maths 2nde — Formule Normal (Annuel -20%)",
+    "period": "annuel",
+    "amount": 125,
+    "status": "paid",
+    "provider": "gocardless"
+  },
+  {
+    "id": "ord_003",
+    "date": "2025-10-25",
+    "item": "Pack Famille (5e + Terminale) — réduction -20%",
+    "period": "mensuel",
+    "amount": 23.8,
+    "status": "trial",
+    "provider": "stripe"
+  }
+]

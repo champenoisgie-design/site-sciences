@@ -1,11 +1,13 @@
 {
-  "name": "One Piece",
+  "name": "OnePiece",
   "slug": "onepiece",
-  "palette": { "primary": "#0ea5e9", "accent": "#f59e0b", "bg": "#020617" },
-  "assets": {
-    "video": "/themes/onepiece/bg.mp4",
-    "poster": "/themes/onepiece/bg.jpg",
-    "badge": "/themes/onepiece/badge.svg",
-    "icon": "/themes/onepiece/icon.svg"
-  }
+  "variants": [
+    { "id": "onepiece1", "label": "OnePiece – Océan 1", "video": "/themes/onepiece/onepiece1.mp4", "poster": "/themes/onepiece/onepiece1.jpg" },
+    { "id": "onepiece4", "label": "OnePiece – Océan 4", "video": "/themes/onepiece/onepiece4.mp4", "poster": "/themes/onepiece/onepiece4.jpg" }
+  ],
+  "gallery": [
+    "/themes/onepiece/img-1.jpg",
+    "/themes/onepiece/img-2.jpg",
+    "/themes/onepiece/img-3.jpg"
+  ]
 }

@@ -15,7 +15,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'email_in_use' }, { status: 400 })
     const passwordHash = await hashPassword(password)
     const user = await prisma.user.create({
-      data: { id: genId(), name, email, passwordHash },
+      data: { id: genId(), email, passwordHash },
     })
     await createSessionForUser(user.id, { remember: !!remember })
     return NextResponse.json({ ok: true })

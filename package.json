@@ -25,6 +25,7 @@
     "@stripe/stripe-js": "^7.9.0",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
+    "date-fns": "^4.1.0",
     "gocardless-nodejs": "^6.0.0",
     "next": "15.5.3",
     "next-auth": "^4.24.11",

@@ -1,27 +1,26 @@
+import fs from "node:fs/promises";
+import path from "node:path";
 import { notFound } from "next/navigation";
-import Hero from "@/components/home/Hero";
+import ThemeShowcase from "@/components/themes/ThemeShowcase";
 
-const KNOWN = new Set(["onepiece", "mario", "dbz", "zelda"]);
+const KNOWN = new Set(["onepiece", "mario"]);
 
-export const metadata = { title: "Aperçu du thème" };
+async function readManifest(slug: string) {
+  const filePath = path.join(process.cwd(), "public", "themes", slug, "manifest.json");
+  try {
+    const text = await fs.readFile(filePath, "utf8");
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
 
-export default function Page({ params }: { params: { slug: string } }) {
-  const { slug } = params;
+export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params; // ✅ Next 15 : params est asynchrone
   if (!KNOWN.has(slug)) return notFound();
 
-  return (
-    <main>
-      <Hero />
-      <section className="mx-auto max-w-5xl px-4 py-10 space-y-4">
-        <h1 className="text-2xl font-semibold">Thème “{slug}”</h1>
-        <p>
-          Voici un aperçu du thème <strong>{slug}</strong> : fond vidéo/poster,
-          contraste adapté et badges/icônes personnalisables.
-        </p>
-        <p className="opacity-70 text-sm">
-          Active “Réduire les animations” pour voir le poster statique.
-        </p>
-      </section>
-    </main>
-  );
+  const manifest = await readManifest(slug);
+  if (!manifest) return notFound();
+
+  return <ThemeShowcase manifest={manifest} />;
 }
