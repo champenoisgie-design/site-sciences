@@ -1,60 +1,47 @@
-// src/app/api/checkout/session/route.ts
 import { NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
-import { getSessionUser } from "@/lib/auth";
+import { getStripeMode } from "@/lib/stripe/mode";
+import { createMockCheckoutSession } from "@/lib/stripe/mock";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
-const PRICE = {
-  normal:   process.env.STRIPE_PRICE_NORMAL_MONTHLY || "",
-  gold:     process.env.STRIPE_PRICE_GOLD_MONTHLY   || "",
-  platine:  process.env.STRIPE_PRICE_PLATINE_MONTHLY|| "",
-};
+// Optionnel futur: import Stripe from "stripe";
 
 export async function POST(req: Request) {
-  const user = await getSessionUser().catch(()=>null);
-  if (!user) return NextResponse.json({ ok:false, error:"not_authenticated" }, { status: 401 });
-  const body = await req.json().catch(()=> ({} as any));
-
-  const url = new URL(req.url);
-  const origin = process.env.NEXT_PUBLIC_SITE_URL || `${url.protocol}//${url.host}`;
-
-  const plan = String(body.plan || "normal") as "normal"|"gold"|"platine";
-  const priceId = PRICE[plan];
-
   try {
-    if (priceId) {
-      const session = await stripe.checkout.sessions.create({
-        mode: "subscription",
-        line_items: [{ price: priceId, quantity: 1 }],
-        success_url: `${origin}/panier?checkout=success`,
-        cancel_url: `${origin}/panier?checkout=cancel`,
-        customer_email: user.email || undefined,
-        metadata: { userId: user.id, plan },
-      });
-      return NextResponse.json({ ok:true, url: session.url });
-    } else {
-      // Fallback test à montant libre si pas de PRICE configuré
-      const amount = Number(body.amount || 0);
-      const session = await stripe.checkout.sessions.create({
-        mode: "payment",
-        line_items: [{
-          price_data: {
-            currency: "eur",
-            product_data: { name: `Site Sciences (${plan})` },
-            unit_amount: Math.max(100, Math.round(amount*100))
-          },
-          quantity: 1
-        }],
-        success_url: `${origin}/panier?checkout=success`,
-        cancel_url: `${origin}/panier?checkout=cancel`,
-        customer_email: user.email || undefined,
-        metadata: { userId: user.id, plan },
-      });
-      return NextResponse.json({ ok:true, url: session.url });
+    const body = await req.json().catch(() => ({}));
+    const plan = body?.plan as "Normal" | "Gold" | "Platine" | undefined;
+    const period = body?.period as "Mensuel" | "Annuel" | undefined;
+    const distinctLevelsCount = body?.distinctLevelsCount ?? undefined;
+    const items = Array.isArray(body?.items) ? body.items : [];
+
+    const trialDays = 3; // confirmé
+
+    const mode = getStripeMode();
+    if (mode === "mock") {
+      const session = await createMockCheckoutSession({ plan, period, trialDays });
+      return NextResponse.json({ ok: true, mode, url: session.url });
     }
-  } catch (e:any) {
-    return NextResponse.json({ ok:false, error: e?.message || "stripe_error" }, { status: 500 });
+
+    // Mode live: on vérifie la présence des clés pour donner un message clair
+    const sk = process.env.STRIPE_SECRET_KEY;
+    const pk = process.env.STRIPE_PUBLISHABLE_KEY;
+    if (!sk || !pk) {
+      return NextResponse.json(
+        {
+          ok: false,
+          mode: "live",
+          error: "Stripe live non configuré: STRIPE_SECRET_KEY / STRIPE_PUBLISHABLE_KEY manquants.",
+          hint: "Ajoute tes clés dans .env.local puis redémarre: STRIPE_MODE=live",
+        },
+        { status: 503 }
+      );
+    }
+
+    // TODO: brancher Stripe réel ici quand les clés seront fournies.
+    return NextResponse.json(
+      { ok: false, mode: "live", error: "Stripe live: implémentation à activer une fois les clés fournies." },
+      { status: 501 }
+    );
+  } catch (e: any) {
+    console.error("[checkout/session] error", e);
+    return NextResponse.json({ ok: false, error: e?.message ?? "unknown" }, { status: 500 });
   }
 }

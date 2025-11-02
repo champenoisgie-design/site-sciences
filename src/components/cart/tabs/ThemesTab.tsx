@@ -1,4 +1,5 @@
 "use client";
+import TryBeforeLinkFixer from "@/components/preview/TryBeforeLinkFixer";
 import { CartState } from "../PanierTabs";
 
 const CARDS = [
@@ -12,20 +13,12 @@ export default function ThemesTab({
 }: { value: CartState; onChange: (v: CartState) => void }) {
   return (
     <div className="grid md:grid-cols-3 gap-4">
+        <TryBeforeLinkFixer />
       {CARDS.map((c) => (
         <div key={c.title} className="rounded-xl border border-gray-200 bg-white p-3">
           <h3 className="font-medium mb-2 text-gray-900">{c.title}</h3>
           <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
-            <video muted playsInline autoPlay loop preload="metadata" loading="lazy" className="w-full h-full object-cover"
-              className="w-full h-full object-cover"
-              poster={c.poster}
-              preload="metadata"
-              autoPlay
-              muted
-              loop
-              playsInline
-              controls
-            >
+            <video muted playsInline autoPlay loop preload="metadata" className="w-full h-full object-cover" poster={c.poster} controls>
               <source src={c.video} type="video/mp4" />
             </video>
           </div>

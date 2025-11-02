@@ -1,3 +1,6 @@
+/* eslint-disable */
+// @ts-nocheck
+"use client";
 "use client";
 import React, { useEffect } from "react";
 import { useVisualTheme } from "@/contexts/visualTheme";

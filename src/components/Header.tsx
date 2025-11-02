@@ -1,3 +1,5 @@
+"use client";
+import ThemeSelector from "@/components/header/ThemeSelector";
 'use client'
 
 import Link from 'next/link'

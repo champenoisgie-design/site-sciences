@@ -1,13 +1,11 @@
 {
-  "name": "OnePiece",
   "slug": "onepiece",
-  "variants": [
-    { "id": "onepiece1", "label": "OnePiece – Océan 1", "video": "/themes/onepiece/onepiece1.mp4", "poster": "/themes/onepiece/onepiece1.jpg" },
-    { "id": "onepiece4", "label": "OnePiece – Océan 4", "video": "/themes/onepiece/onepiece4.mp4", "poster": "/themes/onepiece/onepiece4.jpg" }
-  ],
-  "gallery": [
-    "/themes/onepiece/img-1.jpg",
-    "/themes/onepiece/img-2.jpg",
-    "/themes/onepiece/img-3.jpg"
+  "title": "Univers One Piece",
+  "color": "#0284c7",
+  "summary": "Physique des océans, flottabilité, énergie des vagues, biologie marine…",
+  "chapters": [
+    { "id": "o1", "title": "Flottabilité & Principe d'Archimède", "duration": "5:50" },
+    { "id": "o2", "title": "Énergie des vagues", "duration": "6:05" },
+    { "id": "o3", "title": "Biologie: adaptation marine", "duration": "4:45" }
   ]
 }

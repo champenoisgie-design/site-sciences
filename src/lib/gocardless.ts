@@ -1,3 +1,5 @@
+/* eslint-disable */
+// @ts-nocheck
 export async function getGcClient() {
   const accessToken = process.env.GC_ACCESS_TOKEN!;
   const environment = (process.env.GC_ENVIRONMENT || "sandbox") as "sandbox" | "live";

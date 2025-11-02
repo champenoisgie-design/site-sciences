@@ -1,10 +1,14 @@
 "use client";
-import { useMemo, useState } from "react";
+import type { CartItem, BillingPeriod } from "@/lib/pricing/types";
+import CartIncentives from "@/components/cart/CartIncentives";
+import DiscountBanners from "@/components/cart/DiscountBanners";
+import { useMemo, useState, useEffect } from "react";
 import SubjectsTab from "./tabs/SubjectsTab";
 import ThemesTab from "./tabs/ThemesTab";
 import ModesTab from "./tabs/ModesTab";
 import ChaptersTab from "./tabs/ChaptersTab";
 import SummaryBar from "./SummaryBar";
+import { useSearchParams } from "next/navigation";
 
 export type CartState = {
   subjects: Array<{ niveau: string; matiere: string }>;
@@ -20,6 +24,26 @@ const TABS = [
   { id: "chapters", label: "Achat par chapitre" },
 ] as const;
 
+function __deriveCartItems(state:any): CartItem[] {
+  const items: CartItem[] = [];
+  const entries = Array.isArray(state?.entries) ? state.entries :
+    Array.isArray(state?.subjects) ? state.subjects :
+    Array.isArray(state?.lines) ? state.lines : [];
+  for (const e of entries) {
+    const level = (e && (e.level || e.niveau || e.grade)) || undefined;
+    const title = (e && (e.subject || e.matiere || e.title)) || "Matière";
+    const price = (e && typeof e.priceCents === "number") ? e.priceCents : 1299;
+    items.push({ id: String(title)+"-"+(level||"NA"), type: "subject", title: String(title), level: level, priceCents: price });
+  }
+  const addons = Array.isArray(state?.addons) ? state.addons :
+    Array.isArray(state?.modes) ? state.modes : [];
+  for (const a of addons) {
+    const title = (a && (a.id || a.code || a.title)) || "mode";
+    const price = (a && typeof a.priceCents === "number") ? a.priceCents : 299;
+    items.push({ id: "mode-"+String(title), type: "mode", title: String(title), priceCents: price });
+  }
+  return items;
+}
 export default function PanierTabs() {
   const [active, setActive] = useState<(typeof TABS)[number]["id"]>("subjects");
   const [state, setState] = useState<CartState>({
@@ -29,7 +53,25 @@ export default function PanierTabs() {
     period: "Mensuel",
   });
 
-  const subjectsCount = state.subjects.length;
+  
+  // INIT_FROM_URL: récupérer ?plan=&period= à l'ouverture de la page
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (!searchParams) return;
+    const qpPlan = searchParams.get("plan");
+    const qpPeriod = searchParams.get("period");
+    const validPlan = qpPlan === "Normal" || qpPlan === "Gold" || qpPlan === "Platine" ? qpPlan : undefined;
+    const validPeriod = qpPeriod === "Mensuel" || qpPeriod === "Annuel" ? qpPeriod : undefined;
+    if (validPlan || validPeriod) {
+      setState((s:any) => ({
+        ...s,
+        plan: validPlan ?? (s?.plan ?? "Normal"),
+        period: validPeriod ?? (s?.period ?? "Mensuel"),
+      }));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+const subjectsCount = state.subjects.length;
 
   const addonsCount = useMemo(
     () => Object.values(state.modes).filter(Boolean).length,
@@ -41,7 +83,15 @@ export default function PanierTabs() {
     [state.subjects]
   );
 
-  return (
+  const __items: CartItem[] = __deriveCartItems(state || {});
+const __period: BillingPeriod = ((state && state.period) ? state.period : "Mensuel") as BillingPeriod;
+
+// Bannières de réduction
+const __banners = (
+  <DiscountBanners items={__items} period={__period} distinctLevelsCount={distinctLevelsCount} onRequestAnnual={() => setState((s) => ({ ...s, period: "Annuel" }))} />
+);
+
+return (
     <div className="space-y-6">
       {/* Onglets */}
       <div className="flex gap-2 rounded-xl bg-white p-1 border border-gray-200 w-full overflow-x-auto">
@@ -76,9 +126,12 @@ export default function PanierTabs() {
       </div>
 
       {/* Résumé + Total serveur */}
-      <SummaryBar
-        subjectsCount={subjectsCount}
-        addonsCount={addonsCount}
+
+      {__banners}
+
+      <CartIncentives items={__items} period={__period} distinctLevelsCount={distinctLevelsCount}  plan={state.plan} onRequestAnnual={() => setState((s) => ({ ...s, period: "Annuel" }))} />
+
+      <SummaryBar items={__items}
         distinctLevelsCount={distinctLevelsCount}
         plan={state.plan}
         period={state.period}

@@ -1,47 +1,53 @@
-import { NextRequest, NextResponse } from "next/server";
-import { applyDiscounts, deriveDistinctLevelsCount, formatEuro } from "@/lib/pricing/apply";
-import type { CartPriceRequestBody, CartPriceResponseBody } from "@/lib/pricing/types";
+import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic"; // compute each time
+type BillingPeriod = "Mensuel" | "Annuel";
+type CartItem =
+  | { id: string; type: "subject"; title: string; level?: string; priceCents: number }
+  | { id: string; type: "mode"; title: string; priceCents: number };
 
-export async function POST(req: NextRequest) {
+function eur(nCents: number) {
+  return (nCents / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+}
+
+export async function POST(req: Request) {
   try {
-    const body = (await req.json()) as CartPriceRequestBody;
+    const body = await req.json();
+    const items: CartItem[] = Array.isArray(body?.items) ? body.items : [];
+    const period: BillingPeriod = (body?.period === "Annuel" ? "Annuel" : "Mensuel");
+    const distinctLevelsCount: number | undefined =
+      typeof body?.distinctLevelsCount === "number" ? body.distinctLevelsCount : undefined;
 
-    if (!body || !body.period || !Array.isArray(body.items)) {
-      return NextResponse.json(
-        { error: "Requête invalide: period + items requis" },
-        { status: 400 }
-      );
-    }
+    const subtotalCents = items.reduce((acc, it) => acc + Math.max(0, Math.floor(it.priceCents || 0)), 0);
 
-    const distinctLevelsCount =
-      typeof body.distinctLevelsCount === "number"
-        ? body.distinctLevelsCount
-        : deriveDistinctLevelsCount(body.items);
+    const annual = period === "Annuel";
+    const family = (distinctLevelsCount ?? 0) >= 2;
 
-    const { subtotalCents, discountCents, totalCents, applied, details } = applyDiscounts(
-      body.items,
-      body.period,
-      distinctLevelsCount
-    );
+    const enableCombo = (process.env.PRICING_ENABLE_COMBO || "").toLowerCase() === "true";
+    const combo = enableCombo && annual && family;
 
-    const res: CartPriceResponseBody = {
+    // Applique la meilleure réduction unique: combo 30% sinon 20%.
+    const rate = combo ? 0.30 : (annual || family) ? 0.20 : 0.0;
+    const discountCents = Math.floor(subtotalCents * rate);
+    const totalCents = Math.max(0, subtotalCents - discountCents);
+
+    return NextResponse.json({
       subtotalCents,
-      discountCents,
-      totalCents,
-      totalHuman: formatEuro(totalCents),
-      appliedDiscounts: {
-        annual: applied.annual,
-        family: applied.family,
-        combo: applied.combo,
+      subtotalHuman: eur(subtotalCents),
+      discounts: {
+        rate,
+        amountCents: discountCents,
+        amountHuman: eur(discountCents),
       },
-      details,
-    };
-
-    return NextResponse.json(res, { status: 200 });
-  } catch (e) {
-    console.error("/api/cart/price error", e);
-    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+      appliedDiscounts: {
+        annual,
+        family,
+        combo: combo || undefined,
+      },
+      totalCents,
+      totalHuman: eur(totalCents),
+    });
+  } catch (e: any) {
+    console.error("[/api/cart/price] error:", e);
+    return NextResponse.json({ ok: false, error: e?.message ?? "unknown" }, { status: 500 });
   }
 }

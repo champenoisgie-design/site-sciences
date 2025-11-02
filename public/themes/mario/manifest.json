@@ -1,8 +1,11 @@
 {
-  "name": "Mario",
   "slug": "mario",
-  "variants": [
-    { "id": "mario1", "label": "Mario – World 1", "video": "/themes/mario/mario1.mp4", "poster": "/themes/mario/mario1.jpg" }
-  ],
-  "gallery": []
+  "title": "Univers Mario",
+  "color": "#e11d48",
+  "summary": "Apprendre avec l'univers de Mario: vitesses, trajectoires, forces, probabilités…",
+  "chapters": [
+    { "id": "m1", "title": "Cinématique: vitesse & accélération", "duration": "6:30" },
+    { "id": "m2", "title": "Trajectoires paraboliques (lancers)", "duration": "7:10" },
+    { "id": "m3", "title": "Probabilités des blocs ?", "duration": "5:40" }
+  ]
 }

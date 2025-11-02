@@ -1,40 +1,131 @@
 "use client";
-import { useState } from "react";
-export default function AbonnementPage() {
-  const [loading, setLoading] = useState(false);
-  const [mandate, setMandate] = useState<string | null>(null);
+import React, { useEffect, useMemo, useState } from "react";
 
-  async function startRedirect() {
-    setLoading(true);
-    const res = await fetch("/api/billing/gc/redirect/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
-    const data = await res.json(); if (data?.redirect_url) window.location.href = data.redirect_url;
+type SubState = {
+  status: "active" | "canceled";
+  plan: "Normal" | "Gold" | "Platine";
+  period: "Mensuel" | "Annuel";
+  trialDays: number;
+  startedAt: string; // ISO
+};
+
+function loadSub(): SubState | null {
+  if (typeof window === "undefined") return null;
+  const raw = localStorage.getItem("subscription:mock");
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
   }
-  async function completeRedirect() {
-    const rid = new URLSearchParams(window.location.search).get("redirect_flow_id");
-    if (!rid) return alert("redirect_flow_id manquant");
-    const res = await fetch("/api/billing/gc/redirect/complete", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ redirect_flow_id: rid, session_token: "demo-token" }) });
-    const data = await res.json(); setMandate(data?.mandate ?? null);
-    alert("Mandat confirmé: " + data?.mandate);
-  }
-  async function createSubscription() {
-    if (!mandate) return alert("Mandat requis");
-    const res = await fetch("/api/billing/gc/subscription/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mandate_id: mandate, amount_cents: 999, interval_unit: "monthly", interval: 1, plan_name: "Mensuel 9,99€" }) });
-    const data = await res.json(); alert("Abonnement créé: " + data?.id + " (" + data?.status + ")");
+}
+
+function saveSub(s: SubState) {
+  localStorage.setItem("subscription:mock", JSON.stringify(s));
+}
+
+function daysBetween(a: Date, b: Date) {
+  return Math.floor((b.getTime() - a.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+export default function AbonnementPage() {
+  const [sub, setSub] = useState<SubState | null>(null);
+
+  useEffect(() => {
+    setSub(loadSub());
+  }, []);
+
+  const trialInfo = useMemo(() => {
+    if (!sub) return null;
+    const start = new Date(sub.startedAt);
+    const now = new Date();
+    const used = Math.max(0, daysBetween(start, now));
+    const left = Math.max(0, sub.trialDays - used);
+    return { used, left, total: sub.trialDays };
+  }, [sub]);
+
+  const toggleCancel = () => {
+    if (!sub) return;
+    const next: SubState = {
+      ...sub,
+      status: sub.status === "active" ? "canceled" : "active",
+    };
+    setSub(next);
+    saveSub(next);
+  };
+
+  if (!sub) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-10">
+        <h1 className="text-2xl font-bold">Mon abonnement</h1>
+        <p className="text-muted-foreground mt-2">
+          Aucun abonnement actif. Rendez-vous sur la page <a className="underline" href="/tarifs">Tarifs</a> pour souscrire.
+        </p>
+      </div>
+    );
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10 space-y-6">
-      <h1 className="text-2xl font-semibold">Abonnement — essai gratuit 3 jours (GoCardless)</h1>
-      <ol className="list-decimal pl-6 space-y-3">
-        <li>Démarrer ➜ page GoCardless (IBAN sandbox).</li>
-        <li>Retour ici ➜ “Confirmer le mandat”.</li>
-        <li>Créer l’abonnement ➜ prélèvement auto dans 3 jours.</li>
-      </ol>
-      <div className="flex gap-3">
-        <button onClick={startRedirect} disabled={loading} className="bg-black text-white rounded px-4 py-2">Démarrer</button>
-        <button onClick={completeRedirect} className="border rounded px-4 py-2">Confirmer le mandat</button>
-        <button onClick={createSubscription} className="border rounded px-4 py-2">Créer l’abonnement</button>
+    <div className="mx-auto max-w-2xl px-4 py-10 space-y-4">
+      <h1 className="text-2xl font-bold">Mon abonnement</h1>
+
+      <div className="rounded-2xl border p-4 bg-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-sm text-muted-foreground">Statut</div>
+            <div className="text-lg font-semibold">
+              {sub.status === "active" ? "Actif" : "Annulé"}
+            </div>
+          </div>
+          <button
+            onClick={toggleCancel}
+            className={`rounded-xl px-4 py-2 font-semibold ${
+              sub.status === "active"
+                ? "bg-red-600 text-white hover:bg-red-700"
+                : "bg-emerald-600 text-white hover:bg-emerald-700"
+            }`}
+          >
+            {sub.status === "active" ? "Annuler l’abonnement" : "Réactiver"}
+          </button>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <div>
+            <div className="text-sm text-muted-foreground">Plan</div>
+            <div className="font-medium">{sub.plan}</div>
+          </div>
+          <div>
+            <div className="text-sm text-muted-foreground">Période</div>
+            <div className="font-medium">{sub.period} {sub.period === "Annuel" ? "(−20%)" : ""}</div>
+          </div>
+          <div>
+            <div className="text-sm text-muted-foreground">Début</div>
+            <div className="font-medium">{new Date(sub.startedAt).toLocaleDateString("fr-FR")}</div>
+          </div>
+          <div>
+            <div className="text-sm text-muted-foreground">Essai gratuit</div>
+            <div className="font-medium">
+              {trialInfo ? `${trialInfo.left} j restants / ${trialInfo.total} j` : "—"}
+            </div>
+          </div>
+        </div>
+
+        <p className="text-[12px] text-muted-foreground mt-3">
+          En annuel (−20 %), l’engagement est de 12 mois. Vous pouvez annuler avant la fin de l’essai gratuit (3 jours).
+        </p>
       </div>
-    </main>
+
+      <div className="rounded-2xl border p-4 bg-white">
+        <div className="text-sm font-semibold mb-1">Envie d’encore plus ?</div>
+        <div className="text-sm text-muted-foreground">
+          Passez en <strong>Gold</strong> pour les fiches personnalisées et le tableau Parents, ou en <strong>Platine</strong> pour Co-Pilot,
+          Mentor, Simulations 3D et support prioritaire.
+        </div>
+        <div className="mt-3 flex gap-2">
+          <a href="/panier?plan=Gold&period=Annuel" className="rounded-xl px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 font-semibold">Choisir Gold</a>
+          <a href="/panier?plan=Platine&period=Annuel" className="rounded-xl px-4 py-2 bg-emerald-600 text-white hover:bg-emerald-700 font-semibold">Passer Platine</a>
+        </div>
+      </div>
+    </div>
   );
 }
