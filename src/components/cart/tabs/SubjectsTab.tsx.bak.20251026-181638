@@ -1,0 +1,65 @@
+"use client";
+import { CartState } from "../PanierTabs";
+import { useId } from "react";
+
+const NIVEAUX = ["6e","5e","4e","3e","2nde","1re","Terminale"];
+const MATIERES = ["Maths","Physique-Chimie"];
+
+export default function SubjectsTab({
+  value, onChange
+}: { value: CartState; onChange: (v: CartState) => void }) {
+  const id = useId();
+  const add = () => onChange({
+    ...value,
+    subjects: [...value.subjects, { niveau: "2nde", matiere: "Maths" }]
+  });
+  const remove = (i: number) => onChange({
+    ...value,
+    subjects: value.subjects.filter((_, idx) => idx !== i)
+  });
+  const set = (i: number, key: "niveau"|"matiere", val: string) => {
+    const next = value.subjects.map((s, idx) => idx === i ? { ...s, [key]: val } : s);
+    onChange({ ...value, subjects: next });
+  };
+
+  return (
+    <div className="space-y-4">
+      <p className="opacity-80">
+        Choisis <strong>niveau + matière</strong> pour chaque abonnement (ex: “Physique-Chimie 4ᵉ”).
+      </p>
+
+      <div className="grid gap-3">
+        {value.subjects.map((s, i) => (
+          <div key={i} className="flex flex-wrap items-center gap-2 bg-white/5 p-3 rounded-xl border border-white/10">
+            <select
+              value={s.niveau}
+              onChange={(e) => set(i, "niveau", e.target.value)}
+              className="bg-black/20 border border-white/10 rounded-lg px-2 py-1"
+              aria-label={`Niveau ${i+1}`}
+            >
+              {NIVEAUX.map(n => <option key={n} value={n}>{n}</option>)}
+            </select>
+
+            <select
+              value={s.matiere}
+              onChange={(e) => set(i, "matiere", e.target.value)}
+              className="bg-black/20 border border-white/10 rounded-lg px-2 py-1"
+              aria-label={`Matière ${i+1}`}
+            >
+              {MATIERES.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
+
+            <button className="ml-auto text-sm px-3 py-1 rounded-lg bg-white/10 hover:bg-white/20"
+              onClick={() => remove(i)}>
+              Retirer
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <button className="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20" onClick={add}>
+        + Ajouter une matière/niveau
+      </button>
+    </div>
+  );
+}

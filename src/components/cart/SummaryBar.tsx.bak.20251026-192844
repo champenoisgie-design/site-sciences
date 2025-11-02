@@ -1,0 +1,103 @@
+"use client";
+import { useEffect, useState } from "react";
+
+type Props = {
+  subjectsCount: number;
+  addonsCount: number;
+  distinctLevelsCount: number; // >>> NEW
+  plan: "Normal" | "Gold" | "Platine";
+  period: "Mensuel" | "Annuel";
+  onPlanChange: (p: Props["plan"]) => void;
+  onPeriodChange: (p: Props["period"]) => void;
+};
+
+export default function SummaryBar({
+  subjectsCount, addonsCount, distinctLevelsCount, plan, period, onPlanChange, onPeriodChange
+}: Props) {
+  const [total, setTotal] = useState<string>("…");
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true); setErr(null);
+      try {
+        const res = await fetch("/api/cart/price", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            subjectsCount,
+            plan,
+            period,
+            addons: addonsCount,
+            distinctLevelsCount, // >>> NEW
+            // familyPack: false, // plus besoin de flag : auto si >= 2 niveaux
+          }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!cancelled) setTotal(data.total_human ?? data.total ?? "—");
+      } catch (e: any) {
+        if (!cancelled) setErr("Erreur de calcul");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [subjectsCount, plan, period, addonsCount, distinctLevelsCount]);
+
+  const showFamilyHint = distinctLevelsCount >= 2;
+
+  return (
+    <div className="rounded-2xl border border-emerald-300/20 bg-emerald-300/5 p-4 md:p-5">
+      <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
+        <div className="text-lg">
+          <span className="opacity-80">Formule</span>{" "}
+          <select
+            value={plan}
+            onChange={(e) => onPlanChange(e.target.value as any)}
+            className="bg-black/20 border border-white/10 rounded-lg px-2 py-1"
+          >
+            <option>Normal</option>
+            <option>Gold</option>
+            <option>Platine</option>
+          </select>
+          <span className="mx-3 opacity-50">•</span>
+          <span className="opacity-80">Durée</span>{" "}
+          <select
+            value={period}
+            onChange={(e) => onPeriodChange(e.target.value as any)}
+            className="bg-black/20 border border-white/10 rounded-lg px-2 py-1"
+          >
+            <option>Mensuel</option>
+            <option>Annuel</option>
+          </select>
+        </div>
+
+        <div className="md:ml-auto text-xl">
+          {err ? (
+            <span className="text-red-400">{err}</span>
+          ) : loading ? (
+            <span className="opacity-60">Calcul en cours…</span>
+          ) : (
+            <span>💶 Total : <strong>{total}</strong></span>
+          )}
+        </div>
+
+        <button
+          className="bg-emerald-500 hover:bg-emerald-400 text-black font-medium px-4 py-2 rounded-lg"
+          onClick={() => alert("Paiement simulé ✅")}
+        >
+          Paiement simulé
+        </button>
+      </div>
+
+      <p className="mt-2 text-sm opacity-70">
+        {showFamilyHint
+          ? <>Pack famille <strong>-20%</strong> appliqué (niveaux différents) • En annuel, <strong>-20%</strong> supplémentaires.</>
+          : <>Astuce : ajoute un <strong>2ᵉ niveau</strong> pour activer le pack famille <strong>-20%</strong>. En annuel, <strong>-20%</strong> aussi.</>}
+      </p>
+    </div>
+  );
+}

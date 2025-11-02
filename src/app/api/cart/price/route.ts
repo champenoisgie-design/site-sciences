@@ -1,22 +1,47 @@
-// src/app/api/cart/price/route.ts
-import { NextResponse } from "next/server";
-import { computeCartTotals, type CartInput } from "../../../../lib/price-engine";
+import { NextRequest, NextResponse } from "next/server";
+import { applyDiscounts, deriveDistinctLevelsCount, formatEuro } from "@/lib/pricing/apply";
+import type { CartPriceRequestBody, CartPriceResponseBody } from "@/lib/pricing/types";
 
-export async function POST(req: Request) {
+export const dynamic = "force-dynamic"; // compute each time
+
+export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json().catch(()=> ({}))) as Partial<CartInput>;
-    // Validation très souple : on exige juste primary.basePrice et subjectsCount
-    if (!body?.primary || typeof body.primary.basePrice !== "number" || typeof body.primary.subjectsCount !== "number") {
-      return NextResponse.json({ ok:false, error: "invalid_primary_line" }, { status: 400 });
-    }
-    const result = computeCartTotals(body as CartInput);
-    return NextResponse.json({ ok: true, ...result });
-  } catch (e) {
-    return NextResponse.json({ ok:false, error: "server_error" }, { status: 500 });
-  }
-}
+    const body = (await req.json()) as CartPriceRequestBody;
 
-// Permet de ping en GET (optionnel)
-export async function GET() {
-  return NextResponse.json({ ok:true, hint: "POST with CartInput to compute totals" });
+    if (!body || !body.period || !Array.isArray(body.items)) {
+      return NextResponse.json(
+        { error: "Requête invalide: period + items requis" },
+        { status: 400 }
+      );
+    }
+
+    const distinctLevelsCount =
+      typeof body.distinctLevelsCount === "number"
+        ? body.distinctLevelsCount
+        : deriveDistinctLevelsCount(body.items);
+
+    const { subtotalCents, discountCents, totalCents, applied, details } = applyDiscounts(
+      body.items,
+      body.period,
+      distinctLevelsCount
+    );
+
+    const res: CartPriceResponseBody = {
+      subtotalCents,
+      discountCents,
+      totalCents,
+      totalHuman: formatEuro(totalCents),
+      appliedDiscounts: {
+        annual: applied.annual,
+        family: applied.family,
+        combo: applied.combo,
+      },
+      details,
+    };
+
+    return NextResponse.json(res, { status: 200 });
+  } catch (e) {
+    console.error("/api/cart/price error", e);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+  }
 }

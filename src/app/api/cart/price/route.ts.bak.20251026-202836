@@ -1,0 +1,106 @@
+import { NextResponse } from "next/server";
+
+/**
+ * Entrée attendue (JSON):
+ * {
+ *   subjectsCount: number,
+ *   addons?: number,
+ *   plan: "Normal" | "Gold" | "Platine",
+ *   period: "Mensuel" | "Annuel",
+ *   distinctLevelsCount?: number    // >>> NEW (auto pack famille si >= 2)
+ * }
+ */
+
+type Plan = "Normal" | "Gold" | "Platine";
+type Period = "Mensuel" | "Annuel";
+
+const PRICE_PER_SUBJECT: Record<Plan, number> = {
+  Normal: 9.99,
+  Gold: 14.99,
+  Platine: 19.99,
+};
+
+// Prix par mode complémentaire (par mois)
+const PRICE_PER_ADDON_PER_MONTH = 1.99;
+
+// Réductions
+const ANNUAL_DISCOUNT = 0.20;       // -20% sur 12 mois
+const FAMILY_PACK_DISCOUNT = 0.20;  // -20% si >= 2 niveaux différents
+
+function eur(n: number) { return Math.round(n * 100) / 100; }
+function humanEUR(n: number) {
+  return n.toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+}
+
+export async function POST(req: Request) {
+  let body: any;
+  try { body = await req.json(); }
+  catch { return NextResponse.json({ ok:false, error:"Requête invalide (JSON)" }, { status:400 }); }
+
+  const subjectsCount = Number(body?.subjectsCount ?? 0);
+  const plan = String(body?.plan ?? "") as Plan;
+  const period = String(body?.period ?? "") as Period;
+  const addons = Number(body?.addons ?? 0);
+  const distinctLevelsCount = Number(body?.distinctLevelsCount ?? 0);
+
+  // Validations
+  if (!["Normal","Gold","Platine"].includes(plan)) {
+    return NextResponse.json({ ok:false, error:"Plan invalide" }, { status:400 });
+  }
+  if (!["Mensuel","Annuel"].includes(period)) {
+    return NextResponse.json({ ok:false, error:"Période invalide" }, { status:400 });
+  }
+  if (!Number.isFinite(subjectsCount) || subjectsCount <= 0) {
+    return NextResponse.json({ ok:false, error:"subjectsCount doit être ≥ 1" }, { status:400 });
+  }
+  if (!Number.isFinite(addons) || addons < 0) {
+    return NextResponse.json({ ok:false, error:"addons doit être ≥ 0" }, { status:400 });
+  }
+
+  // Calcul mensuel brut
+  const basePerSubject = PRICE_PER_SUBJECT[plan];
+  const baseMonthly = subjectsCount * basePerSubject;
+  const addonsMonthly = addons * PRICE_PER_ADDON_PER_MONTH;
+
+  let monthly = baseMonthly + addonsMonthly;
+
+  // Pack famille auto si >= 2 niveaux distincts
+  const familyPackApplied = Number.isFinite(distinctLevelsCount) && distinctLevelsCount >= 2 ? FAMILY_PACK_DISCOUNT : 0;
+  if (familyPackApplied > 0) {
+    monthly = monthly * (1 - familyPackApplied);
+  }
+
+  let total = monthly;
+  let total_period: "month" | "year" = "month";
+  let total_human: string;
+
+  if (period === "Annuel") {
+    const yearly = monthly * 12 * (1 - ANNUAL_DISCOUNT);
+    total = eur(yearly);
+    total_period = "year";
+    total_human = `${humanEUR(total)} / an`;
+  } else {
+    total = eur(monthly);
+    total_human = `${humanEUR(total)} / mois`;
+  }
+
+  return NextResponse.json({
+    ok: true,
+    currency: "EUR",
+    total,
+    total_period,
+    total_human,
+    breakdown: {
+      subjectsCount,
+      distinctLevelsCount,
+      pricePerSubjectMonthly: basePerSubject,
+      baseMonthly: eur(baseMonthly),
+      addons,
+      addonsMonthly: eur(addonsMonthly),
+      familyPackApplied,
+      period,
+      annualDiscountApplied: period === "Annuel" ? ANNUAL_DISCOUNT : 0,
+      plan,
+    },
+  });
+}

@@ -1,0 +1,125 @@
+import { NextResponse } from "next/server";
+
+/**
+ * Entrée attendue (JSON):
+ * {
+ *   subjectsCount: number,          // nb de matières/niveaux (>=1)
+ *   addons?: number,                // nb de modes complémentaires (TDAH, DYS, TSA, HPI cochés)
+ *   plan: "Normal" | "Gold" | "Platine",
+ *   period: "Mensuel" | "Annuel",
+ *   familyPack?: boolean            // (optionnel) -10% si vrai
+ * }
+ *
+ * Sortie:
+ * {
+ *   ok: true,
+ *   currency: "EUR",
+ *   total: number,                  // montant en euros (arrondi à 2 décimales)
+ *   total_period: "month" | "year",
+ *   total_human: string,            // ex: "24,97 € / mois"
+ *   breakdown: {...}                // détails du calcul
+ * }
+ *
+ * En cas d'erreur d'entrée → 400 avec { ok:false, error:"..." }.
+ */
+
+type Plan = "Normal" | "Gold" | "Platine";
+type Period = "Mensuel" | "Annuel";
+
+const PRICE_PER_SUBJECT: Record<Plan, number> = {
+  Normal: 9.99,
+  Gold: 14.99,
+  Platine: 19.99,
+};
+
+// Prix par mode complémentaire (par mois)
+const PRICE_PER_ADDON_PER_MONTH = 1.99;
+
+// Réductions
+const ANNUAL_DISCOUNT = 0.20;  // -20% sur 12 mois
+const FAMILY_PACK_DISCOUNT = 0.10; // -10% si familyPack true
+
+function eur(n: number) {
+  // Arrondi “bancaire” à 2 décimales
+  return Math.round(n * 100) / 100;
+}
+
+function humanEUR(n: number) {
+  return n.toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+}
+
+export async function POST(req: Request) {
+  let body: any;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ ok: false, error: "Requête invalide (JSON)" }, { status: 400 });
+  }
+
+  const subjectsCount = Number(body?.subjectsCount ?? 0);
+  const plan = String(body?.plan ?? "") as Plan;
+  const period = String(body?.period ?? "") as Period;
+  const addons = Number(body?.addons ?? 0);
+  const familyPack = Boolean(body?.familyPack ?? false);
+
+  // Validations
+  if (!["Normal", "Gold", "Platine"].includes(plan)) {
+    return NextResponse.json({ ok: false, error: "Plan invalide" }, { status: 400 });
+  }
+  if (!["Mensuel", "Annuel"].includes(period)) {
+    return NextResponse.json({ ok: false, error: "Période invalide" }, { status: 400 });
+  }
+  if (!Number.isFinite(subjectsCount) || subjectsCount <= 0) {
+    return NextResponse.json({ ok: false, error: "subjectsCount doit être ≥ 1" }, { status: 400 });
+  }
+  if (!Number.isFinite(addons) || addons < 0) {
+    return NextResponse.json({ ok: false, error: "addons doit être ≥ 0" }, { status: 400 });
+  }
+
+  // Calcul mensuel brut
+  const basePerSubject = PRICE_PER_SUBJECT[plan];
+  const baseMonthly = subjectsCount * basePerSubject;
+
+  const addonsMonthly = addons * PRICE_PER_ADDON_PER_MONTH;
+
+  let monthly = baseMonthly + addonsMonthly;
+
+  // Réduction Family Pack (si activé)
+  if (familyPack) {
+    monthly = monthly * (1 - FAMILY_PACK_DISCOUNT);
+  }
+
+  let total = monthly;
+  let total_period: "month" | "year" = "month";
+  let total_human: string;
+
+  if (period === "Annuel") {
+    // 12 mois avec -20%
+    const yearly = monthly * 12 * (1 - ANNUAL_DISCOUNT);
+    total = eur(yearly);
+    total_period = "year";
+    total_human = `${humanEUR(total)} / an`;
+  } else {
+    total = eur(monthly);
+    total_human = `${humanEUR(total)} / mois`;
+  }
+
+  return NextResponse.json({
+    ok: true,
+    currency: "EUR",
+    total,
+    total_period,
+    total_human,
+    breakdown: {
+      subjectsCount,
+      pricePerSubjectMonthly: basePerSubject,
+      baseMonthly: eur(baseMonthly),
+      addons,
+      addonsMonthly: eur(addonsMonthly),
+      familyPackApplied: familyPack ? FAMILY_PACK_DISCOUNT : 0,
+      period,
+      annualDiscountApplied: period === "Annuel" ? ANNUAL_DISCOUNT : 0,
+      plan,
+    },
+  });
+}

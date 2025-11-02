@@ -1,0 +1,68 @@
+"use client";
+import { useEffect, useState } from "react";
+
+type Props = {
+  subjectsCount: number;
+  addonsCount: number;
+  plan: "Normal" | "Gold" | "Platine";
+  period: "Mensuel" | "Annuel";
+};
+
+function estimateTotalHuman(subjectsCount: number, plan: Props["plan"], period: Props["period"], addonsCount: number) {
+  // Barème démo (fallback uniquement si l’API échoue)
+  let basePerSubject = 9.99; // Mensuel Normal
+  if (plan === "Gold") basePerSubject = 14.99;
+  if (plan === "Platine") basePerSubject = 19.99;
+  let total = subjectsCount * basePerSubject;
+  total += addonsCount * 1.0; // modes complémentaires (démo)
+  if (period === "Annuel") total = total * 10; // ≈ 2 mois offerts
+  return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(total);
+}
+
+export default function SummaryBar({ subjectsCount, addonsCount, plan, period }: Props) {
+  const [total, setTotal] = useState<string>("…");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await fetch("/api/cart/price", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ subjectsCount, plan, period, addons: addonsCount, familyPack: false }),
+        });
+        if (!res.ok) throw new Error(String(res.status));
+        const data = await res.json();
+        if (!cancelled) setTotal(data.total_human ?? data.total ?? "—");
+      } catch {
+        // Fallback silencieux
+        const fallback = estimateTotalHuman(subjectsCount, plan, period, addonsCount);
+        if (!cancelled) setTotal(fallback);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [subjectsCount, plan, period, addonsCount]);
+
+  return (
+    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 md:p-5">
+      <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
+        <div className="md:ml-auto text-xl text-emerald-900">
+          {loading ? <span className="opacity-60">Calcul en cours…</span> : <span>💶 Total : <strong>{total}</strong></span>}
+        </div>
+        <button
+          className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-lg"
+          onClick={() => alert("Paiement simulé ✅")}
+        >
+          Paiement simulé
+        </button>
+      </div>
+      <p className="mt-2 text-sm text-emerald-900/80">
+        Astuce : <strong>−20% en Annuel</strong> (≈ 2 mois offerts). Essai gratuit activable.
+      </p>
+    </div>
+  );
+}

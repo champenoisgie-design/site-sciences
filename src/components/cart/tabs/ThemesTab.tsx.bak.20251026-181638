@@ -1,0 +1,34 @@
+"use client";
+import { CartState } from "../PanierTabs";
+
+const CARDS = [
+  { title: "One Piece 1", video: "/themes/onepiece/onepiece1.mp4", poster: "/themes/onepiece/onepiece1.jpg", link: "/themes/onepiece" },
+  { title: "One Piece 4", video: "/themes/onepiece/onepiece4.mp4", poster: "/themes/onepiece/onepiece4.jpg", link: "/themes/onepiece" },
+  { title: "Mario 1",      video: "/themes/mario/mario1.mp4",       poster: "/themes/mario/mario1.jpg",       link: "/themes/mario" },
+];
+
+export default function ThemesTab({
+  value, onChange
+}: { value: CartState; onChange: (v: CartState) => void }) {
+  return (
+    <div className="grid md:grid-cols-3 gap-4">
+      {CARDS.map((c) => (
+        <div key={c.title} className="rounded-xl border border-white/10 bg-white/5 p-3">
+          <h3 className="font-medium mb-2">{c.title}</h3>
+          <div className="aspect-video bg-black/60 rounded-lg overflow-hidden">
+            <video controls preload="metadata" poster={c.poster} className="w-full h-full object-cover">
+              <source src={c.video} type="video/mp4" />
+            </video>
+          </div>
+          <div className="flex justify-between items-center mt-2">
+            <a href={c.link} className="text-sm opacity-80 hover:opacity-100">Voir le thème →</a>
+            <button className="text-sm px-3 py-1 rounded bg-white/10 hover:bg-white/20"
+              onClick={() => alert("Demo lancée ✅")}>
+              Essayer avant d’acheter
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

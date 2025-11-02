@@ -1,0 +1,18 @@
+import PanierTabs from "@/components/cart/PanierTabs";
+
+export const metadata = { title: "Mon panier — Site Sciences" };
+
+export default function Page() {
+  return (
+    <main className="min-h-screen bg-[rgb(7,16,26)] text-white">
+      <div className="mx-auto max-w-7xl px-4 py-8">
+        <h1 className="text-2xl md:text-3xl font-semibold mb-2">🧺 Mon panier</h1>
+        <p className="opacity-80 mb-6">Multilinge d’achat : sélection matière, thèmes (demo), modes, Gold/Platine, chapitres.</p>
+        <PanierTabs />
+      </div>
+      <footer className="mt-16 py-10 text-center opacity-60 text-sm">
+        © 2025 coursmathsphysiqueconcret.com
+      </footer>
+    </main>
+  );
+}

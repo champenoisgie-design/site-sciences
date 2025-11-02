@@ -1,0 +1,8 @@
+{
+  "name": "Mario",
+  "slug": "mario",
+  "variants": [
+    { "id": "mario1", "label": "Mario – World 1", "video": "/themes/mario/mario1.mp4", "poster": "/themes/mario/mario1.jpg" }
+  ],
+  "gallery": []
+}
