@@ -1,6 +1,5 @@
 "use client";
 import ThemeSelector from "@/components/header/ThemeSelector";
-'use client'
 
 import Link from 'next/link'
 import ModeSwitcher from '@/components/ModeSwitcher'
@@ -17,6 +16,7 @@ export default function Header() {
     <header className="topbar">
       <div className="topbar-container">
         <div className="topbar-left">
+      <ThemeSelector alignLeft={true} />
           <Link href="/" className="brand">
             Site Sciences
           </Link>
@@ -45,8 +45,6 @@ export default function Header() {
           <Link className="pill pill-link" href="/logout">
             Déconnexion
           </Link>
-  <a href="/themes/onepiece" className="px-2 py-1 hover:opacity-80"></a>
-  <a href="/themes/mario" className="px-2 py-1 hover:opacity-80">Mario</a>
 </nav>
       </div>
     </header>

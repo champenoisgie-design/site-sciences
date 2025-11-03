@@ -1,37 +1,60 @@
 "use client";
-import React, { useState } from "react";
-import { themeIsOwned } from "@/lib/entitlements/client";
+import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 
-const THEMES = [
-  { slug: "mario",    title: "Mario" },
-  { slug: "onepiece", title: "One Piece" }
-];
+type Props = { alignLeft?: boolean };
 
-export default function ThemeSelector({ alignLeft = true }: { alignLeft?: boolean }) {
+export default function ThemeSelector({ alignLeft = true }: Props) {
   const [open, setOpen] = useState(false);
-  const go = (slug: string) => {
-    if (themeIsOwned(slug)) window.location.href = `/themes/${slug}`;
-    else window.location.href = `/panier?theme=${slug}`;
-  };
+  const boxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      if (!boxRef.current) return;
+      if (!boxRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("click", onDoc);
+    return () => document.removeEventListener("click", onDoc);
+  }, []);
+
   return (
-    <div className={`relative ${alignLeft ? "" : "ml-auto"}`}>
-      <button onClick={() => setOpen(v => !v)}
-              className="inline-flex items-center gap-2 rounded-xl border px-3 py-1.5 bg-white hover:bg-slate-50"
-              aria-haspopup="listbox" aria-expanded={open}>
+    <div
+      ref={boxRef}
+      data-injected-theme-selector
+      className="relative"
+      style={{ zIndex: 50 }}
+    >
+      <button
+        type="button"
+        className="pill px-3 py-1"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
         🎨 Thème
-        <svg width="16" height="16" viewBox="0 0 20 20"><path d="M5 7l5 6 5-6" fill="currentColor"/></svg>
       </button>
+
       {open && (
-        <div className="absolute z-50 mt-2 min-w-[180px] rounded-xl border bg-white shadow">
-          {THEMES.map(t => (
-            <button key={t.slug} onClick={() => go(t.slug)}
-                    className="flex w-full items-center justify-between px-3 py-2 text-left hover:bg-slate-50">
-              <span>{t.title}</span>
-              <span className={`text-[11px] ${themeIsOwned(t.slug) ? "text-emerald-700" : "text-slate-400"}`}>
-                {themeIsOwned(t.slug) ? "✅ Possédé" : "Acheter"}
-              </span>
-            </button>
-          ))}
+        <div
+          role="menu"
+          className="absolute mt-2 w-44 rounded-xl border bg-white text-sm shadow-lg"
+          style={{ [alignLeft ? "left" : "right"]: 0 } as React.CSSProperties}
+        >
+          <div className="p-2">
+            <Link role="menuitem" className="block rounded-lg px-3 py-2 hover:bg-gray-100" href="/themes/mario">
+              Mario
+            </Link>
+            <Link role="menuitem" className="block rounded-lg px-3 py-2 hover:bg-gray-100" href="/themes/onepiece">
+              One Piece
+            </Link>
+            <div className="my-2 border-t" />
+            <Link role="menuitem" className="block rounded-lg px-3 py-2 hover:bg-gray-100" href="/preview/accueil?demo=mario">
+              Essayer Mario
+            </Link>
+            <Link role="menuitem" className="block rounded-lg px-3 py-2 hover:bg-gray-100" href="/preview/accueil?demo=onepiece">
+              Essayer One Piece
+            </Link>
+          </div>
         </div>
       )}
     </div>

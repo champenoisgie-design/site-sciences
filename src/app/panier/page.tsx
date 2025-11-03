@@ -1,4 +1,5 @@
 import PanierTabs from "@/components/cart/PanierTabs";
+import TryBeforeMount from "@/components/cart/TryBeforeMount";
 
 export const metadata = { title: "Mon panier — Site Sciences" };
 

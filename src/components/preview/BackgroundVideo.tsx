@@ -6,7 +6,6 @@ export default function BackgroundVideo() {
   const sp = useSearchParams();
   const demo = sp?.get("demo") || "";
   const src = demo ? `/themes/${demo}/preview.mp4` : `/intro.mp4`;
-
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
       <video
