@@ -60,3 +60,18 @@ export default async function AccountHome() {
     </section>
   )
 }
+
+      <section className="mt-8 rounded-2xl border p-5 bg-emerald-50/70">
+        <h2 className="text-sm font-semibold mb-1">Espace parents</h2>
+        <p className="text-sm text-muted-foreground">
+          Suis les progrès de ton enfant, le temps passé sur le site et les chapitres à revoir.
+        </p>
+        <div className="mt-3">
+          <a
+            href="/parents"
+            className="inline-flex items-center rounded-lg bg-emerald-600 px-3 py-2 text-xs font-medium text-white hover:bg-emerald-700 active:scale-[0.99] transition"
+          >
+            Accéder à l’espace parents
+          </a>
+        </div>
+      </section>

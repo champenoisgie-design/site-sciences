@@ -41,7 +41,12 @@ stripeSubscriptionId
 *.backup*
 disabled_files/
 .vercel
+
+# --- local only / heavy files ---
 venv/
+prisma/prisma/dev.db
+public/themes/onepiece/preview.mp4
+*.tsbuildinfo
 .venv/
 public/**/*.mp4
 public/**/*.mov

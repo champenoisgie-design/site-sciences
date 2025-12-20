@@ -88,3 +88,20 @@ export default async function BadgesPage() {
     </div>
   )
 }
+
+
+<section className="mt-8 rounded-2xl border p-5 bg-emerald-50/70">
+  <h2 className="text-sm font-semibold mb-1">Espace parents</h2>
+  <p className="text-sm text-muted-foreground">
+    Suivez la progression, le temps hebdomadaire et les priorités de révision de votre enfant.
+  </p>
+  <div className="mt-3 flex items-center gap-3">
+    <a href="/parents" className="inline-flex items-center rounded-lg bg-emerald-600 px-3 py-2 text-xs font-medium text-white hover:bg-emerald-700 active:scale-[0.99] transition">
+      Accéder à l’espace parents
+    </a>
+    <a href="/faq" className="text-xs underline underline-offset-4 text-muted-foreground hover:text-foreground">
+      En savoir plus
+    </a>
+  </div>
+</section>
+
