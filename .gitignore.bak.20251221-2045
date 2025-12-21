@@ -47,11 +47,3 @@ venv/
 prisma/prisma/dev.db
 public/themes/onepiece/preview.mp4
 *.tsbuildinfo
-# --- local env / deps / os ---
-.venv/
-# --- next ---
-# --- local db / caches ---
-# --- large media (do not commit) ---
-public/**/*.mp4
-public/**/*.mov
-public/**/*.m4v
