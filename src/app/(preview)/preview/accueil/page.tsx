@@ -33,32 +33,32 @@ export default function PreviewAccueilAware() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col">
+    <div className="min-h-screen bg-white text-slate-900 flex flex-col">
       {/* Barre de navigation simulée */}
       <PreviewHeader mode={mode} />
 
       <main className="flex-1">
         {/* Barre de réglages de prévisualisation */}
-        <section className="border-b border-slate-800 bg-slate-900/60">
+        <section className="border-b border-slate-200 bg-white/60">
           <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-emerald-300">
                 Mode prévisualisation
               </p>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500">
                 Ici on simule l’état connecté / non connecté et l’option
                 parents, sans toucher à la vraie page d’accueil.
               </p>
             </div>
             <div className="flex flex-col gap-2 md:flex-row md:items-center">
-              <div className="flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900 px-1 py-1 text-xs">
+              <div className="flex items-center gap-2 rounded-full bg-transparent ui-border bg-white px-1 py-1 text-xs">
                 <button
                   type="button"
                   onClick={() => setMode("visitor")}
                   className={`rounded-full px-3 py-1 ${
                     mode === "visitor"
                       ? "bg-slate-50 text-slate-900 font-semibold"
-                      : "text-slate-300 hover:text-white"
+                      : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
                   Visiteur (non connecté)
@@ -69,17 +69,17 @@ export default function PreviewAccueilAware() {
                   className={`rounded-full px-3 py-1 ${
                     mode === "student"
                       ? "bg-emerald-500 text-slate-950 font-semibold"
-                      : "text-slate-300 hover:text-white"
+                      : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
                   Élève connecté
                 </button>
               </div>
 
-              <label className="flex cursor-pointer items-center gap-2 text-xs text-slate-300">
+              <label className="flex cursor-pointer items-center gap-2 text-xs text-slate-600">
                 <input
                   type="checkbox"
-                  className="h-3 w-3 rounded border-slate-500 bg-slate-900"
+                  className="h-3 w-3 rounded border-slate-500 bg-white"
                   checked={parentsEnabled}
                   onChange={(e) => setParentsEnabled(e.target.checked)}
                 />
@@ -95,7 +95,7 @@ export default function PreviewAccueilAware() {
         </section>
 
         {/* HERO + éventuellement mini-dashboard */}
-        <section className="border-b border-slate-800 bg-gradient-to-b from-slate-950 via-slate-950 to-slate-950/95">
+        <section className="border-b border-slate-200 bg-gradient-to-b from-slate-950 via-slate-950 to-slate-950/95">
           <div className="mx-auto flex max-w-6xl flex-col gap-8 px-4 pb-10 pt-8 md:flex-row md:items-start md:justify-between">
             {/* Colonne gauche : hero */}
             <div className="max-w-xl space-y-4">
@@ -116,13 +116,13 @@ export default function PreviewAccueilAware() {
                 </p>
               )}
 
-              <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+              <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
                 {isStudent
                   ? "Continue ton aventure scientifique là où tu t’es arrêté"
                   : "Apprendre les sciences comme dans tes jeux vidéo"}
               </h1>
 
-              <p className="text-sm text-slate-300 sm:text-base">
+              <p className="text-sm text-slate-600 sm:text-base">
                 {isStudent ? (
                   <>
                     Retrouve tes chapitres en cours, ta barre d’XP et tes défis
@@ -143,24 +143,24 @@ export default function PreviewAccueilAware() {
                 <div className="flex flex-wrap items-center gap-3 pt-2">
                   <a
                     href="/login"
-                    className="inline-flex items-center rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+                    className="inline-flex items-center rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-slate-900 hover:bg-emerald-700"
                   >
                     Commencer l’essai gratuit
                   </a>
                   <a
                     href="/tarifs"
-                    className="inline-flex items-center rounded-full border border-slate-600 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-900"
+                    className="inline-flex items-center rounded-full border border-slate-600 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-white"
                   >
                     Voir les formules
                   </a>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     Aucun engagement, annulation possible à tout moment.
                   </p>
                 </div>
               )}
 
               {isStudent && (
-                <div className="mt-2 space-y-1 text-xs text-slate-400">
+                <div className="mt-2 space-y-1 text-xs text-slate-500">
                   <p>
                     Classe simulée : <strong>{fakeProfile.grade}</strong> ·
                     Thèmes : <strong>{fakeProfile.theme}</strong>
@@ -175,26 +175,26 @@ export default function PreviewAccueilAware() {
 
             {/* Colonne droite : mini-dashboard si élève connecté */}
             {isStudent && (
-              <aside className="w-full max-w-md space-y-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+              <aside className="w-full max-w-md space-y-4 rounded-2xl ui-card/60 p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-slate-400">Profil</p>
-                    <p className="text-sm font-semibold text-slate-50">
+                    <p className="text-xs text-slate-500">Profil</p>
+                    <p className="text-sm font-semibold text-slate-900">
                       {fakeProfile.name}
                     </p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-500">
                       {fakeProfile.grade} •{" "}
                       {fakeProfile.subjects.join(" + ")}
                     </p>
                   </div>
                   <div className="rounded-xl bg-slate-800 px-3 py-2 text-right">
-                    <p className="text-[10px] uppercase tracking-wide text-slate-400">
+                    <p className="text-[10px] uppercase tracking-wide text-slate-500">
                       Niveau perso
                     </p>
                     <p className="text-sm font-semibold text-emerald-300">
                       Saiyan niv. 1
                     </p>
-                    <p className="text-[10px] text-slate-400">
+                    <p className="text-[10px] text-slate-500">
                       (exemple : Dragon Ball Z)
                     </p>
                   </div>
@@ -206,7 +206,7 @@ export default function PreviewAccueilAware() {
                     <span className="font-semibold text-slate-200">
                       XP progression
                     </span>
-                    <span className="text-slate-400">
+                    <span className="text-slate-500">
                       {fakeProfile.xpCurrent} / {fakeProfile.xpNext}
                     </span>
                   </div>
@@ -216,7 +216,7 @@ export default function PreviewAccueilAware() {
                       style={{ width: `${xpRatio}%` }}
                     />
                   </div>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-slate-500">
                     Encore{" "}
                     <span className="font-semibold text-emerald-300">
                       {fakeProfile.xpNext - fakeProfile.xpCurrent} XP
@@ -226,27 +226,27 @@ export default function PreviewAccueilAware() {
                 </div>
 
                 {/* Chapitre en cours */}
-                <div className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-3">
-                  <p className="text-[11px] uppercase tracking-wide text-slate-400">
+                <div className="rounded-xl ui-card px-3 py-3">
+                  <p className="text-[11px] uppercase tracking-wide text-slate-500">
                     Chapitre en cours
                   </p>
-                  <p className="text-sm font-semibold text-slate-50">
+                  <p className="text-sm font-semibold text-slate-900">
                     {fakeProfile.currentChapter}
                   </p>
-                  <p className="mt-1 text-xs text-slate-400">
+                  <p className="mt-1 text-xs text-slate-500">
                     Reprendre la série d’exercices là où tu t’es arrêté
                     (tutoriel + entraînement + défi).
                   </p>
                   <div className="mt-2 flex gap-2">
                     <a
                       href="#"
-                      className="inline-flex flex-1 items-center justify-center rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
+                      className="inline-flex flex-1 items-center justify-center rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-slate-900 hover:bg-emerald-700"
                     >
                       Reprendre
                     </a>
                     <a
                       href="/compte"
-                      className="inline-flex flex-1 items-center justify-center rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-100 hover:bg-slate-900"
+                      className="inline-flex flex-1 items-center justify-center rounded-lg bg-transparent ui-border px-3 py-1.5 text-xs font-medium text-slate-100 hover:bg-white"
                     >
                       Voir ma progression
                     </a>
@@ -259,7 +259,7 @@ export default function PreviewAccueilAware() {
                     <span className="font-semibold text-slate-200">
                       Sessions cette semaine
                     </span>
-                    <span className="text-slate-400">
+                    <span className="text-slate-500">
                       {fakeProfile.weeklySessions} / {fakeProfile.weeklyGoal}
                     </span>
                   </div>
@@ -269,7 +269,7 @@ export default function PreviewAccueilAware() {
                       style={{ width: `${weeklyRatio}%` }}
                     />
                   </div>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-slate-500">
                     Objectif :{" "}
                     <span className="font-semibold text-sky-300">
                       {fakeProfile.weeklyGoal} sessions
@@ -283,15 +283,15 @@ export default function PreviewAccueilAware() {
         </section>
 
         {/* SECTION : blocs “tutoriels, entraînement, multijoueur…” */}
-        <section className="border-b border-slate-800 bg-slate-950/95">
+        <section className="border-b border-slate-200 bg-white/95">
           <div className="mx-auto max-w-6xl px-4 py-10 space-y-6">
             <div className="flex items-center justify-between gap-2">
-              <h2 className="text-lg font-semibold text-white">
+              <h2 className="text-lg font-semibold text-slate-900">
                 {isStudent
                   ? "Comment se déroule une séance type ?"
                   : "Ce que tu trouves dans Site Sciences"}
               </h2>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500">
                 Cette section reprend la structure de ta page d’accueil (6
                 encarts : tutoriels, entraînement, multi-joueur live, etc.).
               </p>
@@ -334,7 +334,7 @@ export default function PreviewAccueilAware() {
         </section>
 
         {/* SECTION : Teaser Espace parents */}
-        <section className="border-b border-slate-800 bg-slate-950">
+        <section className="border-b border-slate-200 bg-white">
           <div className="mx-auto max-w-6xl px-4 pb-12 pt-6">
             <div className="rounded-2xl border border-emerald-700/50 bg-emerald-900/20 px-6 py-6 sm:px-8 sm:py-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div className="max-w-xl">
@@ -388,7 +388,7 @@ export default function PreviewAccueilAware() {
                     <>
                       <a
                         href="/tarifs"
-                        className="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+                        className="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-slate-900 hover:bg-emerald-700"
                       >
                         Voir les formules avec suivi parents
                       </a>
@@ -407,13 +407,13 @@ export default function PreviewAccueilAware() {
         </section>
 
         {/* SECTION : Nouveautés / mises à jour */}
-        <section className="bg-slate-950 pb-12 pt-6">
+        <section className="bg-white pb-12 pt-6">
           <div className="mx-auto max-w-6xl px-4 space-y-4">
             <div className="flex items-center justify-between gap-2">
-              <h2 className="text-lg font-semibold text-white">
+              <h2 className="text-lg font-semibold text-slate-900">
                 Nouveautés (exemple de section actualités)
               </h2>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500">
                 Ici tu pourras lister les nouveaux thèmes, chapitres ou
                 fonctionnalités.
               </p>
@@ -453,14 +453,14 @@ function FeatureCard({
   desc: string;
 }) {
   return (
-    <article className="flex flex-col rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+    <article className="flex flex-col rounded-2xl ui-card/70 p-4">
       <div className="mb-2 flex items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold text-slate-50">{title}</h3>
-        <span className="inline-flex items-center rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-300">
+        <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
+        <span className="inline-flex items-center rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
           {badge}
         </span>
       </div>
-      <p className="text-xs text-slate-400 flex-1">{desc}</p>
+      <p className="text-xs text-slate-500 flex-1">{desc}</p>
     </article>
   );
 }
@@ -475,13 +475,13 @@ function NewsCard({
   desc: string;
 }) {
   return (
-    <article className="flex flex-col rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
-      <span className="mb-1 inline-flex items-center rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-300">
+    <article className="flex flex-col rounded-2xl ui-card/70 p-4">
+      <span className="mb-1 inline-flex items-center rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
         {tag}
       </span>
-      <h3 className="text-sm font-semibold text-slate-50">{title}</h3>
-      <p className="mt-1 text-xs text-slate-400 flex-1">{desc}</p>
-      <p className="mt-2 text-[11px] text-slate-500">
+      <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
+      <p className="mt-1 text-xs text-slate-500 flex-1">{desc}</p>
+      <p className="mt-2 text-[11px] text-slate-9000">
         (Zone purement illustrative pour la preview.)
       </p>
     </article>

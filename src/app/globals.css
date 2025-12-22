@@ -142,6 +142,13 @@ button,
 }
 
 /* modal + demo v2 */
+
+/* --- UI tokens (theme-aware) --- */
+.ui-bg{background:var(--card);}
+.ui-card{background:var(--card);border:1px solid var(--border);border-radius:16px;}
+.ui-border{border-color:var(--border);}
+.ui-text{color:var(--accent);}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;

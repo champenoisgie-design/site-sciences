@@ -1,27 +1,49 @@
-'use client'
-import { useEffect, useState } from 'react'
+"use client";
 
-function getCookie(name: string) {
-  if (typeof document === 'undefined') return null
-  const m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'))
-  return m ? decodeURIComponent(m[2]) : null
+import { useEffect, useState } from "react";
+
+const STORAGE = "cmc.theme";
+
+function getThemeClient(): string {
+  try {
+    return localStorage.getItem(STORAGE) || document.documentElement.getAttribute("data-theme") || "light";
+  } catch {
+    return document.documentElement.getAttribute("data-theme") || "light";
+  }
+}
+
+function setThemeClient(next: string) {
+  try {
+    localStorage.setItem(STORAGE, next);
+  } catch {}
+  document.documentElement.setAttribute("data-theme", next);
 }
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<string>(getCookie('theme') || 'light')
+  const [mounted, setMounted] = useState(false);
+  const [theme, setTheme] = useState("light");
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
-    document.cookie = `theme=${theme};path=/;max-age=${60 * 60 * 24 * 365}`
-  }, [theme])
+    setMounted(true);
+    setTheme(getThemeClient());
+  }, []);
+
+  const isLight = theme === "light";
+  const label = mounted ? (isLight ? "clair" : "sombre") : "…";
 
   return (
     <button
       className="pill"
-      onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+      onClick={() => {
+        const current = getThemeClient();
+        const next = current === "light" ? "dark" : "light";
+        setThemeClient(next);
+        setTheme(next);
+      }}
       aria-label="Basculer le thème"
+      suppressHydrationWarning
     >
-      Thème : {theme === 'dark' ? 'sombre' : 'clair'}
+      {label}
     </button>
-  )
+  );
 }

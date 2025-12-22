@@ -147,10 +147,10 @@ export default function PreviewTarifsPage() {
         <div className="rounded-xl border border-dashed border-slate-200 bg-white/70 p-4 text-sm text-slate-700">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <span className="inline-flex h-6 items-center rounded-full bg-slate-900 px-3 text-xs font-medium text-white">
+              <span className="inline-flex h-6 items-center rounded-full bg-white px-3 text-xs font-medium text-slate-900">
                 Preview Tarifs
               </span>
-              <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
+              <span className="text-xs font-medium uppercase tracking-wide text-slate-9000">
                 {audienceBadge}
               </span>
             </div>
@@ -204,7 +204,7 @@ export default function PreviewTarifsPage() {
                 className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
                   audienceMode === "visitor"
                     ? "bg-white text-slate-900 shadow-sm"
-                    : "text-slate-500"
+                    : "text-slate-9000"
                 }`}
               >
                 Visiteur
@@ -215,7 +215,7 @@ export default function PreviewTarifsPage() {
                 className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
                   audienceMode === "already-subscribed"
                     ? "bg-white text-slate-900 shadow-sm"
-                    : "text-slate-500"
+                    : "text-slate-9000"
                 }`}
               >
                 Déjà abonné
@@ -223,7 +223,7 @@ export default function PreviewTarifsPage() {
             </div>
 
             {audienceMode === "already-subscribed" && (
-              <p className="mt-2 text-[11px] leading-snug text-slate-500">
+              <p className="mt-2 text-[11px] leading-snug text-slate-9000">
                 Mock : l’élève a déjà un abonnement{" "}
                 <span className="font-semibold text-slate-700">
                   {PLANS.find((p) => p.id === CURRENT_PLAN_FOR_PREVIEW)?.name}
@@ -237,10 +237,10 @@ export default function PreviewTarifsPage() {
         {/* Cartes d'offres */}
         <section className="space-y-4">
           <div className="flex items-baseline justify-between gap-4">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-9000">
               Offres disponibles
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-9000">
               Clique sur une offre pour voir le CTA et le panier associés.
             </p>
           </div>
@@ -268,13 +268,13 @@ export default function PreviewTarifsPage() {
                       <h3 className="text-base font-semibold text-slate-900">
                         {plan.name}
                       </h3>
-                      <p className="text-xs text-slate-500">{plan.bestFor}</p>
+                      <p className="text-xs text-slate-9000">{plan.bestFor}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-semibold text-slate-900">
                         {plan.price}
                       </p>
-                      <p className="text-[11px] text-slate-500">
+                      <p className="text-[11px] text-slate-9000">
                         Sans engagement
                       </p>
                     </div>
@@ -296,7 +296,7 @@ export default function PreviewTarifsPage() {
                       </span>
                     )}
                     {isSelected && !isCurrent && (
-                      <span className="inline-flex items-center rounded-full bg-slate-900 px-2 py-0.5 text-[11px] font-medium text-white">
+                      <span className="inline-flex items-center rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-slate-900">
                         Sélectionnée
                       </span>
                     )}
@@ -308,12 +308,12 @@ export default function PreviewTarifsPage() {
         </section>
 
         {/* Comparateur */}
-        <section className="space-y-4 rounded-2xl border border-slate-200 bg-white/80 p-4 md:p-6">
+        <section className="space-y-4 rounded-2xl ui-card/80 p-4 md:p-6">
           <div className="flex items-baseline justify-between gap-4">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-9000">
               Comparateur d’offres
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-9000">
               Vue tableau pour la page desktop & l’espace parents.
             </p>
           </div>
@@ -321,7 +321,7 @@ export default function PreviewTarifsPage() {
           <div className="overflow-x-auto">
             <table className="min-w-full border-separate border-spacing-y-1 text-xs">
               <thead>
-                <tr className="text-left text-[11px] uppercase tracking-wide text-slate-500">
+                <tr className="text-left text-[11px] uppercase tracking-wide text-slate-9000">
                   <th className="w-1/2 pb-2 pr-4">Fonctionnalités</th>
                   <th className="w-1/6 pb-2 text-center">Gold</th>
                   <th className="w-1/6 pb-2 text-center">Platine</th>
@@ -351,10 +351,10 @@ export default function PreviewTarifsPage() {
         </section>
 
         {/* Zone CTA dynamique (qui préfigure le futur panier) */}
-        <section className="space-y-4 rounded-2xl bg-slate-900 px-4 py-5 text-slate-50 md:px-6 md:py-6">
+        <section className="space-y-4 rounded-2xl bg-white px-4 py-5 text-slate-900 md:px-6 md:py-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="space-y-1">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Étape suivante
               </p>
               <h2 className="text-lg font-semibold">
@@ -362,7 +362,7 @@ export default function PreviewTarifsPage() {
                   ? "On prépare le panier avec ton offre."
                   : "On prépare la modification de ton abonnement."}
               </h2>
-              <p className="text-xs text-slate-300">{ctaSubLabel}</p>
+              <p className="text-xs text-slate-600">{ctaSubLabel}</p>
             </div>
 
             <div className="text-right text-sm">
@@ -390,7 +390,7 @@ export default function PreviewTarifsPage() {
               {ctaLabel}
             </button>
 
-            <div className="space-y-1 text-[11px] text-slate-300">
+            <div className="space-y-1 text-[11px] text-slate-600">
               <p>
                 👉 Dans les vraies pages, ce bouton amènera sur le{" "}
                 <span className="font-medium">Panier / Checkout preview</span>{" "}

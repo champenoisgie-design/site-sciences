@@ -55,3 +55,12 @@ public/themes/onepiece/preview.mp4
 public/**/*.mp4
 public/**/*.mov
 public/**/*.m4v
+
+# --- ignore heavy/local ---
+venv/
+node_modules/
+prisma/prisma/dev.db
+public/themes/onepiece/preview.mp4
+*.tsbuildinfo
+.DS_Store
+*.mp4
