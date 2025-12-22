@@ -41,3 +41,8 @@ stripeSubscriptionId
 *.backup*
 disabled_files/
 .vercel
+venv/
+.venv/
+public/**/*.mp4
+public/**/*.mov
+public/**/*.m4v
