@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import AuthNav from "@/components/nav/AuthNav";
 
 // chargés côté client uniquement
 const VisualThemeSelector = dynamic(

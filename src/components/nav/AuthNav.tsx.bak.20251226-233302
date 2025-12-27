@@ -1,0 +1,71 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import AuthNav from "@/components/nav/AuthNav";
+
+type MeResponse = { user: null | { id?: string; email?: string; name?: string } };
+
+function cn(...xs: Array<string | false | undefined | null>) {
+  return xs.filter(Boolean).join(" ");
+}
+
+export default function AuthNav() {
+  const [me, setMe] = useState<MeResponse | null>(null);
+  const user = me?.user ?? null;
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const r = await fetch("/api/auth/me", { method: "GET", credentials: "include" });
+        const j = (await r.json()) as MeResponse;
+        if (mounted) setMe(j);
+      } catch {
+        if (mounted) setMe({ user: null });
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const onLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    } finally {
+      window.location.href = "/";
+    }
+  };
+
+  // Pendant le tout premier fetch, on n’affiche rien pour éviter le “flash”
+  if (me === null) return null;
+
+  if (!user) {
+    return (
+      <a
+        className={cn(
+          "rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700",
+          "hover:bg-slate-50"
+        )}
+        href="/login"
+      >
+        Connexion
+      </a>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-3">
+      <a className="hover:text-slate-900" href="/compte">Mon compte</a>
+      <button
+        onClick={onLogout}
+        className={cn(
+          "rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700",
+          "hover:bg-slate-50"
+        )}
+      >
+        Déconnexion
+      </button>
+    </div>
+  );
+}

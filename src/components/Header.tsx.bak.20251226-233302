@@ -40,9 +40,11 @@ export default function Header() {
           <Link className="pill pill-link" href="/contact">
             Contact
           </Link>
-          <Link className="pill pill-link" href="/compte">
-            Mon compte
-          </Link><AuthNav />
+          <Link className="pill pill-link" href="/account">
+          </Link>
+          <Link className="pill pill-link" href="/logout">
+          </Link>
+  <AuthNav />
 </nav>
       </div>
     </header>
