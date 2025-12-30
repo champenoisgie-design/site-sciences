@@ -4,14 +4,14 @@ import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type Billing = "monthly" | "annual";
-
 type PlanKey = "normal" | "gold" | "platine";
 
 type Plan = {
   key: PlanKey;
   title: string;
   badge?: { label: string; tone: "blue" | "green" };
-  priceMonthly: number; // prix affiché en mensuel (ou mensuel "après annual" comme sur la capture)
+  priceMonthly: number; // mensuel sans engagement
+  priceAnnual: number;  // prix mensuel après remise annuelle (-20%), engagement 12 mois
   bullets: string[];
   cta: string;
   ctaTone: "dark" | "blue" | "green";
@@ -33,27 +33,42 @@ export default function TarifsPage() {
       {
         key: "normal",
         title: "Normal",
-        priceMonthly: 7.99,
+        priceMonthly: 12.49,
+        priceAnnual: 9.99,
         badge: { label: "-20% annuel", tone: "blue" },
-        bullets: ["Essentiel pour démarrer", "Focus & révision intelligente"],
+        bullets: [
+          "Essentiel pour démarrer",
+          "Mode Focus + exercices illimités",
+          "Badges & progression (basique)",
+        ],
         cta: "Choisir Normal",
         ctaTone: "dark",
       },
       {
         key: "gold",
         title: "Gold",
-        priceMonthly: 11.99,
+        priceMonthly: 19.99,
+        priceAnnual: 15.99,
         badge: { label: "Meilleur choix", tone: "blue" },
-        bullets: ["Fiches perso & Parents", "Idéal pour progresser régulièrement"],
+        bullets: [
+          "Parents inclus (tableau + suivi)",
+          "Révision intelligente + stats & corrections expliquées",
+          "Indices guidés + objectifs avancés + sauvegarde session",
+        ],
         cta: "Choisir Gold",
         ctaTone: "blue",
       },
       {
         key: "platine",
         title: "Platine",
-        priceMonthly: 19.99,
+        priceMonthly: 24.99,
+        priceAnnual: 19.99,
         badge: { label: "Premium", tone: "green" },
-        bullets: ["Co-Pilot & Mentor", "Tout débloqué + prioritaire"],
+        bullets: [
+          "Tout Gold + priorité",
+          "Co-Pilot & Mentor",
+          "Services avancés + support prioritaire",
+        ],
         cta: "Choisir Platine",
         ctaTone: "green",
       },
@@ -62,23 +77,31 @@ export default function TarifsPage() {
   );
 
   const goPanier = (plan: PlanKey) => {
-    // On passe le plan tel quel : /panier?plan=normal|gold|platine
     router.push(`/panier?plan=${encodeURIComponent(plan)}`);
   };
 
-  const featureRows: Array<{ label: string; normal: boolean | "—" ; gold: boolean | "—"; platine: boolean | "—" }> = [
+  const featureRows: Array<{
+    label: string;
+    normal: boolean | "—";
+    gold: boolean | "—";
+    platine: boolean | "—";
+  }> = [
     { label: "Accès complet aux leçons & exercices", normal: true, gold: true, platine: true },
     { label: "Mode Focus (timers, pas-à-pas, UI anti-distraction)", normal: true, gold: true, platine: true },
-    { label: "Tests de départ & révision intelligente", normal: true, gold: true, platine: true },
+    { label: "Tests de départ & révision intelligente (basique)", normal: true, gold: true, platine: true },
     { label: "Fiches mémo prêtes (PDF avec filigrane)", normal: true, gold: true, platine: true },
-    { label: "Fiches mémo personnalisées", normal: "—", gold: true, platine: true },
-    { label: "Skins & badges de progression", normal: true, gold: true, platine: true },
+
+    // Différenciation Gold
     { label: "Tableau Parents + e-mails de suivi", normal: "—", gold: true, platine: true },
+    { label: "Parcours de révision intelligent (suggestions)", normal: "—", gold: true, platine: true },
+    { label: "Stats détaillées (par matière / 7-30 jours)", normal: "—", gold: true, platine: true },
+    { label: "Indices intelligents progressifs", normal: "—", gold: true, platine: true },
+    { label: "Corrections expliquées étape par étape", normal: "—", gold: true, platine: true },
+    { label: "Objectifs hebdo + badges avancés", normal: "—", gold: true, platine: true },
+    { label: "Sauvegarde session (reprendre où on s’est arrêté)", normal: "—", gold: true, platine: true },
+
+    // Premium Platine
     { label: "Support prioritaire", normal: "—", gold: "—", platine: true },
-    { label: "Mode sélectionné valable pour toutes matières et tous niveaux", normal: true, gold: true, platine: true },
-
-    { label: "Modes complémentaires (TDAH, DYS, TSA, HPI) — add-ons", normal: "—", gold: "—", platine: "—" },
-
     { label: "Co-Pilot Sciences (coaching IA pas-à-pas)", normal: "—", gold: "—", platine: true },
     { label: "Rapport hebdomadaire de progression (PDF)", normal: "—", gold: "—", platine: true },
     { label: "Mode Mentor (assistant éducatif prioritaire)", normal: "—", gold: "—", platine: true },
@@ -140,56 +163,79 @@ export default function TarifsPage() {
             </button>
           </div>
 
-          <div className="mt-3 text-xs text-slate-500">Prix mensuel après remise annuelle (engagement 12 mois).</div>
+          <div className="mt-3 text-xs text-slate-500">
+            {billing === "annual" ? "Prix mensuel après remise annuelle (engagement 12 mois)." : "Prix mensuel sans engagement."}
+          </div>
+
+          {/* Promo matières */}
+          <div className="mt-5 inline-flex max-w-2xl items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left">
+            <div className="mt-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white">%</div>
+            <div>
+              <div className="text-sm font-semibold">Promo matières (même niveau)</div>
+              <div className="text-sm text-slate-600">
+                Dès <span className="font-semibold">3 matières</span> prises dans le <span className="font-semibold">même niveau</span>,
+                une réduction s’applique sur le total du panier (hors achats uniques).
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Cards */}
         <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {plans.map((p) => (
-            <div key={p.key} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_1px_0_0_rgba(0,0,0,0.02)]">
-              <div className="flex items-start justify-between gap-3">
-                <div className="text-lg font-semibold">{p.title}</div>
-                {p.badge ? (
-                  <span
-                    className={cn(
-                      "rounded-full px-3 py-1 text-xs font-semibold",
-                      p.badge.tone === "blue" ? "bg-blue-50 text-blue-700" : "bg-emerald-50 text-emerald-700"
-                    )}
-                  >
-                    {p.badge.label}
-                  </span>
-                ) : null}
-              </div>
-
-              <div className="mt-3 flex items-baseline gap-2">
-                <div className="text-3xl font-semibold">{money(p.priceMonthly)}</div>
-                <div className="text-sm text-slate-500">/ mois ({billing === "annual" ? "engagement 12 mois" : "sans engagement"})</div>
-              </div>
-
-              <ul className="mt-4 space-y-2 text-sm text-slate-700">
-                {p.bullets.map((b) => (
-                  <li key={b} className="flex items-start gap-2">
-                    <span className="mt-[2px] inline-flex h-4 w-4 items-center justify-center rounded-sm bg-emerald-600 text-xs font-bold text-white">✓</span>
-                    <span>{b}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <button
-                onClick={() => goPanier(p.key)}
+          {plans.map((p) => {
+            const display = billing === "annual" ? p.priceAnnual : p.priceMonthly;
+            return (
+              <div
+                key={p.key}
                 className={cn(
-                  "mt-5 w-full rounded-xl px-4 py-3 text-sm font-semibold",
-                  p.ctaTone === "dark" && "bg-slate-900 text-white hover:bg-slate-800",
-                  p.ctaTone === "blue" && "bg-indigo-600 text-white hover:bg-indigo-500",
-                  p.ctaTone === "green" && "bg-emerald-600 text-white hover:bg-emerald-500"
+                  "rounded-2xl border bg-white p-6 shadow-[0_1px_0_0_rgba(0,0,0,0.02)] flex flex-col h-full",
+                  p.key === "gold" ? "border-indigo-200" : "border-slate-200"
                 )}
               >
-                {p.cta}
-              </button>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="text-lg font-semibold">{p.title}</div>
+                  {p.badge ? (
+                    <span
+                      className={cn(
+                        "rounded-full px-3 py-1 text-xs font-semibold",
+                        p.badge.tone === "blue" ? "bg-blue-50 text-blue-700" : "bg-emerald-50 text-emerald-700"
+                      )}
+                    >
+                      {p.badge.label}
+                    </span>
+                  ) : null}
+                </div>
 
-              <div className="mt-3 text-xs text-slate-500">Changement de mode à tout moment. Paiement sécurisé.</div>
-            </div>
-          ))}
+                <div className="mt-3 flex items-baseline gap-2">
+                  <div className="text-3xl font-semibold">{money(display)}</div>
+                  <div className="text-sm text-slate-500">/ mois ({billing === "annual" ? "engagement 12 mois" : "sans engagement"})</div>
+                </div>
+
+                <ul className="mt-4 space-y-2 text-sm text-slate-700 min-h-[96px]">
+                  {p.bullets.map((b) => (
+                    <li key={b} className="flex items-start gap-2">
+                      <span className="mt-[2px] inline-flex h-4 w-4 items-center justify-center rounded-sm bg-emerald-600 text-xs font-bold text-white">✓</span>
+                      <span>{b}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  onClick={() => goPanier(p.key)}
+                  className={cn(
+                    "mt-auto w-full rounded-xl px-4 py-3 text-sm font-semibold",
+                    p.ctaTone === "dark" && "bg-slate-900 text-white hover:bg-slate-800",
+                    p.ctaTone === "blue" && "bg-indigo-600 text-white hover:bg-indigo-500",
+                    p.ctaTone === "green" && "bg-emerald-600 text-white hover:bg-emerald-500"
+                  )}
+                >
+                  {p.cta}
+                </button>
+
+                <div className="mt-3 text-xs text-slate-500">Changement de mode à tout moment. Paiement sécurisé.</div>
+              </div>
+            );
+          })}
         </div>
 
         {/* Table */}
@@ -204,70 +250,32 @@ export default function TarifsPage() {
           </div>
 
           {featureRows.map((r) => (
-            <div
-              key={r.label}
-              className="grid grid-cols-[1.4fr_.6fr_.6fr_.6fr] items-center border-b border-slate-100 px-4 py-3 text-sm"
-            >
-              <div className="text-slate-700">{r.label}</div>
-              <div className="text-center"><Cell v={r.normal} /></div>
-              <div className="text-center"><Cell v={r.gold} /></div>
-              <div className="text-center"><Cell v={r.platine} /></div>
+            <div key={r.label} className="grid grid-cols-[1.4fr_.6fr_.6fr_.6fr] items-center border-b border-slate-100 px-4 py-3 text-sm">
+              <div className="text-slate-800">{r.label}</div>
+              <div className="flex justify-center"><Cell v={r.normal} /></div>
+              <div className="flex justify-center"><Cell v={r.gold} /></div>
+              <div className="flex justify-center"><Cell v={r.platine} /></div>
             </div>
           ))}
-        </div>
 
-        <div className="mt-3 text-xs text-slate-500">
-          * Offre Platine inclut l’ensemble des fonctionnalités Gold + Normal, avec des services avancés et priorité support.
-        </div>
-
-        {/* Banner */}
-        <div className="mt-10 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <div className="text-sm font-semibold text-slate-900">Tu hésites entre Gold et Platine ?</div>
-              <div className="mt-1 text-sm text-slate-700">
-                Gold = meilleur rapport / progression régulière. Platine = tout débloqué + Co-Pilot + Mentor + prioritaire.
-              </div>
-              <div className="mt-2 text-xs text-slate-600">
-                Prix affiché mensuel. En annuel (-20%), engagement 12 mois. Pack Famille -20% si au moins 2 niveaux.
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => goPanier("gold")}
-                className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
-              >
-                Choisir Gold
-              </button>
-              <button
-                onClick={() => goPanier("platine")}
-                className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500"
-              >
-                Passer en Platine
-              </button>
-            </div>
+          <div className="px-4 py-4 text-xs text-slate-500">
+            * Gold = progression guidée + Parents inclus. Platine = tout débloqué + services avancés & prioritaire.
           </div>
         </div>
 
-        {/* FAQ (3 cards) */}
-        <div className="mt-10 grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5">
-            <div className="font-semibold">Puis-je changer de plan plus tard ?</div>
-            <div className="mt-2 text-sm text-slate-600">
-              Oui, à tout moment. Le passage à Gold/Platine débloque immédiatement les fonctionnalités associées.
-            </div>
+        <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6">
+          <div className="text-sm font-semibold">Tu hésites ?</div>
+          <div className="mt-1 text-sm text-slate-600">
+            <span className="font-semibold">Gold</span> = meilleur rapport pour une progression régulière (guidage + stats + Parents inclus).
+            <span className="ml-2"><span className="font-semibold">Platine</span> = premium (Co-Pilot + Mentor + prioritaire).</span>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-5">
-            <div className="font-semibold">Comment fonctionne l’annuel (-20%) ?</div>
-            <div className="mt-2 text-sm text-slate-600">
-              Le prix est lissé au mois pour l’affichage, mais l’abonnement est avec un engagement de 12 mois.
-            </div>
-          </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-5">
-            <div className="font-semibold">Pack Famille ?</div>
-            <div className="mt-2 text-sm text-slate-600">
-              Ajoute au moins un autre niveau (ex: 4e + 2nde) pour activer -20% supplémentaires. Cumulable avec l’annuel.
-            </div>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button onClick={() => goPanier("gold")} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500">
+              Choisir Gold
+            </button>
+            <button onClick={() => goPanier("platine")} className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500">
+              Passer en Platine
+            </button>
           </div>
         </div>
       </main>
