@@ -68,26 +68,34 @@ model Subscription {
 }
 
 model User {
-  id                 String               @id
-  name               String?
-  email              String?              @unique
-  emailVerified      DateTime?
-  image              String?
-  passwordHash       String?
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime
-  stripeCustomerId   String?              @unique
-  Account            Account[]
-  PasswordResetToken PasswordResetToken[]
-  Session            Session[]
-  Subscription       Subscription?
-  UserBadge          UserBadge[]
-  UserBillingStreak  UserBillingStreak?
-  UserProgress       UserProgress[]
-  Trial              Trial[]
-  ChapterAccess      ChapterAccess[]
-  ParentProfile      ParentProfile[]
-  UserDevice         UserDevice[]
+  id                   String               @id
+  name                 String?
+  email                String?              @unique
+  emailVerified        DateTime?
+  image                String?
+  passwordHash         String?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime
+  stripeCustomerId     String?              @unique
+  Account              Account[]
+  PasswordResetToken   PasswordResetToken[]
+  Session              Session[]
+  Subscription         Subscription?
+  UserBadge            UserBadge[]
+  UserBillingStreak    UserBillingStreak?
+  UserProgress         UserProgress[]
+  Trial                Trial[]
+  ChapterAccess        ChapterAccess[]
+  ParentProfile        ParentProfile[]
+  UserDevice           UserDevice[]
+  // --- Parents PIN (4 chiffres) ---
+  parentPinHash        String?
+  parentPinSetAt       DateTime?
+  parentPinFailed      Int                  @default(0)
+  parentPinLockedUntil DateTime?
+
+  // --- Parents PIN relations ---
+  parentPinSessions ParentPinSession[]
 }
 
 model UserBadge {
@@ -307,4 +315,20 @@ model TeacherStudentLink {
   @@unique([teacherUserId, studentUserId])
   @@index([teacherUserId])
   @@index([studentUserId])
+}
+
+model ParentPinSession {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Identifiant stable de session (cookie -> table Session). On reste "device-aware" plus tard si besoin.
+  sessionId     String
+  unlockedUntil DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, sessionId])
+  @@index([userId, sessionId])
 }

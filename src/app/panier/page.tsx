@@ -1,5 +1,8 @@
 "use client";
 
+
+import { useParentPinModal } from "@/components/parent-pin/useParentPinModal";
+import { fetchWithParentPinRetry } from "@/components/parent-pin/fetchWithParentPinRetry";
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -53,6 +56,7 @@ function readPlan(p: string | null): Plan {
 }
 
 export default function PanierPage() {
+  const { open: openParentPin, ParentPinModal } = useParentPinModal();
   const sp = useSearchParams();
   const router = useRouter();
 
@@ -390,7 +394,48 @@ export default function PanierPage() {
     router.push(`/panier/confirmation?${params.toString()}`);
   };
 
+  async function startStripeCheckout() {
+    // Map duration -> period attendu par l'API checkout/session
+    const period = duration === "annual" ? "Annuel" : "Mensuel";
+
+    // items attendu par l'API : tableau (tu as déjà un format "level:subject" dans l'URL confirmation)
+    // Ici on récupère depuis ton state "items" s'il existe, sinon on fallback sur un tableau vide
+    const payload: any = {
+      plan: (plan === "normal" ? "Normal" : plan === "gold" ? "Gold" : "Platine"),
+      period,
+      items: (Array.isArray(items) ? items : []),
+      distinctLevelsCount: typeof distinctLevelsCount === "number" ? distinctLevelsCount : undefined,
+    };
+
+    const res = await fetchWithParentPinRetry(
+      "/api/checkout/session",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      },
+      openParentPin
+    );
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      alert(data?.error || "Erreur paiement");
+      console.error("checkout/session:", data);
+      return;
+    }
+
+    if (data?.url) {
+      window.location.assign(data.url);
+      return;
+    }
+
+    alert("Checkout: URL manquante");
+    console.error("checkout/session:", data);
+  }
+
   return (
+<>
     <div className="min-h-screen bg-slate-50 text-slate-900">
       {/* Header simple (on harmonisera ensuite au niveau global) */}
       <header className="border-b border-slate-200 bg-white">
@@ -762,10 +807,10 @@ export default function PanierPage() {
 </div>
 
 <button
-                onClick={checkout}
+                onClick={startStripeCheckout}
                 className="mt-4 w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800"
               >
-                Continuer → Confirmation
+                Payer → Stripe
               </button>
 {/* __SS_ADDONS_TOTALTODAY_UI__ */}
 
@@ -777,5 +822,7 @@ export default function PanierPage() {
         </div>
       </div>
     </div>
+      {ParentPinModal}
+  </>
   );
 }

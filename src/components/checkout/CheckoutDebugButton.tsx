@@ -1,8 +1,13 @@
+
+import { useParentPinModal } from "@/components/parent-pin/useParentPinModal";
+import { fetchWithParentPinRetry } from "@/components/parent-pin/fetchWithParentPinRetry";
+
 // src/components/checkout/CheckoutDebugButton.tsx
 "use client";
 import { useState } from "react";
 
 export default function CheckoutDebugButton() {
+  const { open: openParentPin, ParentPinModal } = useParentPinModal();
   const [amount, setAmount] = useState<number>(17.99);
   const [plan, setPlan] = useState<string>("normal");
   const [billing, setBilling] = useState<string>("monthly");
@@ -11,10 +16,10 @@ export default function CheckoutDebugButton() {
   async function pay() {
     setLoading(true);
     try {
-      const res = await fetch("/api/checkout/session", {
+      const res = await fetchWithParentPinRetry("/api/checkout/session", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ amount, plan, billing })
+        body: JSON.stringify({ amount, plan, billing }), openParentPin)
       });
       const json = await res.json();
       if (!res.ok || !json?.url) throw new Error(json?.error || "checkout_error");
@@ -27,7 +32,8 @@ export default function CheckoutDebugButton() {
   }
 
   return (
-    <div className="mt-6 rounded-lg border p-4">
+    <>
+<div className="mt-6 rounded-lg border p-4">
       <div className="font-medium">💳 Test Checkout (debug)</div>
       <div className="mt-3 grid gap-2 md:grid-cols-3">
         <label className="text-sm">Montant (€)
@@ -51,5 +57,7 @@ export default function CheckoutDebugButton() {
         {loading ? "Redirection…" : "Payer (test)"}
       </button>
     </div>
+      {ParentPinModal}
+    </>
   );
 }

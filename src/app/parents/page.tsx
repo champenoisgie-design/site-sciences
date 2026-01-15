@@ -1,11 +1,15 @@
+import { RequireParentPinAlways } from "@/components/parent-pin/RequireParentPinAlways";
 import React from "react";
 import Link from "next/link";
+import { ParentPinGate } from "@/components/parent-pin/ParentPinGate";
 
 export const metadata = { title: "Espace parents — Site Sciences" };
 
 export default function ParentsPage() {
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10 space-y-10">
+    <RequireParentPinAlways>
+<ParentPinGate title="Espace Parents" description="PIN requis pour accéder au récapitulatif parents.">
+<main className="mx-auto max-w-6xl px-4 py-10 space-y-10">
       <header className="space-y-3">
         <p className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
           👨‍👩‍👧 Espace parents
@@ -99,5 +103,9 @@ export default function ParentsPage() {
         </div>
       </section>
     </main>
-  );
+      </ParentPinGate>
+    </RequireParentPinAlways>
+
+);
+
 }

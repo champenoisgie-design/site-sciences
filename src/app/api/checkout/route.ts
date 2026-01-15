@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { requireParentPinUnlocked, consumeParentPinUnlocked } from "@/lib/parentPinGuard";
 
 function pick(...vals: (string | undefined | null)[]) {
   return vals.find((v) => typeof v === 'string' && v.trim().length > 0)
@@ -45,6 +46,19 @@ function resolvePriceId(params: URLSearchParams) {
 }
 
 export async function GET(req: Request) {
+  // Parents PIN required before checkout
+  try {
+    await requireParentPinUnlocked();
+  } catch (e: any) {
+    if (e?.code === "PARENT_PIN_REQUIRED" || e?.message === "PARENT_PIN_REQUIRED") {
+      return new Response(JSON.stringify({ error: "PARENT_PIN_REQUIRED" }), {
+        status:  423,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    throw e;
+  }
+
   try {
     const url = new URL(req.url)
     const sp = url.searchParams

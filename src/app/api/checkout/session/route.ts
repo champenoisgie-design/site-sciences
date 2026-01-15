@@ -1,10 +1,24 @@
 import { NextResponse } from "next/server";
 import { getStripeMode } from "@/lib/stripe/mode";
 import { createMockCheckoutSession } from "@/lib/stripe/mock";
+import { requireParentPinUnlocked, consumeParentPinUnlocked } from "@/lib/parentPinGuard";
 
 // Optionnel futur: import Stripe from "stripe";
 
 export async function POST(req: Request) {
+  // Parents PIN required before checkout
+  try {
+    await requireParentPinUnlocked();
+  } catch (e: any) {
+    if (e?.code === "PARENT_PIN_REQUIRED" || e?.message === "PARENT_PIN_REQUIRED") {
+      return new Response(JSON.stringify({ error: "PARENT_PIN_REQUIRED" }), {
+        status:  423,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    throw e;
+  }
+
   try {
     const body = await req.json().catch(() => ({}));
     const plan = body?.plan as "Normal" | "Gold" | "Platine" | undefined;
@@ -17,6 +31,8 @@ export async function POST(req: Request) {
     const mode = getStripeMode();
     if (mode === "mock") {
       const session = await createMockCheckoutSession({ plan, period, trialDays });
+      await consumeParentPinUnlocked();
+
       return NextResponse.json({ ok: true, mode, url: session.url });
     }
 

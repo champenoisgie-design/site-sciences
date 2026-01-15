@@ -1,6 +1,5 @@
 import { requireUserOrRedirect } from "@/lib/server-auth";
 import CompteClient from "./CompteClient";
-import { RequireParentPinAlways } from "@/components/parent-pin/RequireParentPinAlways";
 
 export const metadata = {
   title: "Mon compte | Site Sciences",

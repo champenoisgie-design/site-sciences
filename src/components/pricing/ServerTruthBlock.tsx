@@ -1,15 +1,20 @@
+
+import { useParentPinModal } from "@/components/parent-pin/useParentPinModal";
+import { fetchWithParentPinRetry } from "@/components/parent-pin/fetchWithParentPinRetry";
+
 // src/components/pricing/ServerTruthBlock.tsx
 "use client";
 import { useMemo, useState } from "react";
 import { useServerPrice, type CartInput } from "../../hooks/useServerPrice";
 
 export default function ServerTruthBlock() {
+  const { open: openParentPin, ParentPinModal } = useParentPinModal();
   async function checkoutServerTotal(total:number, plan?:string, billing?:string) {
     try {
-      const res = await fetch("/api/checkout/session", {
+      const res = await fetchWithParentPinRetry("/api/checkout/session", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ amount: total, plan: plan || "normal", billing: billing || "monthly" })
+        body: JSON.stringify({ amount: total, plan: plan || "normal", billing: billing || "monthly" }), openParentPin), openParentPin)
       });
       const json = await res.json();
       if (!res.ok || !json?.url) throw new Error(json?.error || "checkout_error");
@@ -36,7 +41,8 @@ export default function ServerTruthBlock() {
   const { data, loading, error } = useServerPrice(input);
 
   return (
-    <div className="mt-12 rounded-xl border bg-white">
+    <>
+<div className="mt-12 rounded-xl border bg-white">
       <div className="px-4 py-3 border-b flex items-center justify-between">
         <div className="font-semibold">🧮 Source de vérité serveur (debug)</div>
         {loading && <span className="text-xs text-gray-500">calcul…</span>}
@@ -93,5 +99,7 @@ export default function ServerTruthBlock() {
 
       </div>
     </div>
+      {ParentPinModal}
+    </>
   );
 }

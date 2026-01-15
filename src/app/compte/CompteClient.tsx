@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { AccountTabPinGuard } from "@/components/parent-pin/AccountTabPinGuard";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type SimpleUser = { id: string; email?: string | null; name?: string | null } | null;
 
@@ -14,7 +16,17 @@ const TABS: { id: TabId; label: string }[] = [
 ];
 
 export default function CompteClient({ user }: { user: SimpleUser }) {
-  const [tab, setTab] = useState<TabId>("progression");
+  const router = useRouter();
+  const params = useSearchParams();
+  const initialTab = (params.get("tab") as TabId) || "progression";
+  const [tab, setTab] = useState<TabId>(initialTab);
+
+  useEffect(() => {
+    const q = (params.get("tab") || "") as TabId | "";
+    const next: TabId = (q === "abonnement" || q === "parents" || q === "badges" || q === "progression") ? q : "progression";
+    if (next !== tab) setTab(next);
+  }, [params, tab]);
+
 
   // Pour l'instant, un seul élève, mais l'UI est prête pour plusieurs.
   const students = [
@@ -31,6 +43,7 @@ export default function CompteClient({ user }: { user: SimpleUser }) {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 space-y-6">
+      <AccountTabPinGuard />
       <header className="space-y-2">
         <p className="text-xs text-muted-foreground">
           Connecté en tant que{" "}
@@ -46,7 +59,7 @@ export default function CompteClient({ user }: { user: SimpleUser }) {
             <button
               key={t.id}
               type="button"
-              onClick={() => setTab(t.id)}
+              onClick={() => router.push(`/compte?tab=${t.id}`)}
               className={[
                 "px-3 sm:px-4 py-1.5 rounded-full transition",
                 tab === t.id
