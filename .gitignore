@@ -73,3 +73,6 @@ public/themes/onepiece/preview.mp4
 
 # local prisma backups
 prisma/*.db.bak*
+
+# build artifacts
+*.tsbuildinfo

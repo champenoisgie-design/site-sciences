@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN "trialEndsAt" DATETIME;
+ALTER TABLE "User" ADD COLUMN "trialGrade" TEXT;
+ALTER TABLE "User" ADD COLUMN "trialStartAt" DATETIME;
+ALTER TABLE "User" ADD COLUMN "trialSubject" TEXT;
