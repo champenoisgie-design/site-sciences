@@ -154,3 +154,147 @@ export function computeCartTotals(input: CartInput): CartTotals {
     },
   };
 }
+
+// ------------------------------
+// V2 — Pricing officiel (Jan 2026)
+// - Famille -20%
+// - 3 matières même niveau -10%
+// - Cumulables
+// - Calcul en CENTIMES (entiers)
+// ------------------------------
+
+export type BillingPeriodV2 = "Mensuel" | "Annuel";
+
+export type CartItemV2 =
+  | { id: string; type: "subject"; title: string; level?: string; priceCents: number }
+  | { id: string; type: "mode"; title: string; priceCents: number };
+
+export type PriceBreakdownItemV2 = {
+  code: "SUBTOTAL" | "DISCOUNT_FAMILY" | "DISCOUNT_MULTI_SUBJECT" | "TOTAL";
+  label: string;
+  /** En centimes. Subtotal/Total positifs. Discounts négatifs. */
+  amountCents: number;
+};
+
+export type CartPriceResultV2 = {
+  currency: "EUR";
+  period: BillingPeriodV2;
+
+  subtotalCents: number;
+  subjectSubtotalCents: number;
+
+  familyEligible: boolean;
+  multiSubjectEligible: boolean;
+
+  discounts: {
+    familyRate: number; // 0.20
+    familyCents: number;
+    multiSubjectRate: number; // 0.10
+    multiSubjectCents: number;
+    totalDiscountCents: number;
+    totalDiscountPct: number; // ex 0.30
+  };
+
+  totalCents: number;
+  breakdown: PriceBreakdownItemV2[];
+};
+
+function safeCentsV2(n: unknown): number {
+  const v = Math.floor(Number(n));
+  return Number.isFinite(v) && v > 0 ? v : 0;
+}
+
+/**
+ * Règles:
+ * - Famille: si distinctLevelsCount >= 2 => -20% sur subtotal (tous items)
+ * - Multi-matières: si AU MOINS 3 items 'subject' pour le MÊME level => -10% sur subjectSubtotal uniquement
+ * - Cumulables: on soustrait les deux
+ *
+ * NB: pas de plafond max appliqué ici (mais structure OK si on veut l’ajouter plus tard).
+ */
+export function computeCartPriceV2(input: {
+  items: CartItemV2[];
+  period: BillingPeriodV2;
+  distinctLevelsCount?: number;
+  familyRate?: number; // défaut 0.20
+  multiSubjectRate?: number; // défaut 0.10
+}): CartPriceResultV2 {
+  const currency: "EUR" = "EUR";
+  const period: BillingPeriodV2 = input.period === "Annuel" ? "Annuel" : "Mensuel";
+  const items = Array.isArray(input.items) ? input.items : [];
+
+  const familyRate = input.familyRate ?? 0.20;
+  const multiSubjectRate = input.multiSubjectRate ?? 0.10;
+
+  const subtotalCents = items.reduce((acc, it) => acc + safeCentsV2((it as any).priceCents), 0);
+
+  const subjectItems = items.filter(
+    (it): it is Extract<CartItemV2, { type: "subject" }> => it.type === "subject"
+  );
+  const subjectSubtotalCents = subjectItems.reduce((acc, it) => acc + safeCentsV2(it.priceCents), 0);
+
+  // Famille: distinctLevelsCount >= 2 (si non fourni, on le déduit des levels des subjects)
+  const distinctLevelsCount =
+    typeof input.distinctLevelsCount === "number"
+      ? input.distinctLevelsCount
+      : (() => {
+          const s = new Set<string>();
+          for (const it of subjectItems) if (it.level) s.add(it.level);
+          return s.size;
+        })();
+
+  const familyEligible = distinctLevelsCount >= 2;
+
+  // Multi-matières: >=3 subjects sur le même level
+  const levelCounts = new Map<string, number>();
+  for (const it of subjectItems) {
+    const lvl = it.level || "";
+    if (!lvl) continue;
+    levelCounts.set(lvl, (levelCounts.get(lvl) ?? 0) + 1);
+  }
+  const multiSubjectEligible = Array.from(levelCounts.values()).some((n) => n >= 3);
+
+  const familyCents = familyEligible ? Math.floor(subtotalCents * familyRate) : 0;
+  const multiSubjectCents = multiSubjectEligible ? Math.floor(subjectSubtotalCents * multiSubjectRate) : 0;
+
+  const totalDiscountCents = familyCents + multiSubjectCents;
+  const totalCents = Math.max(0, subtotalCents - totalDiscountCents);
+
+  const totalDiscountPct = subtotalCents > 0 ? totalDiscountCents / subtotalCents : 0;
+
+  const breakdown: PriceBreakdownItemV2[] = [
+    { code: "SUBTOTAL", label: "Sous-total", amountCents: subtotalCents },
+    ...(familyEligible
+      ? [{ code: "DISCOUNT_FAMILY", label: "Promo Famille (-20%)", amountCents: -familyCents }]
+      : []),
+    ...(multiSubjectEligible
+      ? [
+          {
+            code: "DISCOUNT_MULTI_SUBJECT",
+            label: "Promo 3 matières même niveau (-10%)",
+            amountCents: -multiSubjectCents,
+          },
+        ]
+      : []),
+    { code: "TOTAL", label: "Total", amountCents: totalCents },
+  ];
+
+  return {
+    currency,
+    period,
+    subtotalCents,
+    subjectSubtotalCents,
+    familyEligible,
+    multiSubjectEligible,
+    discounts: {
+      familyRate,
+      familyCents,
+      multiSubjectRate,
+      multiSubjectCents,
+      totalDiscountCents,
+      totalDiscountPct,
+    },
+    totalCents,
+    breakdown,
+  };
+}

@@ -200,83 +200,64 @@ function TabProgression({ studentLabel }: { studentLabel: string }) {
 /* -------------------- Onglet : Mon abonnement -------------------- */
 
 function TabAbonnement() {
-  // Squelette, à connecter plus tard aux vraies données (Subscription / UserSubscription)
+  const [sub, setSub] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    fetch("/api/billing/subscription", { cache: "no-store" })
+      .then(r => r.json())
+      .then(j => setSub(j.subscription))
+      .catch(() => {});
+  }, []);
+
+  if (!sub) {
+    return <p className="text-sm text-muted-foreground">Aucun abonnement actif.</p>;
+  }
+
+  const subjects = (() => {
+    try {
+      return JSON.parse(sub.subjectsJson || "{}").subjects;
+    } catch {
+      return "";
+    }
+  })();
+
+  const expired = new Date(sub.currentPeriodEnd) < new Date();
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-lg font-semibold">Mon abonnement</h2>
-          <p className="text-sm text-muted-foreground">
-            Récapitulatif de tes matières, niveaux et options. Cette vue sera
-            connectée à Stripe / GoCardless pour afficher ton état réel.
-          </p>
-        </div>
-        <div className="text-xs text-muted-foreground">
-          Les mises à jour se font en temps réel après chaque paiement.
-        </div>
+      <div>
+        <h2 className="text-lg font-semibold">Mon abonnement</h2>
+        <p className="text-sm text-muted-foreground">
+          Données réelles synchronisées avec Stripe.
+        </p>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-        {/* Abonnement principal */}
-        <div className="rounded-xl border p-4 space-y-3">
-          <div className="flex items-center justify-between gap-2">
-            <div>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                Abonnement principal
-              </p>
-              <p className="text-sm font-semibold">Maths 4ᵉ – Offre Gold (exemple)</p>
-            </div>
-            <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-medium text-emerald-700">
-              En cours
-            </span>
+      <div className="rounded-xl border p-4 space-y-2">
+        <div className="flex justify-between">
+          <div>
+            <p className="text-sm font-semibold">
+              Offre {sub.plan} — {sub.grade}
+            </p>
+            <p className="text-xs text-muted-foreground">{subjects}</p>
           </div>
-          <ul className="text-xs text-muted-foreground space-y-1">
-            <li>• Renouvellement mensuel (démo)</li>
-            <li>• Inclut : suivi de progression détaillé, défis multi-joueur, badges</li>
-            <li>• Mode d&apos;apprentissage : Normal (TDAH / DYS / TSA / HPI en option)</li>
-          </ul>
-          <div className="flex flex-wrap gap-2 pt-2">
-            <button className="rounded-lg border px-3 py-1.5 text-xs hover:bg-accent">
-              Modifier mon niveau (Normal / Gold / Platine)
-            </button>
-            <button className="rounded-lg border px-3 py-1.5 text-xs hover:bg-accent">
-              Ajouter une matière
-            </button>
-          </div>
+          <span className={`rounded-full px-2 py-1 text-xs font-medium ${expired ? "bg-rose-100 text-rose-700" : "bg-emerald-100 text-emerald-700"}`}>
+            {expired ? "Expiré" : "Actif"}
+          </span>
         </div>
 
-        {/* Upsell / thèmes débloqués */}
-        <div className="space-y-3">
-          <div className="rounded-xl border p-4 bg-emerald-50/70">
-            <p className="text-xs font-semibold text-emerald-800">Suggestion</p>
-            <p className="mt-1 text-sm">
-              Ajoutez <span className="font-medium">Physique-Chimie 4ᵉ</span> pour compléter votre suivi scientifique.
-            </p>
-            <p className="mt-1 text-xs text-emerald-900">
-              Le prix exact sera calculé en fonction des options déjà actives pour éviter tout doublon.
-            </p>
-            <button className="mt-3 rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-800">
-              Voir dans le panier
-            </button>
-          </div>
+        <p className="text-xs text-muted-foreground">
+          Fin : {new Date(sub.currentPeriodEnd).toLocaleDateString("fr-FR")}
+        </p>
 
-          <div className="rounded-xl border p-4">
-            <p className="text-xs font-semibold">Mode Famille & thèmes débloqués</p>
-            <p className="mt-1 text-sm">
-              Le mode Famille permet d&apos;ajouter plusieurs élèves au même compte.
-            </p>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Thèmes débloqués (exemple) :
-            </p>
-            <ul className="mt-1 text-xs text-muted-foreground space-y-1">
-              <li>• Mario – Parcours fractions & proportionnalité</li>
-              <li>• One Piece – Grande route des probabilités</li>
-              <li>• Dragon Ball Z – Entraînement Saiyan (évolutions du personnage)</li>
-            </ul>
-            <p className="mt-2 text-xs text-muted-foreground">
-              La page panier empêchera d&apos;acheter deux fois le même thème ou la même matière.
-            </p>
-          </div>
+        <div className="pt-3 flex gap-2">
+          <a href="/panier" className="rounded-lg border px-3 py-1.5 text-xs hover:bg-accent">
+            Modifier
+          </a>
+          {expired && (
+            <a href="/tarifs" className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs text-white hover:bg-emerald-700">
+              Renouveler
+            </a>
+          )}
         </div>
       </div>
     </div>

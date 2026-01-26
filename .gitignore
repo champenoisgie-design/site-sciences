@@ -64,3 +64,12 @@ public/themes/onepiece/preview.mp4
 *.tsbuildinfo
 .DS_Store
 *.mp4
+
+# local build
+*.tsbuildinfo
+
+# local backups
+*.bak.*
+
+# local prisma backups
+prisma/*.db.bak*

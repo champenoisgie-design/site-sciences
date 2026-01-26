@@ -6,7 +6,7 @@ import { fetchWithParentPinRetry } from "@/components/parent-pin/fetchWithParent
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-type Plan = "normal" | "gold" | "platine" | "family";
+type Plan = "normal" | "gold" | "platine";
 type Duration = "monthly" | "annual";
 
 type UpsellKey = "parents" | "coach" | "pdf" | "ia";
@@ -31,7 +31,6 @@ const PLAN_META: Record<Plan, { label: string; monthly: number }> = {
   normal: { label: "Normal", monthly: 12.49 },
   gold: { label: "Gold", monthly: 19.99 },
   platine: { label: "Platine", monthly: 24.99 },
-  family: { label: "Famille", monthly: 36.25 },
 };
 
 const LEVELS = ["6e", "5e", "4e", "3e", "2nde", "1ere", "Tle"];
@@ -51,7 +50,7 @@ function money(n: number) {
   return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(n);
 }
 function readPlan(p: string | null): Plan {
-  if (p === "normal" || p === "gold" || p === "platine" || p === "family") return p;
+  if (p === "normal" || p === "gold" || p === "platine") return p;
   return "gold";
 }
 
@@ -125,7 +124,7 @@ export default function PanierPage() {
   const uniqueLevelsCount = useMemo(() => Object.keys(levelCounts).length, [levelCounts]);
 
   const familyDiscountEligible = uniqueLevelsCount >= 2;
-  const familyDiscountActive = familyDiscountEligible && plan !== "family";
+  const familyDiscountActive = familyDiscountEligible;
 
   // Remise matières (même niveau): dès 3 matières dans le même niveau => -10%
   // (non cumulable avec la remise famille)
@@ -598,10 +597,9 @@ export default function PanierPage() {
                     value={plan}
                     onChange={(e) => setPlan(e.target.value as Plan)}
                   >
-                    <option value="gold">Gold</option>
-                    <option value="platine">Platine</option>
-                    <option value="family">Family</option>
-                  </select>
+                    <option value="normal">Normal</option>
+<option value="gold">Gold</option>
+                    <option value="platine">Platine</option></select>
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
@@ -726,7 +724,7 @@ export default function PanierPage() {
                       {items.length} sélection{items.length > 1 ? "s" : ""} • {duration === "annual" ? "Annuel (-20%)" : "Mensuel"}
                     </div>
                     <div className="mt-2 text-xs text-slate-500">Thème {themePack} • Skin {skin}</div>
-                    {familyDiscountEligible && plan !== "family" ? (
+                    {familyDiscountEligible ? (
                       <div className="mt-2 text-xs text-emerald-700">Pack Famille activé (-20%)</div>
                     ) : null}
                   </div>
