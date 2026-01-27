@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
 import { awardBadge } from '@/lib/badges/award'
+import { requireContentAccess, HttpError } from "@/lib/access/serverAccess";
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -18,6 +19,18 @@ export async function POST(req: Request) {
       { error: 'subject et grade requis' },
       { status: 400 },
     )
+  }
+
+  // PAYWALL / TRIAL SCOPE — vérité côté serveur
+  try {
+    await requireContentAccess({ userId: user.id, requested: { grade, subject } })
+  } catch (e: any) {
+    if (e instanceof HttpError) {
+      console.log("[access] denied lesson/complete", { userId: user.id, grade, subject, status: e.status, error: e.body?.error })
+      return NextResponse.json(e.body, { status: e.status })
+    }
+    console.error(e)
+    return NextResponse.json({ error: "INTERNAL_ERROR" }, { status: 500 })
   }
 
   // Assure un enregistrement de progress

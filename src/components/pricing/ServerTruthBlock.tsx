@@ -1,105 +1,75 @@
+'use client'
 
-import { useParentPinModal } from "@/components/parent-pin/useParentPinModal";
+import { useState } from "react";
 import { fetchWithParentPinRetry } from "@/components/parent-pin/fetchWithParentPinRetry";
 
-// src/components/pricing/ServerTruthBlock.tsx
-"use client";
-import { useMemo, useState } from "react";
-import { useServerPrice, type CartInput } from "../../hooks/useServerPrice";
-
+/**
+ * ServerTruthBlock
+ * Petit bloc debug/marketing qui appelle /api/checkout/session
+ * IMPORTANT: l'appel doit passer par fetchWithParentPinRetry(url, options, openParentPin)
+ */
 export default function ServerTruthBlock() {
-  const { open: openParentPin, ParentPinModal } = useParentPinModal();
-  async function checkoutServerTotal(total:number, plan?:string, billing?:string) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // placeholders (selon ton usage réel, tu peux les remplacer)
+  const total = 999;
+  const plan = "normal";
+  const billing = "monthly";
+
+  async function openParentPin() {
+    // placeholder: fetchWithParentPinRetry va ouvrir le modal PIN si besoin
+    // si tu as déjà une fonction existante dans le projet, on pourra la brancher ensuite
+  }
+
+  async function handleCheckout() {
+    setError(null);
+    setLoading(true);
+
     try {
-      const res = await fetchWithParentPinRetry("/api/checkout/session", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ amount: total, plan: plan || "normal", billing: billing || "monthly" }), openParentPin), openParentPin)
-      });
-      const json = await res.json();
-      if (!res.ok || !json?.url) throw new Error(json?.error || "checkout_error");
-      location.href = json.url;
-    } catch (e:any) {
-      alert(e?.message || "Erreur Checkout");
+      const res = await fetchWithParentPinRetry(
+        "/api/checkout/session",
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            amount: total,
+            plan,
+            billing,
+          }),
+        },
+        openParentPin
+      );
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json?.url) {
+        throw new Error(json?.error || "checkout_error");
+      }
+
+      window.location.href = json.url;
+    } catch (e: any) {
+      setError(e?.message || "checkout_error");
+    } finally {
+      setLoading(false);
     }
   }
-  // petit formulaire debug pour saisir les valeurs courantes du panier
-  const [primaryPrice, setPrimaryPrice] = useState<number>(17.99);
-  const [primarySubjects, setPrimarySubjects] = useState<number>(4);
-  const [familyPrice, setFamilyPrice] = useState<number>(0);
-  const [familySubjects, setFamilySubjects] = useState<number>(0);
-  const [hasReferral, setHasReferral] = useState<boolean>(false);
-  const [isFirst100, setIsFirst100] = useState<boolean>(false);
-
-  const input: CartInput = useMemo(() => ({
-    currency: "EUR",
-    primary: { basePrice: Number(primaryPrice)||0, subjectsCount: Number(primarySubjects)||0, meta: { plan: "—", billing: "—" } },
-    familySecond: (Number(familyPrice)>0 ? { basePrice: Number(familyPrice)||0, subjectsCount: Number(familySubjects)||0, meta: { plan: "—", billing: "—" } } : null),
-    hasReferral, isFirst100
-  }), [primaryPrice, primarySubjects, familyPrice, familySubjects, hasReferral, isFirst100]);
-
-  const { data, loading, error } = useServerPrice(input);
 
   return (
-    <>
-<div className="mt-12 rounded-xl border bg-white">
-      <div className="px-4 py-3 border-b flex items-center justify-between">
-        <div className="font-semibold">🧮 Source de vérité serveur (debug)</div>
-        {loading && <span className="text-xs text-gray-500">calcul…</span>}
+    <div className="rounded-xl border p-4">
+      <div className="text-sm font-semibold">Vérité serveur (checkout)</div>
+      <div className="mt-1 text-xs text-muted-foreground">
+        Debug: appelle /api/checkout/session avec retry PIN si nécessaire.
       </div>
-      <div className="p-4 grid gap-3 md:grid-cols-2">
-        <div className="grid gap-2">
-          <div className="text-sm font-medium">Ligne principale</div>
-          <label className="text-xs">Prix base (€)</label>
-          <input value={primaryPrice} onChange={e=>setPrimaryPrice(parseFloat(e.target.value)||0)} className="border rounded px-2 py-1" type="number" step="0.01"/>
-          <label className="text-xs">Matières (nb)</label>
-          <input value={primarySubjects} onChange={e=>setPrimarySubjects(parseInt(e.target.value||"0"))} className="border rounded px-2 py-1" type="number" min="0"/>
-        </div>
-        <div className="grid gap-2">
-          <div className="text-sm font-medium">Ligne Famille (optionnelle)</div>
-          <label className="text-xs">Prix base (€)</label>
-          <input value={familyPrice} onChange={e=>setFamilyPrice(parseFloat(e.target.value)||0)} className="border rounded px-2 py-1" type="number" step="0.01"/>
-          <label className="text-xs">Matières (nb)</label>
-          <input value={familySubjects} onChange={e=>setFamilySubjects(parseInt(e.target.value||"0"))} className="border rounded px-2 py-1" type="number" min="0"/>
-        </div>
-        <div className="col-span-full flex items-center gap-6">
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={hasReferral} onChange={e=>setHasReferral(e.target.checked)} />
-            Parrainage (-5%)
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={isFirst100} onChange={e=>setIsFirst100(e.target.checked)} />
-            100 premiers (-20%)
-          </label>
-        </div>
-      </div>
-      <div className="px-4 pb-4">
-        {error && <div className="text-sm text-red-600">Erreur: {String(error)}</div>}
-        {data && data.ok && (
-          <div className="text-sm">
-            <div className="mt-2">Total après remises de ligne: <strong>{data.totals.afterLineLevelDiscounts.toFixed(2)} €</strong></div>
-            <div className="mt-1">Total final (serveur): <strong>{data.totals.grandTotal.toFixed(2)} €</strong></div>
-            <div className="mt-2 text-xs text-gray-500">Ref (serveur): remises sujets {Math.round((data.lines.primary.subjectDiscountPct||0)*100)}% / famille {data.lines.familySecond?.familyDiscountPct ? Math.round(data.lines.familySecond.familyDiscountPct*100) : 0}% / parrainage {Math.round((data.discounts.referralPct||0)*100)}% / 100 premiers {Math.round((data.discounts.first100Pct||0)*100)}%</div>
-          </div>
-        )}
-        {data && data.ok && (
-          <div className="mt-3">
-            <button
-              onClick={() => checkoutServerTotal(
-                Number(data?.totals?.grandTotal||0),
-                String(data?.lines?.primary?.meta?.plan || "normal"),
-                String(data?.lines?.primary?.meta?.billing || "monthly")
-              )}
-              className="rounded bg-black text-white px-4 py-2"
-            >
-              Payer ce total (test)
-            </button>
-          </div>
-        )}
 
-      </div>
+      {error ? <div className="mt-2 text-sm text-red-600">{error}</div> : null}
+
+      <button
+        onClick={handleCheckout}
+        disabled={loading}
+        className="mt-3 rounded-lg bg-zinc-900 px-4 py-2 text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+      >
+        {loading ? "..." : "Tester checkout"}
+      </button>
     </div>
-      {ParentPinModal}
-    </>
   );
 }

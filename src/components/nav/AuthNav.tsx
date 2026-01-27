@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import AuthNav from "@/components/nav/AuthNav";
-
 type MeResponse = { user: null | { id?: string; email?: string; name?: string } };
 
 function cn(...xs: Array<string | false | undefined | null>) {

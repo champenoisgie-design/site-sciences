@@ -19,8 +19,8 @@ export default function CheckoutDebugButton() {
       const res = await fetchWithParentPinRetry("/api/checkout/session", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ amount, plan, billing }), openParentPin)
-      });
+        body: JSON.stringify({ amount, plan, billing }, openParentPin)
+      }, openParentPin);
       const json = await res.json();
       if (!res.ok || !json?.url) throw new Error(json?.error || "checkout_error");
       location.href = json.url;

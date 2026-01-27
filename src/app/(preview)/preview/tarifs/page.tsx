@@ -8,7 +8,7 @@ import PreviewHeader from "../accueil/PreviewHeader";
 
 type AudienceMode = "visitor" | "already-subscribed";
 
-type PlanId = "gold" | "platine" | "family";
+type PlanId = "normal" | "gold" | "platine";
 
 type Plan = {
   id: PlanId;
@@ -136,11 +136,9 @@ export default function PreviewTarifsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      <PreviewHeader
+      <PreviewHeader mode="student"
         // Adapte ces props à ce que tu utilises déjà
-        currentRoute="tarifs"
-        isAuthenticated={audienceMode === "already-subscribed"}
-      />
+/>
 
       <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 pb-16 pt-8">
         {/* Bandeau contexte preview */}

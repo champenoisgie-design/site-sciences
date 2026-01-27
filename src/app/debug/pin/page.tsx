@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ParentPinDebugWidget } from "@/components/parent-pin/ParentPinDebugWidget";
+import ParentPinDebugWidget from "@/components/parent-pin/ParentPinDebugWidget";
 
 export default function DebugPinPage() {
   return (

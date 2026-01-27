@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-type PlanId = "gold" | "platine" | "family";
+type PlanId = "normal" | "gold" | "platine";
 type Mode = "visitor" | "subscribed";
 
 type Plan = {

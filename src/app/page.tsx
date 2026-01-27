@@ -1,6 +1,10 @@
 import Link from "next/link";
+import { getCurrentUser } from "@/lib/auth";
 import type { ReactNode } from "react";
 import LiveOnline from "@/components/ux/LiveOnline";
+import HomeTrialBanner from "../components/home/HomeTrialBanner";
+import HomeHeroCTA from "../components/home/HomeHeroCTA";
+import HomeStudentDashboardB from "../components/home/HomeStudentDashboardB";
 
 export const metadata = {
   title: "Site Sciences — Apprendre, s'entraîner, progresser",
@@ -102,15 +106,15 @@ function CardLink(props: {
   );
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const me = await getCurrentUser();
+  if (me) {
+    return <HomeStudentDashboardB />;
+  }
+
   return (
     <main className="min-h-screen bg-background text-foreground">
-      {/* Bandeau essai gratuit */}
-      <div className="w-full bg-emerald-600 text-white">
-        <div className="mx-auto max-w-6xl px-4 py-2 text-center text-sm sm:text-base">
-          <strong>Inscris-toi et teste gratuitement pendant 3 jours</strong>
-        </div>
-      </div>
+      <HomeTrialBanner />
 
       {/* Bandeau “contenu adaptatif” (niveau & matière) */}
       <div className="w-full border-b bg-muted/40">
@@ -134,29 +138,7 @@ export default function HomePage() {
               à <em>tous</em> les niveaux.
             </p>
 
-            {/* CTA e-mail non bloquant */}
-            <form action="/register" method="get" className="mt-6 flex max-w-md gap-2">
-              <input
-                type="email"
-                name="email"
-                placeholder="Ton e-mail"
-                className="w-full rounded-lg border px-3 py-2 outline-none focus:ring"
-                aria-label="Adresse e-mail"
-              />
-              <button
-                type="submit"
-                className="rounded-lg border border-emerald-700 bg-emerald-600 px-4 py-2 font-medium text-white hover:bg-emerald-700 active:scale-[0.99] transition-transform"
-              >
-                Commencer l’essai
-              </button>
-            </form>
-
-            <div className="mt-4 text-sm text-muted-foreground">
-              Déjà inscrit ?{" "}
-              <Link href="/login" className="underline underline-offset-4 hover:text-foreground">
-                Me connecter
-              </Link>
-            </div>
+                        <HomeHeroCTA />
 
             <div className="mt-6">
               <Link

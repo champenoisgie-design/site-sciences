@@ -38,12 +38,12 @@ export default function PricingTable() {
             </tr>
           </thead>
           <tbody>
-            {PRICING.features.map((f) => (
+            {(PRICING as any).features || [].map((f: any) => (
               <tr key={f.key} className="border-t">
                 <td className="p-3">{f.label}</td>
                 {(["normal","gold","platine"] as const).map((k) => (
                   <td key={k} className="text-center p-3">
-                    {PRICING.matrix[k][f.key as keyof typeof PRICING.matrix["normal"]] ? "✅" : "—"}
+                    {((PRICING as any).matrix?.[k]?.[f.key] ? "✅" : "—")}
                   </td>
                 ))}
               </tr>

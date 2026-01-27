@@ -1,11 +1,23 @@
 import { NextResponse } from "next/server";
+import { requireContentAccess, HttpError } from "@/lib/access/serverAccess";
 import { purchaseChapter } from "@/lib/access/subscription";
 import { getSessionUser } from "@/lib/auth";
-import { CHAPTER_PRICING } from "@/lib/pricing";
+const CHAPTER_PRICING = { perChapterEUR: 4.99 } as const;
+
 
 export async function POST(req: Request) {
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ ok:false, error:"unauthenticated" }, { status: 401 });
+  // PAYWALL — achat chapitre: nécessite FULL (un trial ne doit pas acheter sans passer par panier/Stripe ensuite, mais on bloque si PAYWALL)
+  try {
+    await requireContentAccess({ userId: user.id });
+  } catch (e: any) {
+    if (e instanceof HttpError) return NextResponse.json(e.body, { status: e.status });
+    console.error(e);
+    return NextResponse.json({ ok:false, error:"INTERNAL_ERROR" }, { status: 500 });
+  }
+
+
 
   const body = await req.json().catch(() => ({}));
   const { subject, level, chapterKey } = body;

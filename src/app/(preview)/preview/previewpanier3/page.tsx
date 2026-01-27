@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-type Plan = "gold" | "platine" | "family";
+type Plan = "normal" | "gold" | "platine";
 type Mode = "visitor" | "subscribed";
 type Duration = "monthly" | "annual";
 type CartItem = { id: string; level: string; subject: string };
@@ -72,7 +72,7 @@ function ProgressBar() {
             <div
               className={cn(
                 "flex h-8 w-8 items-center justify-center rounded-full border text-xs font-semibold",
-                s.current
+                ('current' in s && (s as any).current)
                   ? "border-white bg-white text-slate-900"
                   : s.done
                     ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-200"
@@ -81,7 +81,7 @@ function ProgressBar() {
             >
               {idx + 1}
             </div>
-            <div className={cn("font-semibold", s.current ? "text-white" : "text-slate-200")}>{s.label}</div>
+            <div className={cn("font-semibold", ('current' in s && (s as any).current) ? "text-white" : "text-slate-200")}>{s.label}</div>
 
             {idx < steps.length - 1 ? (
               <div className="mx-2 h-[2px] flex-1 rounded-full bg-slate-800">
