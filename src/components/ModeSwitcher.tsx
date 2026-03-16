@@ -1,14 +1,17 @@
+// PATCH_TAG_MODES_CLASSIQUE_PANIER_V3
 'use client'
 
+// PATCH_TAG_HEADER_PANIER_MODES_V2
 const MODES = [
-  { value: 'normal', label: 'Normal' },
-  { value: 'tdah', label: 'TDAH' },
-  { value: 'dys', label: 'DYS' },
-  { value: 'tsa', label: 'TSA' },
-  { value: 'hpi', label: 'HPI' },
-]
-
-function getCookie(name: string) {
+  { value: "normal", label: "Classique" },
+{ value: "tdah", label: "TDAH" },
+  { value: "dyslexie", label: "Dyslexie" },
+  { value: "dyscalculie", label: "Dyscalculie" },
+  { value: "dyspraxie", label: "Dyspraxie" },
+  { value: "dysgraphie", label: "Dysgraphie" },
+  { value: "tsa", label: "TSA" },
+  { value: "hpi", label: "HPI" }
+];function getCookie(name: string) {
   if (typeof document === 'undefined') return null
   const m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'))
   return m ? decodeURIComponent(m[2]) : null

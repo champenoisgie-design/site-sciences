@@ -1,3 +1,4 @@
+// PATCH_TAG_MODES_DYS_REMOVAL_V1
 /* ----------------------------------------------------------------
    src/config/pricing.ts
    - Source de vérité pour prix, packs, modes, catalogue, Stripe
@@ -15,9 +16,7 @@ export const PLAN_LABELS: Record<PlanKey, string> = {
 }
 
 export const MODE_LABELS: Record<ModeKey, string> = {
-  tdah: 'TDAH',
-  dys: 'DYS',
-  tsa: 'TSA',
+  tdah: 'TDAH',  tsa: 'TSA',
   hpi: 'HPI',
 }
 
@@ -30,7 +29,15 @@ export const PACK_LABELS: Record<PackKey, string> = {
 export const PRICING = {
   plans: { normal: 599, gold: 999, platine: 1499 } as Record<PlanKey, number>,
   packs: { pack3: 1999, family: 2999 } as Record<PackKey, number>,
-  modes: { tdah: 299, dys: 299, tsa: 299, hpi: 299 } as Record<ModeKey, number>,
+  modes: {
+    tdah: 299,
+    dyslexie: 299,
+    dyscalculie: 299,
+    dyspraxie: 299,
+    dysgraphie: 299,
+    tsa: 299,
+    hpi: 299,
+  } as Record<ModeKey, number>,
 
   /** -------- Catalogue matières --------
    *  Donne-moi la liste finale pour que je fige la structure.

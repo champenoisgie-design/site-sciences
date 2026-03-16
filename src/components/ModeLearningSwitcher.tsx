@@ -1,14 +1,15 @@
+// PATCH_TAG_MODES_CLASSIQUE_PANIER_V3
 'use client'
 import { useEffect, useState } from 'react'
 
-type LearningMode = 'Normal' | 'TDAH' | 'DYS'
+type LearningMode = 'Classique' | 'TDAH' | 'DYS'
 const KEY = '__learning_mode__'
 
 export default function ModeLearningSwitcher() {
-  const [mode, setMode] = useState<LearningMode>('Normal')
+  const [mode, setMode] = useState<LearningMode>('Classique')
 
   useEffect(() => {
-    const saved = (localStorage.getItem(KEY) as LearningMode) || 'Normal'
+    const saved = (localStorage.getItem(KEY) as LearningMode) || 'Classique'
     setMode(saved)
     document.documentElement.setAttribute('data-learning', saved)
   }, [])
@@ -27,9 +28,15 @@ export default function ModeLearningSwitcher() {
         className="rounded border bg-transparent px-2 py-1"
         aria-label="Choisir le mode d’apprentissage"
       >
-        <option value="Normal">Normal</option>
+        <option value="Classique">Classique</option>
         <option value="TDAH">TDAH</option>
-        <option value="DYS">DYS</option>
+        <option value="Dyslexie">Dyslexie</option>
+        <option value="Dyscalculie">Dyscalculie</option>
+        <option value="Dyspraxie">Dyspraxie</option>
+        <option value="Dysgraphie">Dysgraphie</option>
+        <option value="TSA">TSA</option>
+        <option value="HPI">HPI</option>
+
       </select>
     </label>
   )

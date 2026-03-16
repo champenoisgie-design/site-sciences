@@ -1,3 +1,4 @@
+// PATCH_TAG_MODES_CLASSIQUE_PANIER_V3
 "use client";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -5,7 +6,11 @@ import { useState, useEffect } from "react";
 const MODES = [
   { value: "", label: "Aucun (défaut)" },
   { value: "tdah", label: "TDAH" },
-  { value: "dys", label: "DYS" },
+  { value: "dyslexie", label: "Dyslexie" },
+  { value: "dyscalculie", label: "Dyscalculie" },
+  { value: "dyspraxie", label: "Dyspraxie" },
+  { value: "dysgraphie", label: "Dysgraphie" },
+  
   { value: "tsa", label: "TSA" },
   { value: "hpi", label: "HPI" },
   { value: "parents", label: "Parents (beta)" },

@@ -109,7 +109,6 @@ export default function TarifsPage() {
     { label: "Simulation 3D (physique/chimie) interactives", normal: "—", gold: "—", platine: true },
     { label: "Badges Prestige & certificats imprimables", normal: "—", gold: "—", platine: true },
     { label: "Fiches HD sans watermark (illimité)", normal: "—", gold: "—", platine: true },
-    { label: "Multi-profil Famille (parents + 2 enfants)", normal: "—", gold: "—", platine: true },
     { label: "Avantage fidélité (renouvellement annuel -10%)", normal: "—", gold: "—", platine: true },
   ];
 

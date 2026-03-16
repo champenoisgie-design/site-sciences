@@ -65,7 +65,7 @@ export default function HomePage() {
             Mode d’apprentissage
           </label>
           <select className="mt-1 w-full rounded-md border-gray-300 shadow-sm">
-            <option>Normal</option>
+            <option>Classique</option>
             <option>TDAH</option>
             <option>DYS</option>
             <option>TSA</option>
@@ -107,7 +107,7 @@ export default function HomePage() {
       {/* PRICING */}
       <section className="mt-16 text-center">
         <p className="text-gray-700">
-          Abonnements <strong>Normal</strong> • <strong>Gold</strong> •{' '}
+          Abonnements <strong>Classique</strong> • <strong>Gold</strong> •{' '}
           <strong>Platinium</strong> + achat à la demande.
         </p>
         <Link

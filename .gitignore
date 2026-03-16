@@ -76,3 +76,5 @@ prisma/*.db.bak*
 
 # build artifacts
 *.tsbuildinfo
+diag-*.txt
+plan-rename-scan-*.txt

@@ -289,7 +289,11 @@ Pour continuer, choisis une formule (matières, chapitres, thèmes). Paiement pr
 
               <div className="mt-4 flex flex-wrap gap-3">
                 <Link
-                  href="/exercices"
+                  href={
+                    selectedSubject?.level && selectedSubject?.subject
+                      ? `/exercices?grade=${encodeURIComponent(selectedSubject.level)}&subject=${encodeURIComponent(selectedSubject.subject)}`
+                      : "/exercices"
+                  }
                   className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-3 text-white font-semibold hover:bg-emerald-700"
                 >
                   Continuer

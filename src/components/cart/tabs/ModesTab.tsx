@@ -1,6 +1,7 @@
+// PATCH_TAG_MODES_CLASSIQUE_PANIER_V3
 "use client";
 import { CartState } from "../PanierTabs";
-const MODES: Array<keyof CartState["modes"]> = ["TDAH","DYS","TSA","HPI"];
+const MODES: Array<keyof CartState["modes"]> = ["Dyscalculie","Dysgraphie","Dyslexie","Dyspraxie","HPI","TDAH","TSA"];
 
 export default function ModesTab({ value, onChange }: { value: CartState; onChange: (v: CartState) => void }) {
   const toggle = (k: keyof CartState["modes"]) =>

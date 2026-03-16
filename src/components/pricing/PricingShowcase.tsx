@@ -38,7 +38,6 @@ const features: Feature[] = [
   { label: "Simulations 3D (physique/chimie) interactives", availability: { Normal: "no", Gold: "no", Platine: "included" } },
   { label: "Badges Prestige & certificats imprimables", availability: { Normal: "no", Gold: "partial", Platine: "included" } },
   { label: "Fiches HD sans watermark (illimité)", availability: { Normal: "no", Gold: "no", Platine: "included" } },
-  { label: "Multi-profil Famille (parents + 2 enfants)", availability: { Normal: "no", Gold: "no", Platine: "included" } },
   { label: "Avantage fidélité (renouvellement annuel −10%)", availability: { Normal: "no", Gold: "no", Platine: "included" } },
 ];
 

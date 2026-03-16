@@ -1,34 +1,117 @@
 import { use } from 'react'
 import { MODE_LABELS, PRICING, centsToEuros } from '@/config/pricing'
+import { notFound } from 'next/navigation'
+// PATCH_TAG_MODES_DYS_REMOVAL_V1
 
 type ModeKey = keyof typeof MODE_LABELS
 
 function examplesFor(mode: ModeKey) {
   switch (mode) {
-    case 'dys':
+    case 'dyslexie':
       return [
         {
-          title: 'Lecture guidée d’un énoncé',
+          title: "Lecture accompagnée",
           points: [
-            'Énoncé affiché en colonnes courtes (≈60–70 caractères).',
-            'Mots clés en gras/couleur douce, syllabes repérées.',
-            'Bouton “Lire à voix haute” phrase par phrase.',
+            "Texte aéré avec repères visuels stables.",
+            "Surlignage progressif phrase par phrase.",
+            "Lecture audio optionnelle (si activée).",
           ],
         },
         {
-          title: 'Exercice de français — accords',
+          title: "Dictée intelligente",
           points: [
-            'Phrase découpée, chaque groupe souligné de couleur.',
-            'Surlignage des terminaisons candidates (-s/-es/-ent).',
-            'Feedback immédiat + rappel règle en 2 lignes.',
+            "Segmentation en syllabes (option).",
+            "Correction visuelle claire et douce.",
+            "Aide à la relecture sans surcharge.",
           ],
         },
         {
-          title: 'Problème de maths — proportionnalité',
+          title: "Compréhension de texte",
           points: [
-            'Tableau pré-rempli (en-têtes déjà posés).',
-            'Une étape par écran : repérer, compléter, vérifier.',
-            'Schéma visuel (flèches) + unité rappelée dans chaque case.',
+            "Paragraphes courts et structurés.",
+            "Questions directes, une à une.",
+            "Mots-clés mis en évidence.",
+          ],
+        },
+      ]
+    case 'dyscalculie':
+      return [
+        {
+          title: "Addition fractionnée",
+          points: [
+            "Décomposition en étapes visibles.",
+            "Une opération à la fois.",
+            "Validation étape par étape.",
+          ],
+        },
+        {
+          title: "Problème guidé",
+          points: [
+            "Données mises en évidence.",
+            "Résolution en 3 étapes maximum.",
+            "Méthode rappelée au bon moment.",
+          ],
+        },
+        {
+          title: "Géométrie visuelle",
+          points: [
+            "Figures lisibles et stables.",
+            "Mesures affichées clairement.",
+            "Manipulation avant réponse.",
+          ],
+        },
+      ]
+    case 'dyspraxie':
+      return [
+        {
+          title: "Exercice structuré",
+          points: [
+            "Une consigne à la fois.",
+            "Boutons larges et espacés.",
+            "Confirmation visuelle avant validation.",
+          ],
+        },
+        {
+          title: "Organisation guidée",
+          points: [
+            "Étapes numérotées simples.",
+            "Cases à cocher pour suivre l’avancement.",
+            "Retour facile en arrière.",
+          ],
+        },
+        {
+          title: "Géométrie assistée",
+          points: [
+            "Schémas fixes et lisibles.",
+            "Moins de manipulation fine requise.",
+            "Aide visuelle continue.",
+          ],
+        },
+      ]
+    case 'dysgraphie':
+      return [
+        {
+          title: "Rédaction assistée",
+          points: [
+            "Plan simple proposé (début / milieu / fin).",
+            "Mots de liaison suggérés.",
+            "Aide à la relecture sans jugement.",
+          ],
+        },
+        {
+          title: "Réponse courte guidée",
+          points: [
+            "Phrase à compléter (option).",
+            "Mots-clés proposés.",
+            "Validation progressive.",
+          ],
+        },
+        {
+          title: "Résumé structuré",
+          points: [
+            "Mots importants identifiés.",
+            "Cadre de réponse prédéfini.",
+            "Aide à prioriser les idées.",
           ],
         },
       ]
@@ -123,12 +206,15 @@ export default function ModePage({
 }: {
   params: { mode?: string[] } | Promise<{ mode?: string[] }>
 }) {
+  // PATCH_TAG_FIX_MODES_V1
   const resolved = (params as any)?.then
     ? use(params as Promise<{ mode?: string[] }>)
     : (params as { mode?: string[] } | undefined)
-  const raw = resolved?.mode?.[0]?.toLowerCase() as ModeKey | undefined
 
-  if (!raw || !MODE_LABELS[raw]) {
+  const rawSlug = resolved?.mode?.[0]?.toLowerCase()
+
+  // Sans slug => page liste des modes
+  if (!rawSlug) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-8">
         <h1 className="text-3xl font-bold mb-4" data-testid="mode-page-title">
@@ -147,8 +233,7 @@ export default function ModePage({
                 {MODE_LABELS[k as ModeKey]}
               </a>
               <p className="text-xs opacity-70">
-                Dès{' '}
-                {centsToEuros(PRICING.modes[k as keyof typeof PRICING.modes])}
+                Dès {centsToEuros(PRICING.modes[k as keyof typeof PRICING.modes])}
               </p>
             </li>
           ))}
@@ -157,8 +242,15 @@ export default function ModePage({
     )
   }
 
+  const raw = rawSlug as ModeKey
+
+  // Slug inconnu => 404
+  if (!MODE_LABELS[raw] || PRICING.modes[raw as keyof typeof PRICING.modes] == null) {
+    notFound()
+  }
+
   const label = MODE_LABELS[raw]
-  const price = PRICING.modes[raw]
+  const price = PRICING.modes[raw as keyof typeof PRICING.modes]
   const examples = examplesFor(raw)
 
   return (
@@ -240,7 +332,7 @@ export default function ModePage({
       {/* CTA */}
       <a
         className="inline-flex items-center justify-center rounded-xl border px-5 py-2 font-medium hover:bg-black/5"
-        href="#todo-stripe"
+        href={`/panier?mode=${raw}`}
       >
         Activer le mode {label}
       </a>

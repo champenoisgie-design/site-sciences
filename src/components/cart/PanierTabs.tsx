@@ -1,3 +1,4 @@
+// PATCH_TAG_MODES_CLASSIQUE_PANIER_V3
 "use client";
 import type { CartItem, BillingPeriod } from "@/lib/pricing/types";
 import CartIncentives from "@/components/cart/CartIncentives";
@@ -12,7 +13,7 @@ import { useSearchParams } from "next/navigation";
 
 export type CartState = {
   subjects: Array<{ niveau: string; matiere: string }>;
-  modes: { TDAH: boolean; DYS: boolean; TSA: boolean; HPI: boolean };
+  modes: { TDAH: boolean; Dyslexie: boolean; TSA: boolean; HPI: boolean };
   plan: "Normal" | "Gold" | "Platine";
   period: "Mensuel" | "Annuel";
 };
@@ -48,7 +49,7 @@ export default function PanierTabs() {
   const [active, setActive] = useState<(typeof TABS)[number]["id"]>("subjects");
   const [state, setState] = useState<CartState>({
     subjects: [{ niveau: "4e", matiere: "Physique-Chimie" }],
-    modes: { TDAH: false, DYS: false, TSA: false, HPI: false },
+    modes: { TDAH: false, Dyslexie: false, TSA: false, HPI: false },
     plan: "Gold",
     period: "Mensuel",
   });

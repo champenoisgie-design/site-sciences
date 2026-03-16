@@ -1,5 +1,84 @@
+// PATCH_TAG_MODES_CLASSIQUE_PANIER_V3
 "use client";
 
+
+
+
+
+/*__SS_SKIN_CATALOG_V2__*/
+const SKIN_CATALOG = [
+  // Anime / Manga
+  { group: "Anime / Manga", key: "DRAGON_BALL", label: "Dragon Ball Z / Super" },
+  { group: "Anime / Manga", key: "DEMON_SLAYER", label: "Demon Slayer" },
+  { group: "Anime / Manga", key: "ONE_PIECE", label: "One Piece" },
+  { group: "Anime / Manga", key: "NARUTO", label: "Naruto" },
+  { group: "Anime / Manga", key: "SAILOR_MOON", label: "Sailor Moon" },
+
+  // Jeux vidéo
+  { group: "Jeux vidéo", key: "MARIO", label: "Mario" },
+  { group: "Jeux vidéo", key: "MINECRAFT", label: "Minecraft" },
+  { group: "Jeux vidéo", key: "ZELDA", label: "Zelda" },
+  { group: "Jeux vidéo", key: "POKEMON", label: "Pokémon" },
+  { group: "Jeux vidéo", key: "FORTNITE", label: "Fortnite" },
+  { group: "Jeux vidéo", key: "ROBOT", label: "Robot" },
+  { group: "Jeux vidéo", key: "OVERWATCH", label: "Overwatch" },
+  { group: "Jeux vidéo", key: "WORLD_OF_WARCRAFT", label: "World of Warcraft" },
+
+  // Films / Séries
+  { group: "Films / Séries", key: "MARVEL", label: "Marvel" },
+  { group: "Films / Séries", key: "HARRY_POTTER", label: "Harry Potter" },
+  { group: "Films / Séries", key: "STRANGER_THINGS", label: "Stranger Things" },
+  { group: "Films / Séries", key: "MERCREDI", label: "Mercredi" },
+  { group: "Films / Séries", key: "MY_HERO_ACADEMIA", label: "My Hero Academia" },
+] as const;
+
+const SKIN_KEYS = SKIN_CATALOG.map((s) => s.key);
+const SKIN_GROUPS = Array.from(new Set(SKIN_CATALOG.map((s) => s.group)));
+/*__SS_SKIN_CATALOG_V2_END__*/
+
+/*__SS_SKIN_LOGO_SLOT_V2__*/
+function SkinLogoSlot() {
+  return (
+    <div className="h-10 w-10 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] text-slate-500">
+      LOGO
+    </div>
+  );
+}
+/*__SS_SKIN_LOGO_SLOT_V2_END__*/
+
+
+
+// PROMO_RECAP_TODAY_CENTS_V1 (module helper)
+// Objectif: afficher les remises sur le "Total aujourd’hui" (annuel), comme Stripe.
+function __cents(n: number) { return Math.round(n); }
+function __eurToCents(eur: number) { return __cents(eur * 100); }
+function __formatEURFromCents(cents: number) {
+  try { return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(cents / 100); }
+  catch { return ((cents/100).toFixed(2)).replace(".", ",") + " €"; }
+}
+
+// Calcule la promo à appliquer comme le serveur (famille / matières / cumul -30)
+function __computePromoFromSubjectsCompact(subjectsCompact: string) {
+  const entries = String(subjectsCompact || "")
+    .split("|")
+    .map(x => x.trim())
+    .filter(Boolean);
+
+  // entries: "4e:Maths"
+  const grades = entries.map(e => e.split(":")[0]?.trim()).filter(Boolean);
+  const uniqueGrades = Array.from(new Set(grades));
+  const counts = grades.reduce((acc: any, g: string) => { acc[g] = (acc[g] || 0) + 1; return acc; }, {});
+  const isFamily = uniqueGrades.length >= 2; // ≥2 niveaux
+  const isMatieres = Object.values(counts).some((n: any) => Number(n) >= 3); // ≥3 même niveau
+
+  let percent = 0;
+  let label = "";
+  if (isFamily && isMatieres) { percent = 30; label = "Pack Famille + Matières (-30%)"; }
+  else if (isFamily)          { percent = 20; label = "Pack Famille activé (-20%)"; }
+  else if (isMatieres)        { percent = 10; label = "Remise matières (≥ 3 même niveau) (-10%)"; }
+
+  return { percent, label, isFamily, isMatieres, entriesCount: entries.length, uniqueGrades, counts };
+}
 
 import { useParentPinModal } from "@/components/parent-pin/useParentPinModal";
 import { fetchWithParentPinRetry } from "@/components/parent-pin/fetchWithParentPinRetry";
@@ -11,7 +90,7 @@ type Duration = "monthly" | "annual";
 
 type UpsellKey = "parents" | "coach" | "pdf" | "ia";
 type ThemePack = "mario" | "onepiece";
-type Skin = "neon" | "solaire" | "pastel";
+type SkinKey = (typeof SKIN_CATALOG)[number]["key"];
 /*__SS_ADDONS_TYPES__*/
 type LearningAddon = "tdah" | "dys" | "tsa" | "hpi";
 
@@ -20,7 +99,10 @@ const SKIN_PRICE_ONE_TIME = 2.99;          // achat unique
 
 const LEARNING_ADDONS: Array<{ key: LearningAddon; label: string; desc: string }> = [
   { key: "tdah", label: "TDAH", desc: "Timers + micro-étapes + anti-distraction" },
-  { key: "dys",  label: "DYS",  desc: "Typo adaptée + consignes simplifiées" },
+  { key: "dyslexie", label: "Dyslexie", desc: "Texte aéré + repères visuels stables" },
+  { key: "dyscalculie", label: "Dyscalculie", desc: "Étapes claires + calcul guidé" },
+  { key: "dyspraxie", label: "Dyspraxie", desc: "Interface espacée + actions simples" },
+  { key: "dysgraphie", label: "Dysgraphie", desc: "Rédaction assistée + réponses guidées" },
   { key: "tsa",  label: "TSA",  desc: "Structure + prévisibilité + feedback stable" },
   { key: "hpi",  label: "HPI",  desc: "Parcours accéléré + défis avancés" },
 ];
@@ -55,9 +137,83 @@ function readPlan(p: string | null): Plan {
 }
 
 export default function PanierPage() {
+  // =======================================
+  // ===============================
+  
+  // ===============================
+  
+  // ===============================
+  // Platine = tout inclus : options forcées cochées + non modifiables
+  // FIX_GLOBAL_RECAP_V3: TDZ-safe (ne touche pas tabRecap avant sa déclaration)
+  let globalRecap: any = { title: "Récap général", lines: [] as any[] };
+
   const { open: openParentPin, ParentPinModal } = useParentPinModal();
   const sp = useSearchParams();
-  const router = useRouter();
+  
+  // =======================================
+  // UPSSELLS_RESET_ON_PLAN_REACTIVE_V1
+  // =======================================
+  const __planLower = String(sp?.get?.("plan") ?? "").toLowerCase();
+
+  // =======================================
+  // RECAP_OPTIONS_INCLUDED_V1
+  // =======================================
+  const __isGoldPlan = __planLower === "gold";
+  const __isPlatinePlan = __planLower === "platine";
+  const __parentsIncludedByPlan = __isGoldPlan || __isPlatinePlan;
+  const __allOptionsIncludedByPlan = __isPlatinePlan;
+
+  const __upsellMonthlyEffective = (k, monthly) => {
+    if (__allOptionsIncludedByPlan) return 0;
+    if (k === "parents" && __parentsIncludedByPlan) return 0;
+    return monthly;
+  };
+
+  const __upsellIncludedEffective = (k) => {
+    if (__allOptionsIncludedByPlan) return true;
+    if (k === "parents" && __parentsIncludedByPlan) return true;
+    return false;
+  };
+  // END_RECAP_OPTIONS_INCLUDED_V1
+
+
+  useEffect(() => {
+    if (__planLower === "platine") {
+      setSelectedUpsells({ parents: true, coach: true, pdf: true, ia: true });
+      return;
+    }
+    if (__planLower === "gold") {
+      // Gold: Parents+ seulement
+      setSelectedUpsells({ parents: true, coach: false, pdf: false, ia: false });
+      return;
+    }
+    // Normal / fallback
+    setSelectedUpsells({ parents: false, coach: false, pdf: false, ia: false });
+  }, [__planLower]);
+  // END_UPSSELLS_RESET_ON_PLAN_REACTIVE_V1
+
+
+  // ===============================
+  // PLATINE_OPTIONS_LOCK_V9 (FINAL)
+  // ===============================
+  // Basé sur ?plan=platine
+  const __planNameForOptions = (() => {
+    try { return String(new URLSearchParams(window.location.search).get("plan") ?? ""); }
+    catch { return ""; }
+  })();
+const __isPlatine = __planNameForOptions.toLowerCase() === "platine";
+
+  const __effectiveOptions = __isPlatine
+    ? { parentsPlus: true, coachHebdo: true, pdf: true, ai: true }
+    : ((typeof (globalThis as any).options !== "undefined" ? (options as any) : undefined) ??
+       { parentsPlus: false, coachHebdo: false, pdf: false, ai: false });
+const __optionPriceLabel = (txt: string) => (__isPlatine ? "Inclus" : txt);
+
+
+
+    const __optChecked = (v: any) => (__isPlatine ? true : !!v);
+// ===============================
+    const router = useRouter();
 
   // ✅ PROD : pas de switch visitor/subscribed (c’était dev only)
   const [tab, setTab] = useState<"subjects" | "themes" | "learning" | "chapters">("subjects");
@@ -72,14 +228,21 @@ export default function PanierPage() {
     ia: false,
   });
 
-  /*__SS_ADDONS_STATE__*/
+  
+  // ===============================
+  // PLATINE_UPSELLS_FORCE_V2
+  // ===============================
+  const __ALL_UPSELLS = { parents: true, coach: true, pdf: true, ia: true } as const;
+  const __effectiveUpsells: Record<UpsellKey, boolean> =
+    __isPlatine ? (__ALL_UPSELLS as any) : (selectedUpsells as any);
+/*__SS_ADDONS_STATE__*/
   const [selectedLearning, setSelectedLearning] = useState<Record<LearningAddon, boolean>>({
     tdah: false, dys: false, tsa: false, hpi: false,
   });
 
   // achat unique: on peut acheter 1+ skins (même si on en "utilise" un seul)
-  const [purchasedSkins, setPurchasedSkins] = useState<Record<Skin, boolean>>({
-    neon: false, solaire: false, pastel: false,
+  const [purchasedSkins, setPurchasedSkins] = useState<Record<SkinKey, boolean>>({
+
   });
 
   // ✅ PROD : pas d’ownership mock (tout est “non acheté” tant qu’on n’a pas le backend)
@@ -87,23 +250,27 @@ export default function PanierPage() {
     return {
       parentsOwned: false,
       themeOwned: {} as Partial<Record<ThemePack, boolean>>,
-      skinOwned: {} as Partial<Record<Skin, boolean>>,
+      skinOwned: {} as Partial<Record<SkinKey, boolean>>,
     };
   }, []);
 
   // Thème/skin : on lit le choix global sauvegardé (home)
   const [themePack, setThemePack] = useState<ThemePack>("mario");
-  const [skin, setSkin] = useState<Skin>("neon");
-  useEffect(() => {
+  const [activeSkin, setActiveSkin] = useState<SkinKey>(SKIN_KEYS[0] as any);
+useEffect(() => {
     try {
       const t = localStorage.getItem("ss_theme_pack");
-      const s = localStorage.getItem("ss_ui_skin");
-      if (t === "mario" || t === "onepiece") setThemePack(t);
-      if (s === "neon" || s === "solaire" || s === "pastel") setSkin(s);
-    } catch {}
+      const sk = localStorage.getItem("ss_skin_key");
+      if (sk && (SKIN_KEYS as any).includes(sk)) setActiveSkin(sk as any);
+} catch {}
   }, []);
 
-  // garde plan dans l’URL (pratique)
+  
+
+  useEffect(() => {
+    try { localStorage.setItem("ss_skin_key", String(activeSkin)); } catch {}
+  }, [activeSkin]);
+// garde plan dans l’URL (pratique)
   useEffect(() => {
     const params = new URLSearchParams(sp.toString());
     params.set("plan", plan);
@@ -139,13 +306,15 @@ export default function PanierPage() {
   // Auto-coché si inclus (et non facturé)
   useEffect(() => {
     if (!parentsIncluded) return;
-    setSelectedUpsells((p) => ({ ...p, parents: true }));
-  }, [parentsIncluded]);
+    if (__planLower !== "normal") setSelectedUpsells((p) => ({ ...p, parents: true }));
+
+// =======================================
+}, [parentsIncluded]);
 
   const upsellMonthly = useMemo(() => {
     let t = 0;
     for (const u of UPSELLS) {
-      if (!selectedUpsells[u.key]) continue;
+      if (!__effectiveUpsells[u.key]) continue;
       if (u.key === "parents" && (parentsIncluded || owned.parentsOwned)) continue;
       t += u.monthly;
     }
@@ -194,7 +363,6 @@ export default function PanierPage() {
     return Math.round(beforeLevelDiscountMonthly * bulkSameLevelRate * 100) / 100;
   }, [bulkSameLevelActive, beforeLevelDiscountMonthly, bulkSameLevelRate]);
 
-
   // Total facturé aujourd’hui = abonnement (mensuel ou annuel) + achats uniques (skins)
   const totalDueToday = useMemo(() => {
     // Recalc autonome (évite toute dépendance d'ordre à totalMonthly)
@@ -212,17 +380,16 @@ export default function PanierPage() {
     return Math.round(t * 100) / 100;
   }, [baseMonthly, upsellMonthly, learningMonthly, annualDiscountRate, familyDiscountActive, bulkSameLevelActive, bulkSameLevelRate, duration, skinsOneTime]);
 
-
   /*__SS_RIGHT_RECAP_MODEL__*/
   // --- Modèle récap (onglet + global) ---
   const selectedUpsellsMonthly = useMemo(() => {
     return UPSELLS
-      .filter((u) => selectedUpsells[u.key])
+      .filter((u) => __effectiveUpsells[u.key])
       .map((u) => ({
         key: u.key,
         label: u.label,
-        monthly: (u.key === "parents" && (parentsIncluded || owned.parentsOwned)) ? 0 : u.monthly,
-        included: (u.key === "parents" && parentsIncluded) ? true : false,
+        monthly: __upsellMonthlyEffective(u.key, (u.key === "parents" && (parentsIncluded || owned.parentsOwned)) ? 0 : u.monthly),
+        included: (__upsellIncludedEffective(u.key) || (u.key === "parents" && parentsIncluded)) ? true : false,
         owned: (u.key === "parents" && owned.parentsOwned) ? true : false,
       }))
       .filter((u) => u.monthly > 0 || u.included || u.owned);
@@ -250,91 +417,10 @@ export default function PanierPage() {
   }, [items]);
 
   const tabRecap = useMemo(() => {
-    // Récap “ce que tu touches maintenant” selon l’onglet
-    if (tab === "subjects") {
-      return {
-        title: "Récap onglet — Matières",
-        lines: [
-          { label: `${items.length} matière(s) sélectionnée(s)`, value: null },
-          ...Object.entries(itemsByLevel).map(([lvl, subs]) => ({
-            label: lvl,
-            value: subs.join(", "),
-          })),
-          { label: "Sous-total abonnement (base)", value: money(baseMonthly) + "/mois" },
-        ],
-      };
-    }
+    // FIX_LINES_V1: lines était manquant -> évite crash runtime
+    const lines: any[] = [];
 
-    if (tab === "themes") {
-      return {
-        title: "Récap onglet — Thèmes & skins",
-        lines: [
-          { label: "Thème actif", value: themePack },
-          { label: "Skin actif", value: skin },
-          { label: "Skins achetés (unique)", value: purchasedSkinsList.join(", ") || "—" },
-          { label: "Sous-total achats uniques", value: money(skinsOneTime) },
-        ],
-      };
-    }
-
-    if (tab === "learning") {
-      return {
-        title: "Récap onglet — Modes d’apprentissage",
-        lines: [
-          { label: "Modes choisis", value: selectedLearningList.map((x) => x.toUpperCase()).join(", ") || "—" },
-          { label: "Sous-total modes", value: money(learningMonthly) + "/mois" },
-          { label: "Rappel", value: "Renouvelé mensuellement (ou annuel si Annuel)" },
-        ],
-      };
-    }
-
-    // chapters (placeholder)
-    return {
-      title: "Récap onglet — Chapitres",
-      lines: [
-        { label: "Bientôt disponible", value: "Achat à l’unité par chapitre" },
-      ],
-    };
-  }, [tab, items.length, itemsByLevel, baseMonthly, themePack, skin, purchasedSkinsList, skinsOneTime, selectedLearningList, learningMonthly]);
-
-  const globalRecap = useMemo(() => {
-    const lines: Array<{ label: string; value?: string; tone?: "muted" | "good" | "bad" }> = [];
-
-    // Base
-    lines.push({ label: `Abonnement ${PLAN_META[plan].label} × ${items.length} matière(s)`, value: money(baseMonthly) + "/mois" });
-
-    // Upsells
-    if (selectedUpsellsMonthly.length) {
-      for (const u of selectedUpsellsMonthly) {
-        if (u.included) lines.push({ label: `${u.label}`, value: "Inclus", tone: "good" });
-        else if (u.owned) lines.push({ label: `${u.label}`, value: "Déjà acheté", tone: "good" });
-        else lines.push({ label: `${u.label}`, value: money(u.monthly) + "/mois" });
-      }
-    }
-
-    // Learning
-    if (learningMonthly > 0) {
-      lines.push({ label: `Modes d’apprentissage (${selectedLearningList.length})`, value: money(learningMonthly) + "/mois" });
-    }
-
-    // Achats uniques
-    if (skinsOneTime > 0) {
-      lines.push({ label: `Skins (achat unique)`, value: money(skinsOneTime) });
-    }
-
-    // Remises (affichage “comme famille”)
-    if (familyDiscountActive && typeof familyDiscountMonthlyValue !== "undefined" && familyDiscountMonthlyValue > 0) {
-      lines.push({ label: "Remise Famille (-20%)", value: "- " + money(familyDiscountMonthlyValue), tone: "good" });
-    }
-    if (bulkSameLevelActive && typeof bulkSameLevelDiscountMonthlyValue !== "undefined" && bulkSameLevelDiscountMonthlyValue > 0) {
-      lines.push({ label: "Remise matières (≥3 même niveau) (-10%)", value: "- " + money(bulkSameLevelDiscountMonthlyValue), tone: "good" });
-    }
-
-    // Totaux
-    lines.push({ label: "Total abonnement", value: money(totalMonthly) + "/mois" });
-    lines.push({ label: "Total aujourd’hui", value: money(totalDueToday), tone: "bad" });
-
-    return { title: "Récap général", lines };
+return { title: "Récap général", lines };
   }, [
     plan,
     items.length,
@@ -351,9 +437,11 @@ export default function PanierPage() {
     totalDueToday,
   ]);
 
+  
+  // FIX_GLOBAL_RECAP_ASSIGN_V1: après init tabRecap seulement
+  globalRecap = tabRecap;
 
-
-  const addItem = () => {
+const addItem = () => {
     const id = `i${Math.random().toString(16).slice(2)}`;
     setItems((p) => [...p, { id, level: "5e", subject: "Maths" }]);
   };
@@ -362,6 +450,7 @@ export default function PanierPage() {
     setItems((p) => p.map((x) => (x.id === id ? { ...x, ...patch } : x)));
 
   const toggleUpsell = (k: UpsellKey) => {
+    if (__isPlatine) return;
     if (k === "parents" && parentsIncluded) return;
     if (k === "parents" && owned.parentsOwned) return;
     setSelectedUpsells((p) => ({ ...p, [k]: !p[k] }));
@@ -373,7 +462,7 @@ export default function PanierPage() {
     params.set("duration", duration);
     params.set("items", items.map((i) => `${i.level}:${i.subject}`).join("|"));
 
-    const ups = Object.entries(selectedUpsells)
+    const ups = Object.entries(__effectiveUpsells)
       .filter(([, v]) => v)
       .map(([k]) => k)
       .join(",");
@@ -386,7 +475,7 @@ export default function PanierPage() {
     if (skins) params.set("skins", skins);
 
     params.set("theme", themePack);
-    params.set("skin", skin);
+    params.set("skin", String(activeSkin));
 
     /*__SS_ADDONS_CHECKOUT__*/
 
@@ -394,7 +483,19 @@ export default function PanierPage() {
   };
 
   async function startStripeCheckout() {
-    // Map duration -> period attendu par l'API checkout/session
+    
+    /*__SS_DEBUG_CART_V1__*/
+    try {
+      console.log("[cart] selectedUpsells =", typeof selectedUpsells !== "undefined" ? selectedUpsells : null);
+      console.log("[cart] selectedLearning =", typeof selectedLearning !== "undefined" ? selectedLearning : null);
+      console.log("[cart] purchasedSkins =", typeof purchasedSkins !== "undefined" ? purchasedSkins : null);
+      console.log("[cart] plan/duration =", { plan, duration });
+      console.log("[cart] items =", Array.isArray(items) ? items : null);
+    } catch (e) {
+      console.log("[cart] debug log error", e);
+    }
+    /*__SS_DEBUG_CART_V1_END__*/
+// Map duration -> period attendu par l'API checkout/session
     const period = duration === "annual" ? "Annuel" : "Mensuel";
 
     // items attendu par l'API : tableau (tu as déjà un format "level:subject" dans l'URL confirmation)
@@ -406,19 +507,57 @@ export default function PanierPage() {
       distinctLevelsCount: typeof distinctLevelsCount === "number" ? distinctLevelsCount : undefined,
     };
 
-    const res = await fetchWithParentPinRetry(
-      "/api/checkout/session",
+    /*__SS_CHECKOUT_ITEMS_FIX_V2__*/
+    // Normalize items to what backend expects (grade + subject) and prevent empty checkout
+    const checkoutItems = (items || [])
+      .map((it: any) => {
+        const grade = String((it as any)?.grade ?? (it as any)?.level ?? (it as any)?.classe ?? "");
+        const subject = String((it as any)?.subject ?? (it as any)?.matiere ?? (it as any)?.subjectKey ?? "");
+        return { ...it, grade, subject, quantity: Math.max(1, Number((it as any)?.quantity ?? 1)) };
+      })
+      .filter((it: any) => it?.grade && it?.subject);
+
+    // Send learning modes too (backend logs selectedLearning/learning)
+    const checkoutSelectedLearning =
+      (typeof selectedLearning !== "undefined") ? selectedLearning : undefined;
+    /*__SS_CHECKOUT_ITEMS_FIX_V2_END__*/
+
+
+    const res = await fetchWithParentPinRetry("/api/checkout/session",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+        plan,
+        period: duration === "annual" ? "Annuel" : "Mensuel",
+        items: checkoutItems,
+        selectedUpsells: (typeof __effectiveUpsells !== "undefined" ? __effectiveUpsells : selectedUpsells),
+        // learning modes (send both keys for compatibility)
+        selectedLearning: checkoutSelectedLearning,
+        learning: checkoutSelectedLearning,
+        // skins purchase map
+        skins: (typeof purchasedSkins !== "undefined" ? purchasedSkins : undefined),
+      }),
       },
       openParentPin
     );
 
     const data = await res.json().catch(() => ({}));
 
+    
+    // ---- SAFETY GUARARD: never assume data.url exists ----
+    const url = (data && typeof (data as any).url === "string") ? (data as any).url : "";
     if (!res.ok) {
+      console.error("checkout/session failed:", { status: res.status, data });
+      alert(((data as any)?.error) || "Erreur paiement");
+      return;
+    }
+    if (!url) {
+      console.error("checkout/session missing url:", data);
+      alert("Erreur paiement: URL Stripe manquante. (Voir console / logs serveur)");
+      return;
+    }
+if (!res.ok) {
       alert(data?.error || "Erreur paiement");
       console.error("checkout/session:", data);
       return;
@@ -499,32 +638,47 @@ export default function PanierPage() {
                 Un skin acheté est disponible définitivement. Prix: {money(SKIN_PRICE_ONE_TIME)} / skin.
               </div>
 
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                {(["neon","solaire","pastel"] as const).map((k) => (
-                  <div key={k} className="rounded-xl border border-slate-200 p-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <button
-                        className={cn("text-sm font-semibold", skin === k ? "text-slate-900" : "text-slate-700")}
-                        onClick={() => setSkin(k)}
-                        type="button"
-                      >
-                        Skin {k}
-                      </button>
-                      <label className="flex items-center gap-2 text-xs text-slate-600">
-                        <input
-                          type="checkbox"
-                          checked={!!purchasedSkins[k]}
-                          onChange={() => setPurchasedSkins((p) => ({ ...p, [k]: !p[k] }))}
-                        />
-                        Acheter ({money(SKIN_PRICE_ONE_TIME)})
-                      </label>
-                    </div>
-                    <div className="mt-2 text-xs text-slate-500">
-                      Actif: {skin === k ? "oui" : "non"}
+              <div className="mt-4 grid gap-4">
+                {SKIN_GROUPS.map((group) => (
+                  <div key={group} className="rounded-2xl border border-slate-200 p-4">
+                    <div className="text-sm font-semibold">{group}</div>
+
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {SKIN_CATALOG.filter((x) => x.group === group).map((x) => (
+                        <div key={x.key} className="rounded-xl border border-slate-200 p-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <button
+                              className={cn(
+                                "flex items-center gap-2 text-sm font-semibold",
+                                activeSkin === x.key ? "text-slate-900" : "text-slate-700"
+                              )}
+                              onClick={() => setActiveSkin(x.key)}
+                              type="button"
+                            >
+                              <SkinLogoSlot />
+                              <span>{x.label}</span>
+                            </button>
+
+                            <label className="flex items-center gap-2 text-xs text-slate-600">
+                              <input
+                                type="checkbox"
+                                checked={!!purchasedSkins[x.key]}
+                                onChange={() => setPurchasedSkins((p) => ({ ...p, [x.key]: !p[x.key] }))}
+                              />
+                              Acheter ({money(SKIN_PRICE_ONE_TIME)})
+                            </label>
+                          </div>
+
+                          <div className="mt-2 text-xs text-slate-500">
+                            Actif: {activeSkin === x.key ? "oui" : "non"}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))}
               </div>
+
             </div>
 
             <aside className="rounded-2xl border border-slate-200 bg-white p-5">
@@ -532,7 +686,10 @@ export default function PanierPage() {
               <div className="mt-3 text-sm text-slate-700">
                 Skins achetés:
                 <div className="mt-1 text-slate-600">
-                  {Object.entries(purchasedSkins).filter(([,v]) => v).map(([k]) => k).join(", ") || "—"}
+                  {Object.entries(purchasedSkins)
+                    .filter(([, v]) => v)
+                    .map(([k]) => (SKIN_CATALOG.find((x) => x.key === k)?.label ?? k))
+                    .join(", ") || "—"}
                 </div>
               </div>
               <div className="mt-3 text-sm text-slate-700">
@@ -577,7 +734,9 @@ export default function PanierPage() {
                 </div>
               </div>
               <div className="mt-3 text-sm text-slate-700">
-                Total modes (€/mois): <span className="font-semibold">{money(learningMonthly)}</span>
+                Total modes (€/mois): 
+      {}
+      <span className="font-semibold">{money(learningMonthly)}</span>
               </div>
             </aside>
           </div>
@@ -678,9 +837,16 @@ export default function PanierPage() {
               <h2 className="text-lg font-semibold">Options</h2>
               <div className="mt-4 grid gap-3">
                 {UPSELLS.map((u) => {
-                  const checked = !!selectedUpsells[u.key];
+                  const checked = !!__effectiveUpsells[u.key];
                   const isOwned = u.key === "parents" && owned.parentsOwned;
-                  return (
+                  
+// FIX_GLOBAL_RECAP_V1: fallback safe si globalRecap a été supprimé par patch
+const globalRecap =
+  (typeof tabRecap !== "undefined" && tabRecap && typeof tabRecap === "object")
+    ? tabRecap
+    : { title: "Récap général", lines: [] as any[] };
+
+return (
                     <button
                       key={u.key}
                       onClick={() => toggleUpsell(u.key)}
@@ -723,7 +889,7 @@ export default function PanierPage() {
                     <div className="mt-1 text-xs text-slate-500">
                       {items.length} sélection{items.length > 1 ? "s" : ""} • {duration === "annual" ? "Annuel (-20%)" : "Mensuel"}
                     </div>
-                    <div className="mt-2 text-xs text-slate-500">Thème {themePack} • Skin {skin}</div>
+                    <div className="mt-2 text-xs text-slate-500">Thème {themePack} • Skin {activeSkin}</div>
                     {familyDiscountEligible ? (
                       <div className="mt-2 text-xs text-emerald-700">Pack Famille activé (-20%)</div>
                     ) : null}
@@ -777,7 +943,8 @@ export default function PanierPage() {
     </div>
 
     <div className="mt-3 text-xs text-slate-500">
-      Total abonnement = €/mois. Total aujourd’hui = (mensuel ou annuel) + achats uniques.
+
+  Total abonnement = €/mois. Total aujourd’hui = (mensuel ou annuel) + achats uniques.
     </div>
   </div>
 </div>
